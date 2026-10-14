@@ -1,0 +1,212 @@
+# Plan de travail — Labo Blocs
+
+Version 0.1 · 14/10/2026 · **proposition à valider par Thomas avant d'écrire du code** (brief Claude Code §5).
+
+Sources : `BRIEF-CLAUDE-CODE-labo-blocs.md`, `BRIEF-CLAUDE-DESIGN-labo-blocs.md`, maquette
+https://claude.ai/artifact/NUiEuKMzsMxzubE188MAoH, code de `atelier-cereales` et `theatre-ombre`.
+Le cahier des charges v5 (`CAHIER-DES-CHARGES-outil-blocs.md`) n'est pas encore dans le dépôt : à ajouter dans `docs/`.
+
+## 1. Ce que je reprends de l'existant
+
+| Existant | Où | Devient dans Labo Blocs |
+|---|---|---|
+| Programme simplifié `{demarrage, boucle}`, conversion Blockly ⇄ programme | atelier `js/moteur/programme.js` | base du **programme v1** (§3), les noms de blocs sont gardés |
+| Simulation en temps virtuel (ms), journal d'événements | atelier `js/moteur/simulation.js` | couche « broches » du simulateur, étendue aux fils « quand… » |
+| Validation par scénarios, phrases bienveillantes, premier écart seulement | atelier `js/moteur/validation.js` | reprise telle quelle, étapes ajoutées pour les nouvelles entrées |
+| Blocs, thème « atelier » Zelos pastel | atelier `js/blocs.js`, `css/atelier.css` | **définitions uniques** des blocs (brief design §4) |
+| Génération C++ | atelier `js/moteur/arduino.js` | panneau « code Arduino » niveau 3 (lecture seule, lignes reliées aux blocs) |
+| Flasher STK500 (Web Serial), messages d'erreur | atelier `js/flasher.js` | profil Uno / mBot |
+| Protocole live v1, SerialLink, carte simulée jumelle du `.ino` | théâtre `js/protocol.js`, `serial.js`, `simulated-board.js` | protocole live **v2** (§6) |
+| Fils « quand… » (comme Scratch) | théâtre `js/runtime.js` | sémantique des fils du programme v1 (mais exécutés par notre moteur, pas JS-Interpreter, cf. §3) |
+| Sauvegarde `.json` par équipe, choix du dossier, secours navigateur, Firefox = téléchargement | atelier `js/fichiers.js`, `session.js` | module « sauvegarde » commun |
+| Tests `node:test`, recette navigateur puppeteer, `RECETTE.md` | les deux | même méthode |
+
+Contrainte technique gardée de l'atelier : **le site doit marcher ouvert en `file://`** depuis le dossier réseau.
+Donc scripts classiques (pas de modules ES au chargement), données en `definirXxx({...})` plutôt qu'en JSON
+chargé par `fetch`, Blockly copié dans le dépôt, aucun CDN. Le théâtre d'ombre est en modules ES : son code sera
+converti en scripts classiques en le reprenant.
+
+## 2. Arborescence
+
+```
+labo-blocs/
+  README.md · CLAUDE.md · RECETTE.md · package.json
+  docs/                    briefs, CdC, ce plan, décisions, rapports du jalon 0
+  noyau/                   ⇐ MODULE PARTAGÉ (sans affichage, tourne sous Node et dans le navigateur)
+    programme/             modèle v1, lecture/écriture Blockly, contrôle de forme, migration depuis l'atelier
+    simulation/            temps virtuel, fils, couche broches, couches composants (LED, bouton, servo, buzzer…)
+    validation/            scénarios, phrases d'écart
+    generateurs/           C++ Arduino (lecture seule, avec correspondance bloc → lignes), code octet carte
+    parcours/              paquet de parcours : lecture, contrôle, comparaison de versions, mise à jour
+    sauvegarde/            rubrique « programmation » de la sauvegarde, migrations
+    protocole/             live v2 : commandes, réponses, erreurs en français
+  interface/               ⇐ partie navigateur du module partagé
+    blocs/                 définitions des blocs, thème « atelier », palette filtrée par exercice
+    editeur/ simulateur/ carte/ (Web Serial, flasher STK500, connexion, messages) messages/ css/
+  extensions/              une extension = blocs + éléments de simulateur + commandes live + support firmware
+    sons/  vision-ia/  mbot/  escape/          (créées au fil des projets, R2)
+  cartes/
+    uno/  mbot/  microbit/ profil (broches, capacités) + firmware/ (sources) + image précompilée
+  parcours/
+    distributeur/          les exercices 01 à 13B repris de l'atelier, en paquet de parcours
+  site/                    application Labo Blocs autonome
+    index.html             élève (A1–A6)
+    prof.html              professeur (B8–B12)
+    admin.html             admin d'un projet (C13)
+    vendor/                Blockly + copie du module construit
+  tests/                   node:test (moteur, parcours, sauvegarde, protocole, firmware jumeau)
+  tools/                   serveur local, copie Blockly, construction du module, copie vers un projet,
+                           compilation des firmwares, recette navigateurs, archive ZIP
+  dist/                    (ignoré) labo-blocs-noyau-<version>/ : ce qu'un projet copie dans son vendor/
+```
+
+## 3. Format du programme (R1)
+
+Un seul objet JSON alimente simulateur, live, C++ et envoi carte. Il est **produit à partir de Blockly** et n'est
+jamais édité à la main. Le programme de l'atelier `{demarrage, boucle}` se convertit sans perte.
+
+```json
+{
+  "format": "labo-blocs/programme",
+  "version": 1,
+  "variables": ["CHOIX"],
+  "listes": ["NOTES"],
+  "fonctions": [
+    { "nom": "clignoter", "parametres": ["fois"], "corps": [ … ] }
+  ],
+  "fils": [
+    { "quand": "demarrage", "corps": [ … ] },
+    { "quand": "boucle",    "corps": [ … ] },
+    { "quand": "broche",    "broche": "D8", "front": "appui", "corps": [ … ] },
+    { "quand": "extension", "extension": "vision-ia", "evenement": "je_vois", "args": { "perso": "loup" }, "corps": [ … ] }
+  ]
+}
+```
+
+- **Instructions et expressions** : `{ "bloc": "<type>", "id": "<id Blockly>", …champs }` comme dans l'atelier
+  (`led_etat`, `attendre`, `servo_angle`, `affecter`, `si_alors`, `si_sinon`, `comparaison`, `bouton_etat`…).
+  Ajouts : `repeter_n`, `tant_que`, `hasard`, opérations, `liste_*`, `appeler`, `retourner`, et
+  `{ "bloc": "ext", "extension": "sons", "action": "jouer", … }` pour les extensions.
+- **Exécution** (comme `setup`/`loop`) : « au démarrage » une fois, puis « répéter indéfiniment » en boucle ; les
+  autres fils démarrent sur leur événement. Fils coopératifs : chacun s'interrompt seulement sur `attendre`.
+  Un événement qui revient pendant que son fil tourne est **ignoré** (pas de relance) — à confirmer.
+- **Pourquoi pas JS-Interpreter** (théâtre) : notre moteur en temps virtuel est déterministe, rejouable à ×1/×2/×5,
+  testable sous Node et permet la validation instantanée. Le même modèle se compile en code octet pour la carte.
+- Chaque bloc garde son `id` → surlignage pendant l'exécution, lignes C++ reliées, écart « bloc hors programme ».
+
+## 4. Paquet de parcours (CdC §4.10)
+
+Dossier `parcours/<id>/` en scripts `definirParcours({...})` / `definirExercice({...})` (lisibles en `file://`),
+plus un **fichier unique d'échange** `<id>-<version>.labo-parcours.json` pour l'import/export et la mise à jour
+par fichier (un `<input type=file>` marche en `file://`).
+
+```json
+{
+  "format": "labo-blocs/parcours", "version": 1,
+  "id": "distributeur", "titre": "Distributeur de céréales", "accent": "#F7AE5E",
+  "versionParcours": "1.2.0", "moteurMinimum": "1.0.0",
+  "cartes": ["uno"], "modes": ["simulateur", "carte"], "extensions": [],
+  "parametres": { "dureePetiteDose": 3, "dureeGrandeDose": 7 },
+  "exercices": [
+    { "id": "dist-ex05", "titre": "Allumer, sinon éteindre", "defi": false,
+      "niveau": 1, "carte": "uno", "modes": null,
+      "consigne": "…", "composants": [ { "type": "bouton", "broche": "D3" }, … ],
+      "blocsAutorises": [ … ], "blocsDepart": null,
+      "scenarios": [ … ], "indices": [ "…", "…" ], "aSavoir": "5",
+      "solutionReference": { …programme v1… },
+      "empreinte": "sha256:…" }
+  ]
+}
+```
+
+- `id` d'exercice **stable, jamais réutilisé** (`dist-ex05`, pas un numéro d'ordre) : l'ordre peut changer.
+- `empreinte` = hachage de ce qui change le résultat (consigne, composants, scénarios, solution). Si l'empreinte
+  d'un exercice réussi change → « modifié, à revérifier » ; les blocs de l'équipe sont gardés.
+- Comparaison de deux versions → ajoutés / modifiés / supprimés / déplacés (écran C13), refus si
+  `moteurMinimum` > version du moteur, refus si une évaluation est verrouillée, version précédente gardée pour
+  « Revenir à la version précédente ».
+- Le 3e indice n'est pas écrit : il est tiré de la solution (comme le brief design B9).
+
+## 5. Sauvegarde (R6)
+
+Chaque projet garde **son** fichier d'équipe. Labo Blocs y écrit une rubrique versionnée et ne touche pas au reste :
+
+```json
+{
+  "application": "atelier-cereales", "format": 1, "equipe": { … }, "carnet": { … },
+  "programmation": {
+    "format": "labo-blocs/sauvegarde", "version": 1,
+    "parcours": { "id": "distributeur", "version": "1.2.0" },
+    "exercices": {
+      "dist-ex05": { "blockly": { … }, "statut": "reussi", "empreinte": "sha256:…",
+                     "indicesOuverts": 1, "verifications": [ … ], "envoisCarte": [ … ], "temps": 312 }
+    },
+    "reglages": { "niveau": 2, "mode": "simulateur" }
+  }
+}
+```
+
+- Migration à la lecture des sauvegardes actuelles de l'atelier (exercices `"1"`…`"13B"` → `dist-ex01`…), sans
+  jamais réécrire l'ancien fichier avant que l'équipe ait travaillé. Tests sur les sauvegardes d'exemple de l'atelier.
+- Écriture : comme l'atelier (automatique, jamais d'écrasement d'un fichier plus récent, copie de secours).
+
+## 6. Cartes, envoi et live (R3, R5, décision « option C »)
+
+**Un firmware de base par carte** = interpréteur de code octet + protocole live v2. Il est installé une fois
+(« installation du programme de la carte », écran A6), puis l'élève envoie seulement son programme compilé
+en **code octet** (quelques centaines d'octets) : pas de compilation C++ en classe, pas de serveur.
+
+Deux pistes à départager au jalon 0 pour **garder le programme après coupure** :
+1. **EEPROM** (1 Ko sur ATmega328P) : envoi par le port série, simple, mais programmes courts.
+2. **Flash** : le navigateur recopie l'image du firmware avec le code octet ajouté dans une zone réservée, et
+   l'envoie avec le flasher STK500 déjà écrit (≈ 10 s). Taille ≫ 1 Ko, aucun besoin d'écrire la flash depuis le
+   firmware. Plus lent, mais c'est ce que fait déjà l'atelier.
+
+Je propose de mesurer les deux : taille réelle du code octet des solutions 01–13B et des programmes de
+Simon Rétro Game (hasard + listes), temps d'envoi, survie à la coupure.
+
+- **mBot mCore** : ATmega328P + bootloader Uno → même chemin que la Uno, profil de broches différent.
+- **micro:bit** : pas de Web Serial vers le bootloader ; piste = copie d'une image `.hex` (firmware + code octet)
+  via WebUSB/DAPLink, comme l'éditeur Python officiel, et le live par le port série USB. V1 (16 Ko RAM) et V2 à tester.
+- **Live v2** : garde v1 tel quel (`PING→PONG v2`, `D`, `A`, `T`, `OFF`, arrêt après 3 s sans signe de vie), ajoute
+  `R <broche>` (lecture numérique), `RA <broche>` (analogique), `S <broche> <angle>` (servo), `W <0|1>` (les
+  entrées changées sont envoyées par la carte sans qu'on demande), puis `X <extension> …`. Carte simulée jumelle
+  du firmware pour les tests, comme le théâtre.
+- **Vider la carte** = envoyer un code octet vide (le firmware reste installé).
+
+## 7. Découpage du module partagé et versions (R7)
+
+- `noyau/` et `interface/` forment **le module**, construit dans `dist/labo-blocs-noyau-<version>/`
+  (un `labo-blocs.js` + `labo-blocs.css` + `blockly/`) que chaque projet copie dans son `site/vendor/` par
+  `npm run vers-projet -- ../atelier-cereales`. Le projet note la version copiée ; pas de lien réseau.
+- Versions séparées, toutes affichées dans « À propos » et vérifiées : **moteur** (semver du module),
+  **programme** (format), **parcours** (de chaque paquet), **protocole** live, **firmware** de chaque carte
+  (« carte pas à jour » si différent).
+- Un projet fournit seulement : son paquet de parcours (ou une référence id + version), son accent, ses extensions,
+  ses pages propres (carnet…), et appelle `LaboBlocs.monter(element, options)`.
+
+## 8. Jalon 0 — essais (en premier, jetables, dans `essais/`)
+
+| Essai | Mesure | Livré |
+|---|---|---|
+| a. Interpréteur Uno | octets de code octet des solutions 01–13B ; EEPROM vs flash ; survie à la coupure | rapport + carte qui exécute un programme venu de blocs |
+| b. mBot mCore | envoi par le même flasher, broches/moteurs du mCore | rapport |
+| c. micro:bit V1/V2 | envoi d'une image par WebUSB, place disponible | rapport + décision |
+| d. Live v2 | `R` et `W` : lecture d'un bouton, latence | carte simulée jumelle + test sur vraie carte |
+| e. Web Serial | reconfirmation sur un autre poste du collège | ✔ / ✘ par poste |
+
+Ce qui demande **ta main** (je n'ai pas de carte ici) : brancher les cartes, lancer les pages d'essai, me dire ce qui
+s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier-coller.
+
+## 9. Questions pour Thomas
+
+1. **Cahier des charges v5** : peux-tu le déposer (je l'ajoute dans `docs/`) ? J'ai planifié sans le §10.
+2. **Matériel disponible** pour le jalon 0 : Uno (optiboot ou ancien bootloader ?), mBot mCore (combien ?),
+   micro:bit V1 et/ou V2 ?
+3. **Fils « quand… »** : un événement qui revient pendant que son fil tourne est ignoré (proposé) ou relance le fil ?
+4. **Distributeur** : à la fin du jalon 1 bis, le distributeur charge-t-il le module Labo Blocs **à la place** de
+   son moteur actuel (l'atelier devient un projet qui embarque Labo Blocs), ou garde-t-il son moteur et ne reçoit
+   que les exercices ? Je propose la première solution (c'est le sens de R7).
+5. **Hébergement en ligne** : GitHub Pages comme l'atelier, pour « mettre à jour en ligne » (C13) ?
+6. Les deux versions du brief design : j'ai gardé celle du 14/10 qui fixe le style des blocs (§4 « celui de
+   l'atelier du distributeur »).
