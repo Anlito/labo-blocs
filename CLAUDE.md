@@ -2,7 +2,7 @@
 
 ## À lire avant de travailler
 1. `docs/BRIEF-CLAUDE-CODE-labo-blocs.md` — contraintes non négociables, décisions, jalons.
-2. `docs/PLAN.md` — plan validé (ou en attente de validation) : arborescence, formats, découpage.
+2. `docs/PLAN.md` — plan validé : arborescence, formats, découpage.
 3. `docs/BRIEF-CLAUDE-DESIGN-labo-blocs.md` et la maquette https://claude.ai/artifact/NUiEuKMzsMxzubE188MAoH
 4. `docs/CAHIER-DES-CHARGES-outil-blocs.md` (v5) quand il est présent : §4.10, §6, §10 (R1–R8).
 

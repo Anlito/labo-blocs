@@ -1,10 +1,10 @@
 # Plan de travail — Labo Blocs
 
-Version 0.1 · 14/10/2026 · **proposition à valider par Thomas avant d'écrire du code** (brief Claude Code §5).
+Version 0.2 · 14/10/2026 · **validé par Thomas le 14/10/2026** (réponses en §9).
 
 Sources : `BRIEF-CLAUDE-CODE-labo-blocs.md`, `BRIEF-CLAUDE-DESIGN-labo-blocs.md`, maquette
 https://claude.ai/artifact/NUiEuKMzsMxzubE188MAoH, code de `atelier-cereales` et `theatre-ombre`.
-Le cahier des charges v5 (`CAHIER-DES-CHARGES-outil-blocs.md`) n'est pas encore dans le dépôt : à ajouter dans `docs/`.
+Cahier des charges v5 : `docs/CAHIER-DES-CHARGES-outil-blocs.md`.
 
 ## 1. Ce que je reprends de l'existant
 
@@ -89,7 +89,7 @@ jamais édité à la main. Le programme de l'atelier `{demarrage, boucle}` se co
   `{ "bloc": "ext", "extension": "sons", "action": "jouer", … }` pour les extensions.
 - **Exécution** (comme `setup`/`loop`) : « au démarrage » une fois, puis « répéter indéfiniment » en boucle ; les
   autres fils démarrent sur leur événement. Fils coopératifs : chacun s'interrompt seulement sur `attendre`.
-  Un événement qui revient pendant que son fil tourne est **ignoré** (pas de relance) — à confirmer.
+  Un événement qui revient pendant que son fil tourne est **ignoré** (pas de relance) — validé.
 - **Pourquoi pas JS-Interpreter** (théâtre) : notre moteur en temps virtuel est déterministe, rejouable à ×1/×2/×5,
   testable sous Node et permet la validation instantanée. Le même modèle se compile en code octet pour la carte.
 - Chaque bloc garde son `id` → surlignage pendant l'exécution, lignes C++ reliées, écart « bloc hors programme ».
@@ -198,15 +198,11 @@ Simon Rétro Game (hasard + listes), temps d'envoi, survie à la coupure.
 Ce qui demande **ta main** (je n'ai pas de carte ici) : brancher les cartes, lancer les pages d'essai, me dire ce qui
 s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier-coller.
 
-## 9. Questions pour Thomas
+## 9. Réponses de Thomas (14/10/2026)
 
-1. **Cahier des charges v5** : peux-tu le déposer (je l'ajoute dans `docs/`) ? J'ai planifié sans le §10.
-2. **Matériel disponible** pour le jalon 0 : Uno (optiboot ou ancien bootloader ?), mBot mCore (combien ?),
-   micro:bit V1 et/ou V2 ?
-3. **Fils « quand… »** : un événement qui revient pendant que son fil tourne est ignoré (proposé) ou relance le fil ?
-4. **Distributeur** : à la fin du jalon 1 bis, le distributeur charge-t-il le module Labo Blocs **à la place** de
-   son moteur actuel (l'atelier devient un projet qui embarque Labo Blocs), ou garde-t-il son moteur et ne reçoit
-   que les exercices ? Je propose la première solution (c'est le sens de R7).
-5. **Hébergement en ligne** : GitHub Pages comme l'atelier, pour « mettre à jour en ligne » (C13) ?
-6. Les deux versions du brief design : j'ai gardé celle du 14/10 qui fixe le style des blocs (§4 « celui de
-   l'atelier du distributeur »).
+1. Cahier des charges v5 ajouté dans `docs/`.
+2. **Matériel en salle** : Arduino Uno, mBot (mCore), micro:bit V1 et V2.
+3. Fils « quand… » : un événement qui revient pendant que son fil tourne est **ignoré**.
+4. **Tous les projets utilisent le moteur de Labo Blocs** (le distributeur d'abord, puis le théâtre d'ombre, etc.).
+5. Mise à jour « en ligne » : par **GitHub Pages**, comme l'atelier.
+6. Brief design : version du 14/10 (style des blocs de l'atelier).

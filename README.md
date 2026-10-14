@@ -11,10 +11,10 @@ Fonctionne hors ligne depuis un dossier réseau, sans compte ; Chrome et Edge (F
 
 | Document | Contenu |
 |---|---|
-| [docs/PLAN.md](docs/PLAN.md) | plan de travail proposé (arborescence, formats, module partagé, jalon 0) — **à valider** |
+| [docs/PLAN.md](docs/PLAN.md) | plan de travail validé (arborescence, formats, module partagé, jalon 0) |
 | [docs/BRIEF-CLAUDE-CODE-labo-blocs.md](docs/BRIEF-CLAUDE-CODE-labo-blocs.md) | brief de développement : contraintes, décisions, jalons |
 | [docs/BRIEF-CLAUDE-DESIGN-labo-blocs.md](docs/BRIEF-CLAUDE-DESIGN-labo-blocs.md) | principes d'interface, écrans, style des blocs |
-| `docs/CAHIER-DES-CHARGES-outil-blocs.md` | cahier des charges v5 (à ajouter) |
+| [docs/CAHIER-DES-CHARGES-outil-blocs.md](docs/CAHIER-DES-CHARGES-outil-blocs.md) | cahier des charges v5 |
 | [Maquette](https://claude.ai/artifact/NUiEuKMzsMxzubE188MAoH) | charte et écrans A1, A3–A6, B9, B10, C13 |
 
 Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
@@ -22,4 +22,4 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 
 ## État
 
-Jalon 0 (essais) pas encore commencé : le plan attend sa validation.
+Plan validé le 14/10/2026. Jalon 0 (essais) en cours : voir `essais/`.
