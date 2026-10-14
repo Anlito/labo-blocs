@@ -72,6 +72,6 @@ if (fs.existsSync(fichier)) {
   // Garder le micro:bit (construire-microbit.js).
   const t = fs.readFileSync(fichier, 'utf8');
   const avant = JSON.parse(t.slice(t.indexOf('definirFirmwares(') + 17, t.lastIndexOf(')')));
-  if (avant.microbit) resultats.microbit = avant.microbit;
+  for (const k of ['microbitV1', 'microbitV2']) if (avant[k]) resultats[k] = avant[k];
 }
 fs.writeFileSync(fichier, '// Firmwares de Labo Blocs (Intel HEX), générés par essais/outils/construire-firmware.js et construire-microbit.js : ne pas modifier.\ndefinirFirmwares(' + JSON.stringify(resultats, null, 1) + ');\n');

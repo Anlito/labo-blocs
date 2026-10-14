@@ -63,9 +63,14 @@
     <h2><span class="num">1</span>Installer le programme de la carte (une seule fois)</h2>
     <p data-carte="uno">Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
     <p data-carte="mcore" hidden>Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
-    <p data-carte="microbit" hidden>Le bouton enregistre le fichier <strong>labo_blocs_microbit.hex</strong> (le même pour la V1 et la V2) :
+    <div data-carte="microbit" hidden>
+      <p class="ligne"><strong>Version :</strong>
+        <label><input type="radio" name="version-mb" value="V1" checked> V1 (rien d’écrit au dos)</label>
+        <label><input type="radio" name="version-mb" value="V2"> V2 (« V2 » écrit au dos, trou de micro à côté du logo)</label></p>
+    <p>Le bouton enregistre le fichier de cette version :
       glisse-le sur le lecteur <strong>MICROBIT</strong> dans l’explorateur de fichiers. Si un texte défile sur l’écran du
       micro:bit après la copie, note-le (sur une V1, ce serait sans doute « MemoryError » : mémoire trop petite).</p>
+    </div>
     <button id="btn-installer">Installer le firmware Labo Blocs</button>
     <progress id="progression" max="1" value="0" hidden></progress>
   </section>

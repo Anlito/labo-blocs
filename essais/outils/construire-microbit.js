@@ -1,6 +1,8 @@
-// Fichier à copier sur le micro:bit (V1 et V2 dans un seul fichier « universel ») :  node essais/outils/construire-microbit.js
+// Fichiers à copier sur le micro:bit :  node essais/outils/construire-microbit.js
 //   MicroPython officiel (V1 1.1.1, V2 2.1.2, ceux de l'éditeur Python du micro:bit) + essais/microbit/main.py allégé
-//   → essais/firmware/labo_blocs_microbit.hex (glisser sur le lecteur MICROBIT)
+//   → essais/firmware/labo_blocs_microbit_v1.hex et _v2.hex (glisser sur le lecteur MICROBIT)
+//   Un fichier par version : le fichier « universel » V1 + V2 est refusé par les V1 dont la puce USB (DAPLink) est
+//   ancienne (FAIL.TXT « The hex file cannot be decoded », essai du 14/10/2026).
 //   → essais/page-essai/firmwares.js (ajouté aux firmwares Uno et mCore)
 const fs = require('node:fs');
 const path = require('node:path');
@@ -27,11 +29,15 @@ const microbitFs = new MicropythonFsHex([
   { hex: fs.readFileSync(path.join(MP, 'micropython-v2.1.2.hex'), 'utf8'), boardId: microbitBoardId.V2 },
 ]);
 microbitFs.write('main.py', source);
-const hex = microbitFs.getUniversalHex();
-const destination = path.join(ESSAIS, 'firmware', 'labo_blocs_microbit.hex');
-fs.writeFileSync(destination, hex);
+const hexV1 = microbitFs.getIntelHex(microbitBoardId.V1);
+const hexV2 = microbitFs.getIntelHex(microbitBoardId.V2);
+const destination = path.join(ESSAIS, 'firmware', 'labo_blocs_microbit_v1.hex');
+fs.writeFileSync(destination, hexV1);
+fs.writeFileSync(path.join(ESSAIS, 'firmware', 'labo_blocs_microbit_v2.hex'), hexV2);
+const ancien = path.join(ESSAIS, 'firmware', 'labo_blocs_microbit.hex');
+if (fs.existsSync(ancien)) fs.unlinkSync(ancien);
 fs.writeFileSync(path.join(ESSAIS, 'microbit', 'main-allege.py'), source); // pour les tests et pour voir ce qui part dans la carte
-console.log(`micro:bit : ${path.relative(process.cwd(), destination)} — main.py allégé : ${source.length} octets (source : ${fs.statSync(path.join(ESSAIS, 'microbit', 'main.py')).size})`);
+console.log(`micro:bit : ${path.relative(process.cwd(), destination)} et _v2.hex — main.py allégé : ${source.length} octets (source : ${fs.statSync(path.join(ESSAIS, 'microbit', 'main.py')).size})`);
 
 // Ajout dans firmwares.js de la page d'essai, à côté de la Uno et du mCore.
 const fichier = path.join(ESSAIS, 'page-essai', 'firmwares.js');
@@ -40,5 +46,7 @@ if (fs.existsSync(fichier)) {
   const t = fs.readFileSync(fichier, 'utf8');
   existants = JSON.parse(t.slice(t.indexOf('definirFirmwares(') + 17, t.lastIndexOf(')')));
 }
-existants.microbit = hex;
+delete existants.microbit;
+existants.microbitV1 = hexV1;
+existants.microbitV2 = hexV2;
 fs.writeFileSync(fichier, '// Firmwares de Labo Blocs (Intel HEX), générés par essais/outils/construire-firmware.js et construire-microbit.js : ne pas modifier.\ndefinirFirmwares(' + JSON.stringify(existants, null, 1) + ');\n');

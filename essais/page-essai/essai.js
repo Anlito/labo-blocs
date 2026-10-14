@@ -203,15 +203,16 @@
 
   // micro:bit : pas d'envoi par le port série ; on enregistre le fichier, à glisser sur le lecteur MICROBIT.
   function installerMicrobit() {
-    const hex = global.firmwares && global.firmwares.microbit;
+    const version = $('input[name=version-mb]:checked').value;
+    const hex = global.firmwares && global.firmwares['microbit' + version];
     if (!hex) return noter('Fichier micro:bit introuvable dans la page (firmwares.js).', 'ecart');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([hex], { type: 'application/octet-stream' }));
-    a.download = 'labo_blocs_microbit.hex';
+    a.download = `labo_blocs_microbit_${version.toLowerCase()}.hex`;
     document.body.appendChild(a);
     a.click();
     a.remove();
-    noter('Fichier « labo_blocs_microbit.hex » enregistré (Téléchargements). Glisse-le sur le lecteur MICROBIT : la LED jaune clignote pendant la copie, puis la carte redémarre.');
+    noter(`Fichier « ${a.download} » enregistré (Téléchargements). Glisse-le sur le lecteur MICROBIT : la LED jaune clignote pendant la copie, puis la carte redémarre. Si un fichier FAIL.TXT apparaît sur le lecteur, recopie son contenu dans les remarques.`);
     demander('La copie s’est-elle terminée sans message d’erreur sur l’écran du micro:bit (pas de texte qui défile) ?');
   }
 

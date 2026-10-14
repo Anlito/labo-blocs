@@ -12,7 +12,7 @@ faits pour être repris au jalon 1 s'ils tiennent sur les vraies cartes.
 |---|---|---|
 | a. Interpréteur dans la Uno | `code-octet/compilateur.js` (blocs → code octet), `firmware/labo_blocs/vm.c` (interpréteur), `labo_blocs.ino` (firmware) | ✔ tests automatiques + vrai firmware dans une Uno émulée (simavr) |
 | b. mBot mCore | même firmware compilé avec `CARTE_MCORE` : moteurs, ultrasons, suiveur de ligne, bouton et capteur de lumière de la carte, 2 LED RGB, buzzer | compilation seulement (simavr n'émule pas le mBot) |
-| c. micro:bit V1 / V2 | `microbit/main.py` (MicroPython), `firmware/labo_blocs_microbit.hex` | ✔ tests automatiques (python3 et MicroPython) |
+| c. micro:bit V1 / V2 | `microbit/main.py` (MicroPython), `firmware/labo_blocs_microbit_v1.hex` et `_v2.hex` | ✔ tests automatiques (python3 et MicroPython) |
 | d. Protocole direct v2 | dans le même firmware | ✔ dans la Uno émulée |
 | e. Web Serial sur les postes | `page-essai/index.html` (champ « Poste » dans le compte rendu) | à faire sur place |
 
@@ -66,8 +66,8 @@ résistance interne encore active, et une LED aurait pu rester faiblement allum�
 ### c. micro:bit V1 et V2 — prototype prêt à essayer
 
 **Choix : MicroPython officiel** (celui de l'éditeur Python du micro:bit : V1 1.1.1, V2 2.1.2) + un interpréteur du
-code octet écrit en Python (`microbit/main.py`). Un **seul fichier** `firmware/labo_blocs_microbit.hex` pour la V1 et la
-V2, installé **en le glissant sur le lecteur MICROBIT** (aucun outil, marche aussi sous Firefox). Ensuite, c'est
+code octet écrit en Python (`microbit/main.py`). Un fichier par version, `firmware/labo_blocs_microbit_v1.hex` et
+`_v2.hex`, installé **en le glissant sur le lecteur MICROBIT** (aucun outil, marche aussi sous Firefox). Ensuite, c'est
 exactement comme la Uno : même code octet, même protocole v2 par le câble USB, même page d'essai. Le programme est gardé
 dans un fichier du micro:bit (`prog.lb`), qui survit à la coupure ; il est écrit en entier d'un coup, donc un envoi
 interrompu ne laisse jamais un programme à moitié écrit.
@@ -147,6 +147,11 @@ en retard et attendre que la carte réponde à PING avant d'envoyer des ordres.
   (message d'erreur de MicroPython au démarrage) ; ensuite la carte ne répond pas. Texte à relever. Correction faite en
   attendant : la commande d'extension n'utilise plus la suppression de tranche de liste (`del s[a:]`), peut-être absente
   du MicroPython de la V1.
+- **Cause trouvée** : le lecteur MICROBIT a créé `FAIL.TXT` : « The hex file cannot be decoded. Checksum calculation
+  failure occurred. » Le fichier était juste (toutes les sommes de contrôle vérifiées), mais au format **universel**
+  (V1 + V2 dans un fichier), que les V1 à puce USB (DAPLink) ancienne ne savent pas lire. Correction : **un fichier
+  par version** (`labo_blocs_microbit_v1.hex`, `_v2.hex`), au format classique ; la page fait choisir la version.
+  À retenir pour Labo Blocs : ne pas compter sur le fichier universel avec le parc du collège.
 
 ## Réponses de Thomas (14/10/2026)
 
