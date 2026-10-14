@@ -21,9 +21,32 @@
     li.scrollIntoView({ block: 'nearest' });
     majRapport();
   }
+  // Question posée dans le journal, avec « Oui » / « Non » : la réponse va dans le compte rendu.
+  const reponses = [];
+  function demander(question, uneFois) {
+    if (uneFois && demander.posees.has(question)) return;
+    demander.posees.add(question);
+    const li = document.createElement('li');
+    li.className = 'question';
+    li.append(question + ' ');
+    for (const [mot, genre] of [['Oui', 'ok'], ['Non', 'ecart']]) {
+      const b = document.createElement('button');
+      b.textContent = mot;
+      b.className = 'second petit';
+      b.addEventListener('click', () => {
+        li.remove();
+        reponses.push(`${question} → ${mot}`);
+        noter(`${question} → ${mot}`, genre);
+      });
+      li.append(b);
+    }
+    $('#journal').appendChild(li);
+    li.scrollIntoView({ block: 'nearest' });
+  }
+  demander.posees = new Set();
+
   function majRapport() {
     const info = port && port.getInfo ? port.getInfo() : {};
-    const reponses = [...document.querySelectorAll('input[data-question]')].map((c) => `${c.checked ? '[x]' : '[ ]'} ${c.dataset.question}`);
     $('#rapport').value = [
       'Compte rendu — essais Labo Blocs (jalon 0)',
       `Date : ${new Date().toLocaleString('fr-FR')}`,
@@ -32,8 +55,8 @@
       `Port USB : ${info.usbVendorId ? '0x' + info.usbVendorId.toString(16) + ':0x' + info.usbProductId.toString(16) : 'inconnu'}`,
       `Poste : ${$('#poste').value || '(non renseigné)'}`,
       '',
-      'Observations :',
-      ...reponses,
+      'Ce que tu as vu :',
+      ...(reponses.length ? reponses : ['(aucune question répondue)']),
       `Remarques : ${$('#remarques').value || ''}`,
       '',
       'Journal :',
@@ -249,14 +272,18 @@
     if (r === 'OK') r = await liaison.commande('FIN', 3000);
     const ms = Math.round(performance.now() - debut);
     if (!r || !/^OK/.test(r)) return noter(`Envoi de « ${nom} » : échec (${r || 'pas de réponse'}). Débranche et rebranche le câble USB, puis réessaie.`, 'ecart');
-    noter(`Envoi de « ${nom} » : ${octets.length} octets, réussi en ${ms} ms. Le programme tourne.`, 'ok');
+    noter(`Envoi de « ${nom} » : ${octets.length} octets, réussi en ${ms} ms.`, 'ok');
+    demander(`Le programme « ${nom} » tourne-t-il sur la carte ?`);
   }
 
   async function vider() {
     if (!(await connecter())) return;
     arreterDirect();
     const r = await liaison.commande('EFFACE', 2000);
-    if (r === 'OK') noter('Carte vidée : le programme est effacé, tout est éteint.', 'ok');
+    if (r === 'OK') {
+      noter('Carte vidée : le programme est effacé.', 'ok');
+      demander('Après « Vider la carte », tout est-il arrêté sur la carte ?');
+    }
     else noter(`Vider la carte : échec (${r || 'pas de réponse'}).`, 'ecart');
   }
 
@@ -335,19 +362,34 @@
       await deconnecter();
       noter('Port fermé : tu peux débrancher la carte.');
     });
-    action('#btn-led-on', () => direct('D 13 1', 'LED D13 allumée'));
+    action('#btn-led-on', async () => {
+      await direct('D 13 1', 'LED D13 allumée');
+      demander('La LED « L » s’est-elle allumée tout de suite ?', true);
+    });
     action('#btn-led-off', () => direct('D 13 0', 'LED D13 éteinte'));
     action('#btn-surveiller', async () => {
       const b = Number($('#broche-entree').value);
       await direct(`M ${b} P`, `D${b} en entrée avec résistance interne`);
       await direct(`W ${b}`, `Surveiller D${b}`);
+      noter('Appuie plusieurs fois sur le bouton : chaque appui et chaque relâchement doivent s’afficher.');
+      setTimeout(() => demander('Chaque appui sur le bouton s’est-il affiché ?', true), 8000);
     });
     action('#btn-lire', () => direct(`R ${Number($('#broche-entree').value)}`, `Lire D${$('#broche-entree').value}`));
-    action('#btn-servo', () => direct(`S ${Number($('#broche-servo').value)} ${Number($('#angle').value)}`, `Servo D${$('#broche-servo').value} à ${$('#angle').value}°`));
+    action('#btn-servo', async () => {
+      await direct(`S ${Number($('#broche-servo').value)} ${Number($('#angle').value)}`, `Servo D${$('#broche-servo').value} à ${$('#angle').value}°`);
+      demander('Le servo a-t-il tourné à l’angle demandé ?', true);
+    });
     action('#btn-off', () => direct('OFF', 'Tout éteindre'));
     action('#btn-silence', async () => {
+      if (!signeDeVie) return noter('Le mode direct n’est pas en cours : allume d’abord la LED ou tourne le servo.', 'ecart');
       arreterDirect();
-      noter('Signe de vie arrêté : la carte doit tout éteindre d’elle-même dans 3 s.');
+      noter('Signe de vie arrêté : ne touche à rien, la carte doit tout éteindre d’elle-même dans 3 s…');
+      await attendre(4500);
+      demander('Sans signe de vie, la carte a-t-elle tout éteint (LED, servo relâché) au bout de 3 s ?');
+    });
+    action('#btn-coupure', async () => {
+      await deconnecter();
+      demander('Après la coupure, le programme est-il reparti tout seul, sans rien renvoyer ?');
     });
     action('#btn-aller-retour', mesurerAllerRetour);
     action('#btn-mbot-ultrason', () => direct('X 1 2 3', 'Ultrasons (port 3), en cm'));
@@ -366,7 +408,7 @@
       await navigator.clipboard.writeText($('#rapport').value).catch(() => $('#rapport').select());
       noter('Compte rendu copié.');
     });
-    document.querySelectorAll('input[data-question], #poste, #remarques').forEach((e) => e.addEventListener('input', majRapport));
+    document.querySelectorAll('#poste, #remarques').forEach((e) => e.addEventListener('input', majRapport));
     majRapport();
   });
 })(this);

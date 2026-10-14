@@ -30,7 +30,8 @@
   #journal li.ok { color: var(--ok); }
   #journal li.ecart { color: var(--ecart); background: var(--ecart-fond); }
   #rapport { width: 100%; height: 220px; font: 13px/1.4 Consolas, monospace; }
-  .questions label { display: block; margin: 4px 0; }
+  #journal li.question { background: #E8F1F6; color: var(--texte); font-weight: 600; }
+  button.petit { min-height: 32px; padding: 3px 12px; margin-left: 6px; }
   progress { width: 100%; height: 14px; }
   .ligne { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
 </style>
@@ -73,7 +74,10 @@
     <h2><span class="num">3</span>Envoyer un programme venu de blocs</h2>
     <div class="ligne"><select id="programme"></select><button id="btn-envoyer">Envoyer dans la carte</button></div>
     <p class="bandeau" data-carte="mcore" hidden>Programme « avancer » : pose le robot par terre, loin du bord de la table, ou roues en l’air.</p>
-    <p>Ensuite : <strong>Fermer le port</strong>, débranche le câble USB, puis alimente la carte autrement (pile, autre prise USB) ou rebranche-la. Le programme doit repartir tout seul.</p>
+    <p><strong>Essai de coupure :</strong> clique sur le bouton ci-dessous (il ferme le port), débranche le câble USB, attends
+      5 s, puis alimente la carte (pile, chargeur, ou le câble rebranché <em>sans</em> cliquer ailleurs dans la page).
+      Le programme doit repartir tout seul. Réponds ensuite à la question dans le journal.</p>
+    <button id="btn-coupure">Je fais l’essai de coupure</button>
     <button id="btn-vider" class="second">Vider la carte</button>
   </section>
 
@@ -113,16 +117,8 @@
   </section>
 
   <section>
-    <h2>Ce que tu as vu</h2>
-    <div class="questions">
-      <label><input type="checkbox" data-question="Après l’envoi, le programme tourne (LED, bip, moteurs…)"> Après l’envoi, le programme tourne (LED, bip, moteurs…)</label>
-      <label><input type="checkbox" data-question="Après débranchement puis nouvelle alimentation, le programme repart tout seul"> Après débranchement puis nouvelle alimentation, le programme repart tout seul</label>
-      <label><input type="checkbox" data-question="Après « Vider la carte » puis nouvelle alimentation, plus rien ne bouge"> Après « Vider la carte » puis nouvelle alimentation, plus rien ne bouge</label>
-      <label><input type="checkbox" data-question="Mode direct : la LED / les LED répondent tout de suite"> Mode direct : la LED / les LED répondent tout de suite</label>
-      <label><input type="checkbox" data-question="Mode direct : chaque appui sur le bouton s’affiche"> Mode direct : chaque appui sur le bouton s’affiche</label>
-      <label><input type="checkbox" data-question="Sans signe de vie, tout s’éteint au bout de 3 s"> Sans signe de vie, tout s’éteint au bout de 3 s</label>
-      <label><input type="checkbox" data-question="mBot : moteurs, capteurs, LED RGB et buzzer répondent"> mBot : moteurs, capteurs, LED RGB et buzzer répondent</label>
-    </div>
+    <h2>Remarques</h2>
+    <p>Les questions s’affichent dans le journal au fil des essais : réponds par « Oui » ou « Non ».</p>
     <p><label>Remarques :<br><textarea id="remarques" rows="2" style="width:100%"></textarea></label></p>
   </section>
 

@@ -92,6 +92,23 @@ jalon 0) ; il demandera un essai sur une V1 et une V2.
 **Attention** : le firmware Labo Blocs remplace le programme de la carte. Pour revenir au distributeur actuel, renvoyer son
 programme depuis l'atelier ; pour mBlock, mBlock réinstalle son propre firmware (« Mettre à jour le micrologiciel »).
 
+## Premier essai sur une vraie Uno (Thomas, 14/10/2026, 18 h 15)
+
+Carte : clone Uno avec puce USB CH340 (0x1a86:0x7523), Chrome 154 sous Windows.
+
+| Étape | Résultat |
+|---|---|
+| Installation du firmware depuis le navigateur | ✔ 6,7 s, bootloader à 115200 bauds |
+| Vérifier la carte (PING) | ✔ réponse en 5 ms |
+| Envoi d'un programme venu de blocs (38 octets) | ✔ 140 ms |
+| Programme gardé après passage en direct | ✔ « 38 octets » toujours là |
+| Mode direct : LED D13, servo D6 (0°, 90°, 130°, 180°) | ✔ toutes les commandes acceptées |
+| Ce qui s'est vu sur la carte (LED qui clignote, servo qui tourne) | à confirmer : cases non cochées |
+| Coupure de courant, « Vider la carte », bouton, arrêt au bout de 3 s | pas encore fait |
+
+La page posait mal les questions : les cases à cocher sont restées vides. Elle pose maintenant des questions
+« Oui / Non » dans le journal au bon moment, et un bouton guide l'essai de coupure.
+
 ## Réponses de Thomas (14/10/2026)
 
 1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le
