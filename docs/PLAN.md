@@ -165,6 +165,9 @@ Deux pistes à départager au jalon 0 pour **garder le programme après coupure*
 Je propose de mesurer les deux : taille réelle du code octet des solutions 01–13B et des programmes de
 Simon Rétro Game (hasard + listes), temps d'envoi, survie à la coupure.
 
+> Jalon 0 (14/10) : **l'EEPROM suffit** — 130 octets pour le distributeur 13B, 524 pour un Simon complet
+> (`essais/RAPPORT-JALON-0.md`). La piste flash reste en réserve. À confirmer sur les vraies cartes.
+
 - **mBot mCore** : ATmega328P + bootloader Uno → même chemin que la Uno, profil de broches différent.
 - **micro:bit** : pas de Web Serial vers le bootloader ; piste = copie d'une image `.hex` (firmware + code octet)
   via WebUSB/DAPLink, comme l'éditeur Python officiel, et le live par le port série USB. V1 (16 Ko RAM) et V2 à tester.
