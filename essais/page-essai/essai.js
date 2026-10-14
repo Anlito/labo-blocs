@@ -380,6 +380,14 @@
       demander('Le servo a-t-il tourné à l’angle demandé ?', true);
     });
     action('#btn-off', () => direct('OFF', 'Tout éteindre'));
+    action('#btn-balayage', async () => {
+      const b = Number($('#broche-servo').value);
+      for (const angle of [0, 180, 90]) {
+        await direct(`S ${b} ${angle}`, `Servo D${b} à ${angle}°`);
+        await attendre(1200);
+      }
+      demander('Pendant le balayage, le servo a-t-il tourné (0°, puis 180°, puis 90°) ?', true);
+    });
     action('#btn-silence', async () => {
       if (!signeDeVie) return noter('Le mode direct n’est pas en cours : allume d’abord la LED ou tourne le servo.', 'ecart');
       arreterDirect();

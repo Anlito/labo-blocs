@@ -109,6 +109,26 @@ Carte : clone Uno avec puce USB CH340 (0x1a86:0x7523), Chrome 154 sous Windows.
 La page posait mal les questions : les cases à cocher sont restées vides. Elle pose maintenant des questions
 « Oui / Non » dans le journal au bon moment, et un bouton guide l'essai de coupure.
 
+## Deuxième essai sur la Uno (Thomas, 14/10/2026, 18 h 40) — Uno validée, sauf le servo
+
+| Étape | Résultat |
+|---|---|
+| Après l'envoi, le programme tourne | ✔ |
+| Après débranchement puis nouvelle alimentation, il repart tout seul | ✔ **le programme survit à la coupure** |
+| « Vider la carte » puis nouvelle alimentation : plus rien ne bouge | ✔ |
+| Mode direct : LED immédiate, chaque appui du bouton D2 affiché (appuis rapides compris) | ✔ |
+| Sans signe de vie, tout s'éteint au bout de 3 s | ✔ |
+| Servo D6 | ✘ ne bouge pas |
+
+Servo : dans la Uno émulée, le firmware envoie bien sur D6 les impulsions attendues (90° ≈ 1 470 µs, 0° ≈ 543 µs,
+180° ≈ 2 400 µs), avec le signe de vie toutes les secondes. Pistes : branchement (signal orange/jaune sur D6, rouge sur
+5V, marron/noir sur GND), alimentation, ou angle inchangé (seul 90° a été envoyé dans cet essai : un servo déjà à 90°
+ne bouge pas). Ajout d'un bouton « Balayage 0° → 180° → 90° » dans la page d'essai.
+
+Une fois, juste après l'ouverture du port, une commande est restée sans réponse et la réponse est arrivée à la commande
+suivante (la carte redémarre à l'ouverture du port). À corriger dans le module carte du jalon 3 : vider les réponses
+en retard et attendre que la carte réponde à PING avant d'envoyer des ordres.
+
 ## Réponses de Thomas (14/10/2026)
 
 1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le
