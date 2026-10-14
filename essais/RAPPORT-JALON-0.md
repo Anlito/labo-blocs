@@ -138,6 +138,16 @@ Une fois, juste après l'ouverture du port, une commande est restée sans répon
 suivante (la carte redémarre à l'ouverture du port). À corriger dans le module carte du jalon 3 : vider les réponses
 en retard et attendre que la carte réponde à PING avant d'envoyer des ordres.
 
+## Troisième essai (Thomas, 14/10/2026, 19 h 10)
+
+- **Uno, servo** : balayage 0° → 180° → 90° fait deux fois, le servo ne bouge pas. Le firmware émet pourtant les bonnes
+  impulsions (vérifié dans la Uno émulée). À vérifier : le servo et son branchement avec un programme connu (exemple
+  « Sweep » de l'IDE Arduino sur D6, ou le programme du distributeur).
+- **micro:bit** (USB 0x0d28:0x0204, version V1/V2 à préciser) : après la copie du `.hex`, **un texte défile** sur l'écran
+  (message d'erreur de MicroPython au démarrage) ; ensuite la carte ne répond pas. Texte à relever. Correction faite en
+  attendant : la commande d'extension n'utilise plus la suppression de tranche de liste (`del s[a:]`), peut-être absente
+  du MicroPython de la V1.
+
 ## Réponses de Thomas (14/10/2026)
 
 1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le

@@ -365,8 +365,9 @@ def courir(f, t):
             pc += 3
             if k > 4 or k > len(s):
                 return 0
-            a = s[len(s) - k:]
-            del s[len(s) - k:]
+            a = [0] * k
+            for i in range(k - 1, -1, -1):
+                a[i] = s.pop()
             s.append(H['ext'](e, c, a))
         else:
             return 0
