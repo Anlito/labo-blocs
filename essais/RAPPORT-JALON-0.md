@@ -153,6 +153,21 @@ en retard et attendre que la carte réponde à PING avant d'envoyer des ordres.
   par version** (`labo_blocs_microbit_v1.hex`, `_v2.hex`), au format classique ; la page fait choisir la version.
   À retenir pour Labo Blocs : ne pas compter sur le fichier universel avec le parc du collège.
 
+## Quatrième essai : micro:bit V2 (Thomas, 14/10/2026, 19 h 26)
+
+Fichier `labo_blocs_microbit_v2.hex` copié sans erreur : **MicroPython + interpréteur Labo Blocs démarrent sur la V2**
+(le fichier universel avait donc été refusé par cette V2 aussi : sa puce USB est ancienne).
+
+| Étape | Résultat |
+|---|---|
+| Vérifier la carte | ✔ « microbit-v2 », réponse en 8 ms |
+| Mode direct : cœur, effacer l'écran | ✔ affiché tout de suite |
+| Bouton A, température (25 °C), accéléromètre (900 mg sur x) | ✔ |
+| P0 à HAUT / BAS | commandes acceptées, effet non vérifié |
+| Surveiller un bouton entre P1 et GND | ✘ aucun événement — un bouton était-il branché ? |
+| Envoi d'un programme, coupure, « Vider la carte » | pas encore fait |
+| micro:bit V1 (mémoire) | pas encore essayé |
+
 ## Réponses de Thomas (14/10/2026)
 
 1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le
