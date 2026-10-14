@@ -1,7 +1,7 @@
 # Jalon 0 — Essais : rapport
 
-14/10/2026 · État : **essais (a), (b) et (d) prêts et testés sans carte ; à confirmer sur les vraies cartes par Thomas** ·
-essai (c) micro:bit : étude, prototype à faire · essai (e) : avec la page d'essai.
+14/10/2026 · État : **Uno validée sur une vraie carte (sauf le servo, en cours)** · mBot : prêt, à essayer quand Thomas aura un robot ·
+micro:bit V1/V2 : prototype prêt à essayer · essai (e) : avec la page d'essai.
 
 Les essais sont jetables (dossier `essais/`), mais le format du code octet, l'interpréteur C et le protocole v2 sont
 faits pour être repris au jalon 1 s'ils tiennent sur les vraies cartes.
@@ -12,7 +12,7 @@ faits pour être repris au jalon 1 s'ils tiennent sur les vraies cartes.
 |---|---|---|
 | a. Interpréteur dans la Uno | `code-octet/compilateur.js` (blocs → code octet), `firmware/labo_blocs/vm.c` (interpréteur), `labo_blocs.ino` (firmware) | ✔ tests automatiques + vrai firmware dans une Uno émulée (simavr) |
 | b. mBot mCore | même firmware compilé avec `CARTE_MCORE` : moteurs, ultrasons, suiveur de ligne, bouton et capteur de lumière de la carte, 2 LED RGB, buzzer | compilation seulement (simavr n'émule pas le mBot) |
-| c. micro:bit V1 / V2 | étude ci-dessous | — |
+| c. micro:bit V1 / V2 | `microbit/main.py` (MicroPython), `firmware/labo_blocs_microbit.hex` | ✔ tests automatiques (python3 et MicroPython) |
 | d. Protocole direct v2 | dans le même firmware | ✔ dans la Uno émulée |
 | e. Web Serial sur les postes | `page-essai/index.html` (champ « Poste » dans le compte rendu) | à faire sur place |
 
@@ -63,19 +63,28 @@ Détail dans l'en-tête de `firmware/labo_blocs/labo_blocs.ino`. Toute commande 
 Défaut trouvé et corrigé grâce à la carte émulée : en « éteignant tout », une broche passait en entrée avec sa
 résistance interne encore active, et une LED aurait pu rester faiblement allumée.
 
-### c. micro:bit V1 et V2 — étude
+### c. micro:bit V1 et V2 — prototype prêt à essayer
 
-Le même protocole série (Web Serial marche avec le port USB du micro:bit) et le même code octet sont possibles. Deux pistes :
+**Choix : MicroPython officiel** (celui de l'éditeur Python du micro:bit : V1 1.1.1, V2 2.1.2) + un interpréteur du
+code octet écrit en Python (`microbit/main.py`). Un **seul fichier** `firmware/labo_blocs_microbit.hex` pour la V1 et la
+V2, installé **en le glissant sur le lecteur MICROBIT** (aucun outil, marche aussi sous Firefox). Ensuite, c'est
+exactement comme la Uno : même code octet, même protocole v2 par le câble USB, même page d'essai. Le programme est gardé
+dans un fichier du micro:bit (`prog.lb`), qui survit à la coupure ; il est écrit en entier d'un coup, donc un envoi
+interrompu ne laisse jamais un programme à moitié écrit.
 
-1. **Firmware C avec le même `vm.c`** (bibliothèques officielles CODAL pour la V2, DAL pour la V1), programme gardé
-   en mémoire flash. Avantage : un seul interpréteur, déjà testé. Inconvénient : deux chaînes de compilation à mettre
-   en place, surtout la V1 (outils anciens).
-2. **MicroPython** (celui de l'éditeur Python officiel) avec un interpréteur du code octet écrit en Python et le
-   programme gardé dans un fichier. Avantage : installation par simple copie d'un `.hex` sur le lecteur MICROBIT.
-   Inconvénient : mémoire très juste sur la V1 (16 Ko de mémoire vive), plus lent, un 2e interpréteur à tenir identique.
+- **Même comportement que la Uno** : l'interpréteur Python rejoue les 14 exercices (solutions et 47 programmes faux),
+  le Simon, les fils « quand… » et les blocs nouveaux, et donne **exactement** la même sortie que l'interpréteur C,
+  avec python3 et avec MicroPython (`tests/essais-microbit.test.js`).
+- Extension micro:bit (n° 2) : afficher un nombre, une image (cœur, sourire…), un pixel, effacer, boutons A et B,
+  accéléromètre, température, logo tactile (V2), lumière.
+- Broches libres : P0, P1, P2, P8, P12 à P16 (les autres servent à l'écran, aux boutons et à l'I2C).
 
-**Proposition** : piste 1, en commençant par la V2, puis vérifier que la V1 suit. Prototype à faire (prochaine étape du
-jalon 0) ; il demandera un essai sur une V1 et une V2.
+**Risque à vérifier : la mémoire de la V1.** L'interpréteur occupe environ 8 à 9 Ko une fois chargé ; la V1 n'en a
+qu'environ 10. La V2 a de la marge (128 Ko). Si la V1 affiche « MemoryError », plan B : un firmware en C avec le même
+`vm.c` que la Uno (la chaîne CODAL compile déjà pour la V2 ici ; pour la V1 elle est plus ancienne et demande du travail).
+
+Pistes écartées : CODAL pour la V1 (le portage n'est plus entretenu depuis 2018, il ne compile plus avec les
+bibliothèques actuelles).
 
 ## À faire par Thomas (environ 30 min par carte)
 

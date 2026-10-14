@@ -164,7 +164,9 @@
     }
     liaison.surEvenement = (ligne) => {
       const [, broche, v] = ligne.split(' ');
-      $('#evenements').textContent = `Broche ${broche} : niveau ${v === '1' ? 'HAUT' : 'BAS'} (${new Date().toLocaleTimeString('fr-FR')})`;
+      const texte = `Broche ${broche} : niveau ${v === '1' ? 'HAUT' : 'BAS'} (${new Date().toLocaleTimeString('fr-FR')})`;
+      $('#evenements').textContent = texte;
+      $('#evenements-mb').textContent = texte;
       noter(`Événement reçu : ${ligne}`);
     };
     await attendre(DELAI_DEMARRAGE);
@@ -179,6 +181,7 @@
 
   // ---------- 1. Installer le firmware ----------
   async function installer() {
+    if (carte() === 'microbit') return installerMicrobit();
     if (!port && !(await choisirPort())) return;
     await deconnecter();
     const hex = global.firmwares && global.firmwares[carte()];
@@ -198,6 +201,20 @@
     await ping();
   }
 
+  // micro:bit : pas d'envoi par le port série ; on enregistre le fichier, à glisser sur le lecteur MICROBIT.
+  function installerMicrobit() {
+    const hex = global.firmwares && global.firmwares.microbit;
+    if (!hex) return noter('Fichier micro:bit introuvable dans la page (firmwares.js).', 'ecart');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([hex], { type: 'application/octet-stream' }));
+    a.download = 'labo_blocs_microbit.hex';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    noter('Fichier « labo_blocs_microbit.hex » enregistré (Téléchargements). Glisse-le sur le lecteur MICROBIT : la LED jaune clignote pendant la copie, puis la carte redémarre.');
+    demander('La copie s’est-elle terminée sans message d’erreur sur l’écran du micro:bit (pas de texte qui défile) ?');
+  }
+
   // ---------- 2. Vérifier la carte ----------
   async function ping() {
     if (!(await connecter())) return;
@@ -212,7 +229,32 @@
 
   // ---------- 3. Envoyer un programme ----------
   const ext = (commande, args) => ({ bloc: 'ext', extension: 1, commande, arguments: args });
+  const mb = (commande, args) => ({ bloc: 'ext', extension: 2, commande, arguments: args });
   const PROGRAMMES = {
+    'microbit-coeur': {
+      nom: 'micro:bit : cœur qui clignote sur l’écran',
+      programme: { fils: [{ quand: 'boucle', corps: [mb(2, [3]), { bloc: 'attendre', duree: 0.5 }, mb(4, []), { bloc: 'attendre', duree: 0.5 }] }] },
+    },
+    'microbit-boutons': {
+      nom: 'micro:bit : bouton A → 1, bouton B → 2, sinon écran vide',
+      programme: {
+        fils: [
+          {
+            quand: 'boucle',
+            corps: [
+              { bloc: 'si_sinon', condition: { bloc: 'comparaison', op: '=', a: mb(5, []), b: 1 }, alors: [mb(1, [1])], sinon: [
+                { bloc: 'si_sinon', condition: { bloc: 'comparaison', op: '=', a: mb(6, []), b: 1 }, alors: [mb(1, [2])], sinon: [mb(4, [])] },
+              ] },
+              { bloc: 'attendre', duree: 0.05 },
+            ],
+          },
+        ],
+      },
+    },
+    'microbit-hasard': {
+      nom: 'micro:bit : dé (nombre au hasard de 1 à 6 toutes les secondes) — hasard et variables',
+      programme: { fils: [{ quand: 'boucle', corps: [{ bloc: 'affecter', variable: 'de', valeur: { bloc: 'hasard', min: 1, max: 6 } }, mb(1, [{ bloc: 'variable', variable: 'de' }]), { bloc: 'attendre', duree: 1 }] }] },
+    },
     'uno-clignote': {
       nom: 'Clignoter la LED « L » de la carte (D13), sans câblage',
       programme: { fils: [{ quand: 'boucle', corps: [{ bloc: 'led_etat', broche: 'D13', etat: 1 }, { bloc: 'attendre', duree: 0.5 }, { bloc: 'led_etat', broche: 'D13', etat: 0 }, { bloc: 'attendre', duree: 0.5 }] }] },
@@ -326,7 +368,7 @@
     const select = $('#programme');
     select.innerHTML = '';
     for (const [id, p] of Object.entries(PROGRAMMES)) {
-      if (!id.startsWith(c === 'mcore' ? 'mbot' : 'uno')) continue;
+      if (!id.startsWith(c === 'mcore' ? 'mbot' : c === 'microbit' ? 'microbit' : 'uno')) continue;
       select.add(new Option(p.nom, id));
     }
     majRapport();
@@ -411,6 +453,22 @@
       await direct('X 1 1 0 0', 'Moteurs arrêtés');
     });
     action('#btn-mbot-bip', () => direct('T 8 880 200', 'Bip du buzzer (D8)'));
+    action('#btn-mb-coeur', async () => {
+      await direct('X 2 2 3', 'Cœur sur l’écran');
+      demander('Le cœur s’est-il affiché tout de suite ?', true);
+    });
+    action('#btn-mb-effacer', () => direct('X 2 4', 'Effacer l’écran'));
+    action('#btn-mb-a', () => direct('X 2 5', 'Bouton A (1 = appuyé)'));
+    action('#btn-mb-accel', () => direct('X 2 7 1', 'Accélération sur x (mg)'));
+    action('#btn-mb-temp', () => direct('X 2 8', 'Température (°C)'));
+    action('#btn-mb-p1', async () => {
+      await direct('M 1 P', 'P1 en entrée avec résistance interne');
+      await direct('W 1', 'Surveiller P1');
+      noter('Appuie plusieurs fois sur le bouton : chaque appui et chaque relâchement doivent s’afficher.');
+      setTimeout(() => demander('Chaque appui sur le bouton de P1 s’est-il affiché ?', true), 8000);
+    });
+    action('#btn-mb-p0-on', () => direct('D 0 1', 'Broche P0 à HAUT'));
+    action('#btn-mb-p0-off', () => direct('D 0 0', 'Broche P0 à BAS'));
     action('#btn-copier', async () => {
       majRapport();
       await navigator.clipboard.writeText($('#rapport').value).catch(() => $('#rapport').select());

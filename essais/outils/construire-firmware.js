@@ -67,4 +67,11 @@ for (const [carte, options] of Object.entries(CARTES)) {
 }
 const page = path.join(ESSAIS, 'page-essai');
 fs.mkdirSync(page, { recursive: true });
-fs.writeFileSync(path.join(page, 'firmwares.js'), '// Firmwares de Labo Blocs (Intel HEX), générés par essais/outils/construire-firmware.js : ne pas modifier.\ndefinirFirmwares(' + JSON.stringify(resultats, null, 1) + ');\n');
+const fichier = path.join(page, 'firmwares.js');
+if (fs.existsSync(fichier)) {
+  // Garder le micro:bit (construire-microbit.js).
+  const t = fs.readFileSync(fichier, 'utf8');
+  const avant = JSON.parse(t.slice(t.indexOf('definirFirmwares(') + 17, t.lastIndexOf(')')));
+  if (avant.microbit) resultats.microbit = avant.microbit;
+}
+fs.writeFileSync(fichier, '// Firmwares de Labo Blocs (Intel HEX), générés par essais/outils/construire-firmware.js et construire-microbit.js : ne pas modifier.\ndefinirFirmwares(' + JSON.stringify(resultats, null, 1) + ');\n');

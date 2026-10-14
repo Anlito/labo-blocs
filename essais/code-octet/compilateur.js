@@ -26,9 +26,11 @@
   const COMPARAISONS = { '=': OP.EGAL, '≠': OP.DIFF, '<': OP.INF, '≤': OP.INF_EGAL, '>': OP.SUP, '≥': OP.SUP_EGAL };
   const OPERATIONS = { '+': OP.ADD, '-': OP.SUB, '×': OP.MUL, '÷': OP.DIV, mod: OP.MOD };
 
-  // « D3 » → 3, « A0 » → 14 (numérotation Arduino Uno).
+  // « D3 » → 3, « A0 » → 14 (numérotation Arduino Uno) ; micro:bit : « P0 » → 0 … « P20 » → 20.
   function numeroBroche(b) {
     const s = String(b).trim().toUpperCase();
+    const p = /^P(\d+)$/.exec(s);
+    if (p && Number(p[1]) <= 20) return Number(p[1]);
     let m = /^D?(\d+)$/.exec(s);
     if (m && Number(m[1]) <= 19) return Number(m[1]);
     m = /^A(\d)$/.exec(s);

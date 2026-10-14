@@ -48,6 +48,7 @@
     <div class="ligne">
       <label><input type="radio" name="carte" value="uno" checked> Arduino Uno</label>
       <label><input type="radio" name="carte" value="mcore"> mBot (carte mCore)</label>
+      <label><input type="radio" name="carte" value="microbit"> micro:bit (V1 ou V2)</label>
       <label>Poste : <input type="text" id="poste" placeholder="ex. salle B12, PC 4"></label>
     </div>
     <div class="ligne">
@@ -60,7 +61,11 @@
 
   <section>
     <h2><span class="num">1</span>Installer le programme de la carte (une seule fois)</h2>
-    <p>Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
+    <p data-carte="uno">Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
+    <p data-carte="mcore" hidden>Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
+    <p data-carte="microbit" hidden>Le bouton enregistre le fichier <strong>labo_blocs_microbit.hex</strong> (le même pour la V1 et la V2) :
+      glisse-le sur le lecteur <strong>MICROBIT</strong> dans l’explorateur de fichiers. Si un texte défile sur l’écran du
+      micro:bit après la copie, note-le (sur une V1, ce serait sans doute « MemoryError » : mémoire trop petite).</p>
     <button id="btn-installer">Installer le firmware Labo Blocs</button>
     <progress id="progression" max="1" value="0" hidden></progress>
   </section>
@@ -108,6 +113,19 @@
         <button id="btn-mbot-bouton" class="second">Bouton de la carte</button>
         <button id="btn-mbot-lumiere" class="second">Capteur de lumière</button>
       </div>
+    </div>
+    <div data-carte="microbit" hidden>
+      <div class="ligne">
+        <button id="btn-mb-coeur">Cœur sur l’écran</button><button id="btn-mb-effacer" class="second">Effacer l’écran</button>
+        <button id="btn-mb-p0-on">P0 à HAUT (LED sur P0)</button><button id="btn-mb-p0-off" class="second">P0 à BAS</button>
+      </div>
+      <div class="ligne">
+        <button id="btn-mb-a" class="second">Lire le bouton A</button>
+        <button id="btn-mb-accel" class="second">Accéléromètre (x)</button>
+        <button id="btn-mb-temp" class="second">Température</button>
+      </div>
+      <div class="ligne"><button id="btn-mb-p1">Surveiller un bouton branché entre P1 et GND</button></div>
+      <p>Appuie sur le bouton : <strong id="evenements-mb" class="doux">aucun événement reçu</strong></p>
     </div>
     <div class="ligne">
       <button id="btn-off" class="second">Tout éteindre</button>

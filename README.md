@@ -22,11 +22,12 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 
 ## État
 
-Plan validé le 14/10/2026. Jalon 0 (essais) : Uno, mBot et mode direct prêts à tester sur les vraies cartes,
-micro:bit à l'étude — voir [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
+Plan validé le 14/10/2026. Jalon 0 (essais) : Uno validée sur une vraie carte (sauf le servo), micro:bit V1/V2 prêt à
+essayer, mBot prêt à essayer — voir [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
 
 ```bash
 npm test                 # tests (gcc ; simavr en option : apt install gcc libsimavr-dev libelf-dev)
 npm run essais:mesures   # taille du code octet des programmes
 npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARDUINO_CORE et SERVO)
+npm run essais:microbit  # refaire le fichier micro:bit (npm install d'abord)
 ```

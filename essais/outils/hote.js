@@ -51,4 +51,17 @@ function disponible() {
   }
 }
 
-module.exports = { executer, compilerHote, disponible };
+// Sortie brute, pour comparer avec un autre interpréteur (micro:bit).
+function executerTexte(octets, dureeMs, entrees, graine) {
+  const exe = compilerHote();
+  const fichier = path.join(DOSSIER, 'programme-texte.bin');
+  fs.writeFileSync(fichier, octets);
+  const texte = (entrees || [])
+    .slice()
+    .sort((a, b) => a.t - b.t || (a.apres ? 1 : 0) - (b.apres ? 1 : 0))
+    .map((e) => `${Math.round(e.t)} ${e.broche} ${e.valeur ? 1 : 0} ${e.apres ? 1 : 0}`)
+    .join('\n');
+  return execFileSync(exe, [fichier, String(Math.round(dureeMs)), String(graine || 12345)], { input: texte + '\n' }).toString();
+}
+
+module.exports = { executer, executerTexte, compilerHote, disponible };

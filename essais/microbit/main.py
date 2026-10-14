@@ -54,7 +54,7 @@ def h_servo(b, a):
     p.write_analog(int((0.5 + a / 90) * 1023 / 20 + 0.5))
 
 def h_son(b, f, ms):
-    music.pitch(f, ms, pin=broche(b) if b != 99 else None, wait=False) if b != 99 or V2 else None
+    music.pitch(f, ms, pin=broche(b), wait=False)
 
 def h_silence(b):
     music.stop()
