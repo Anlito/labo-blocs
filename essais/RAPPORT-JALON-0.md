@@ -92,8 +92,11 @@ jalon 0) ; il demandera un essai sur une V1 et une V2.
 **Attention** : le firmware Labo Blocs remplace le programme de la carte. Pour revenir au distributeur actuel, renvoyer son
 programme depuis l'atelier ; pour mBlock, mBlock réinstalle son propre firmware (« Mettre à jour le micrologiciel »).
 
-## Questions
+## Réponses de Thomas (14/10/2026)
 
-1. mBot : les capteurs sont-ils sur les ports par défaut (ultrasons port 3, suiveur de ligne port 2) ?
-2. Les boutons du distributeur sont-ils toujours des poussoirs à 2 fils vers GND (`boutonsVersMasse: true`) ? C'est le
-   réglage par défaut du compilateur.
+1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le
+   port 2**. Les blocs mBot n'auront donc pas de choix de port (moins de texte, pas d'erreur de branchement possible
+   dans le programme) ; la consigne de câblage le rappellera. Le firmware garde le numéro de port dans la commande,
+   pour pouvoir changer plus tard sans le réinstaller.
+2. **Boutons du distributeur** : poussoirs à 2 fils vers GND — réglage par défaut du compilateur
+   (`boutonsVersMasse: true`) confirmé.

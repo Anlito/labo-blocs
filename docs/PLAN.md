@@ -209,3 +209,5 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
 4. **Tous les projets utilisent le moteur de Labo Blocs** (le distributeur d'abord, puis le théâtre d'ombre, etc.).
 5. Mise à jour « en ligne » : par **GitHub Pages**, comme l'atelier.
 6. Brief design : version du 14/10 (style des blocs de l'atelier).
+7. **mBot** : ultrasons toujours sur le **port 3**, suiveur de ligne sur le **port 2** (imposé aux élèves) : blocs sans choix de port.
+8. **Boutons** (distributeur) : poussoirs à 2 fils vers GND, résistance interne de la carte.
