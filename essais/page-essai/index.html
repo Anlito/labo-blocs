@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essais Labo Blocs</title>
+<style>
+  :root {
+    --fond: #F7FAFB; --carte: #FFFFFF; --texte: #1F2A30; --doux: #4A5A63; --bord: #D5DEE3;
+    --accent: #2F6F8F; --ok: #2E7D4F; --ecart: #A15C00; --ecart-fond: #FFF4E0;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fond); color: var(--texte); font: 15px/1.45 "Segoe UI", system-ui, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 24px; margin: 8px 0 4px; }
+  h2 { font-size: 18px; margin: 0 0 8px; }
+  p { margin: 4px 0 10px; }
+  .doux { color: var(--doux); }
+  section { background: var(--carte); border: 1px solid var(--bord); border-radius: 10px; padding: 14px 16px; margin: 12px 0; }
+  .num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; margin-right: 6px; }
+  button { font: inherit; font-weight: 600; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; margin: 2px 4px 2px 0; min-height: 40px; }
+  button.second { background: #fff; color: var(--accent); }
+  button:disabled { opacity: .5; cursor: wait; }
+  select, input[type=number], input[type=text], textarea { font: inherit; padding: 6px 8px; border: 1px solid var(--bord); border-radius: 6px; }
+  label { margin-right: 12px; }
+  .alerte { background: var(--ecart-fond); border: 1px solid var(--ecart); color: #5A3400; border-radius: 8px; padding: 10px 12px; }
+  .bandeau { background: #E8F1F6; border-radius: 8px; padding: 8px 12px; margin: 8px 0; }
+  #journal { list-style: none; padding: 0; margin: 0; max-height: 260px; overflow: auto; font-size: 14px; }
+  #journal li { padding: 4px 6px; border-bottom: 1px solid #EEF2F4; }
+  #journal li.ok { color: var(--ok); }
+  #journal li.ecart { color: var(--ecart); background: var(--ecart-fond); }
+  #rapport { width: 100%; height: 220px; font: 13px/1.4 Consolas, monospace; }
+  .questions label { display: block; margin: 4px 0; }
+  progress { width: 100%; height: 14px; }
+  .ligne { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Essais Labo Blocs — jalon 0</h1>
+  <p class="doux">Pour vérifier sur une vraie carte : installation du programme de la carte, envoi d’un programme venu de blocs,
+    tenue après une coupure de courant, « Vider la carte », mode direct. Chrome ou Edge. À la fin, copie le compte rendu et envoie-le.</p>
+  <p id="sans-usb" class="alerte" hidden>Ce navigateur ne permet pas l’accès USB. Ouvre cette page dans Chrome ou Edge.</p>
+
+  <section>
+    <h2>Quelle carte ?</h2>
+    <div class="ligne">
+      <label><input type="radio" name="carte" value="uno" checked> Arduino Uno</label>
+      <label><input type="radio" name="carte" value="mcore"> mBot (carte mCore)</label>
+      <label>Poste : <input type="text" id="poste" placeholder="ex. salle B12, PC 4"></label>
+    </div>
+    <div class="ligne">
+      <button id="btn-choisir" class="second">Choisir le port de la carte</button>
+      <span id="etat-port" class="doux">Aucune carte choisie</span>
+      <button id="btn-deconnecter" class="second">Fermer le port</button>
+    </div>
+    <p class="doux">Ferme l’IDE Arduino, mBlock et les autres onglets qui utilisent la carte.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">1</span>Installer le programme de la carte (une seule fois)</h2>
+    <p>Remplace le programme de la carte par le firmware Labo Blocs (≈ 10 s). Ne débranche pas pendant l’envoi.</p>
+    <button id="btn-installer">Installer le firmware Labo Blocs</button>
+    <progress id="progression" max="1" value="0" hidden></progress>
+  </section>
+
+  <section>
+    <h2><span class="num">2</span>Vérifier la carte</h2>
+    <button id="btn-ping">Vérifier la carte</button>
+  </section>
+
+  <section>
+    <h2><span class="num">3</span>Envoyer un programme venu de blocs</h2>
+    <div class="ligne"><select id="programme"></select><button id="btn-envoyer">Envoyer dans la carte</button></div>
+    <p class="bandeau" data-carte="mcore" hidden>Programme « avancer » : pose le robot par terre, loin du bord de la table, ou roues en l’air.</p>
+    <p>Ensuite : <strong>Fermer le port</strong>, débranche le câble USB, puis alimente la carte autrement (pile, autre prise USB) ou rebranche-la. Le programme doit repartir tout seul.</p>
+    <button id="btn-vider" class="second">Vider la carte</button>
+  </section>
+
+  <section>
+    <h2><span class="num">4</span>Mode direct</h2>
+    <p class="bandeau"><strong>En direct :</strong> le câble doit rester branché. Le programme s’arrête si l’on ferme l’onglet. <span id="direct-etat" class="doux">Mode direct arrêté</span></p>
+    <div data-carte="uno">
+      <div class="ligne"><button id="btn-led-on">Allumer la LED D13</button><button id="btn-led-off" class="second">Éteindre la LED D13</button></div>
+      <div class="ligne">
+        <label>Bouton (vers GND) sur la broche <input type="number" id="broche-entree" min="2" max="13" value="2" style="width:70px"></label>
+        <button id="btn-surveiller">Surveiller le bouton</button><button id="btn-lire" class="second">Lire une fois</button>
+      </div>
+      <p>Appuie sur le bouton : <strong id="evenements" class="doux">aucun événement reçu</strong></p>
+      <div class="ligne">
+        <label>Servo sur D<input type="number" id="broche-servo" min="2" max="13" value="6" style="width:60px"></label>
+        <label>Angle <input type="number" id="angle" min="0" max="180" value="90" style="width:70px"></label>
+        <button id="btn-servo">Tourner le servo</button>
+      </div>
+    </div>
+    <div data-carte="mcore" hidden>
+      <div class="ligne">
+        <button id="btn-mbot-rouge">LED RGB rouges</button><button id="btn-mbot-bip">Bip</button>
+        <button id="btn-mbot-moteurs">Avancer 0,7 s</button>
+      </div>
+      <div class="ligne">
+        <button id="btn-mbot-ultrason" class="second">Ultrasons (port 3)</button>
+        <button id="btn-mbot-ligne" class="second">Suiveur de ligne (port 2)</button>
+        <button id="btn-mbot-bouton" class="second">Bouton de la carte</button>
+        <button id="btn-mbot-lumiere" class="second">Capteur de lumière</button>
+      </div>
+    </div>
+    <div class="ligne">
+      <button id="btn-off" class="second">Tout éteindre</button>
+      <button id="btn-silence" class="second">Arrêter le signe de vie (la carte doit tout éteindre dans 3 s)</button>
+      <button id="btn-aller-retour" class="second">Mesurer l’aller-retour</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Ce que tu as vu</h2>
+    <div class="questions">
+      <label><input type="checkbox" data-question="Après l’envoi, le programme tourne (LED, bip, moteurs…)"> Après l’envoi, le programme tourne (LED, bip, moteurs…)</label>
+      <label><input type="checkbox" data-question="Après débranchement puis nouvelle alimentation, le programme repart tout seul"> Après débranchement puis nouvelle alimentation, le programme repart tout seul</label>
+      <label><input type="checkbox" data-question="Après « Vider la carte » puis nouvelle alimentation, plus rien ne bouge"> Après « Vider la carte » puis nouvelle alimentation, plus rien ne bouge</label>
+      <label><input type="checkbox" data-question="Mode direct : la LED / les LED répondent tout de suite"> Mode direct : la LED / les LED répondent tout de suite</label>
+      <label><input type="checkbox" data-question="Mode direct : chaque appui sur le bouton s’affiche"> Mode direct : chaque appui sur le bouton s’affiche</label>
+      <label><input type="checkbox" data-question="Sans signe de vie, tout s’éteint au bout de 3 s"> Sans signe de vie, tout s’éteint au bout de 3 s</label>
+      <label><input type="checkbox" data-question="mBot : moteurs, capteurs, LED RGB et buzzer répondent"> mBot : moteurs, capteurs, LED RGB et buzzer répondent</label>
+    </div>
+    <p><label>Remarques :<br><textarea id="remarques" rows="2" style="width:100%"></textarea></label></p>
+  </section>
+
+  <section>
+    <h2>Journal</h2>
+    <ul id="journal"></ul>
+  </section>
+
+  <section>
+    <h2>Compte rendu à envoyer</h2>
+    <button id="btn-copier">Copier le compte rendu</button>
+    <textarea id="rapport" readonly></textarea>
+  </section>
+</main>
+<script src="../reference/moteur/programme.js"></script>
+<script src="../reference/moteur/catalogue.js"></script>
+<script src="../reference/exercices/parametres.js"></script>
+<script src="../reference/exercices/13B.js"></script>
+<script src="../code-octet/compilateur.js"></script>
+<script src="flasher.js"></script>
+<script src="essai.js"></script>
+<script src="firmwares.js"></script>
+</body>
+</html>

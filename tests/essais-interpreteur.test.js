@@ -9,7 +9,8 @@ const simulation = require('../essais/reference/moteur/simulation.js');
 const { jouerScenario } = require('../essais/reference/moteur/validation.js');
 const faux = require('../essais/reference/programmes-faux.js');
 const { compiler, numeroBroche } = require('../essais/code-octet/compilateur.js');
-const { executer } = require('../essais/outils/hote.js');
+const { executer, disponible } = require('../essais/outils/hote.js');
+const sauter = disponible() ? false : 'gcc absent : interpréteur C non compilé';
 
 const exercices = chargerExercices();
 
@@ -55,12 +56,12 @@ function comparer(exercice, programme, scenario, nom) {
 }
 
 for (const ex of exercices) {
-  test(`exercice ${ex.id} : solution de référence identique dans la carte et le simulateur`, () => {
+  test(`exercice ${ex.id} : solution de référence identique dans la carte et le simulateur`, { skip: sauter }, () => {
     for (const [i, s] of (ex.scenarios || []).entries()) comparer(ex, ex.solutionReference, s, `solution, scénario ${i + 1}`);
   });
   const liste = faux[ex.id] || [];
   if (liste.length) {
-    test(`exercice ${ex.id} : programmes faux identiques dans la carte et le simulateur`, () => {
+    test(`exercice ${ex.id} : programmes faux identiques dans la carte et le simulateur`, { skip: sauter }, () => {
       for (const f of liste) for (const [i, s] of (ex.scenarios || []).entries()) comparer(ex, f.programme, s, `${f.nom}, scénario ${i + 1}`);
     });
   }

@@ -41,4 +41,14 @@ function executer(octets, dureeMs, entrees, graine) {
   return { journal, fin, erreur };
 }
 
-module.exports = { executer, compilerHote };
+// Faux si gcc manque (poste Windows sans compilateur C) : les tests concernés sont alors sautés.
+function disponible() {
+  try {
+    compilerHote();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+module.exports = { executer, compilerHote, disponible };
