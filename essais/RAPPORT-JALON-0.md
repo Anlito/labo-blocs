@@ -183,6 +183,8 @@ Carte mCore (USB 0x1a86:0x7523, puce CH340) :
 | Ultrasons (port 3) | ✘ toujours la même valeur (laquelle ? 400 = pas d'écho). Bouton ajouté : mesure sur les 4 ports |
 | Essai de coupure (15/10, 16 h) | ✔ **le programme repart tout seul** |
 | Ultrasons sur les 4 ports | ✘ toujours 400 (aucun écho) — firmware : diagnostic ajouté (mesure sur chaque fil S1/S2 de chaque port, commande `X 1 7 <broche>`) |
+| Diagnostic fil par fil (S1 et S2 de chaque port) | ✘ toujours 400 — vérifier le capteur avec mBlock |
+| Moteurs (gauche seul, droit seul, 50 %, 100 %) | ✔ |
 | Suiveur de ligne (port 2) | 0 (« noir/noir ») — normal si le robot était roues en l'air, à refaire posé sur une feuille blanche |
 | « Vider la carte » | ✔ la carte est bien vidée (« programme gardé : aucun » ensuite) ; la page affichait « échec (OK) » à cause d'octets parasites invisibles collés devant « OK » après un redémarrage — la page les retire maintenant de chaque réponse (à faire aussi dans le module carte du jalon 3) |
 
