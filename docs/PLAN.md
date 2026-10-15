@@ -213,3 +213,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
 8. **Boutons** (distributeur) : poussoirs à 2 fils vers GND, résistance interne de la carte.
 9. **Jalon 0 terminé le 15/10/2026** (`essais/RAPPORT-JALON-0.md`) : Uno, mBot, micro:bit V2 validés ; **micro:bit V1
    abandonnée** (pas en salle).
+10. **Jalon 1 livré le 15/10/2026** (recette à faire, `RECETTE.md`). Écarts au plan : les modules sont dans `noyau/` et
+   `interface/` à la racine et le site les charge par `../` (pas encore de module construit dans `dist/` : il viendra avec
+   l'intégration au distributeur, jalon 1 bis) ; le simulateur exécute le **même code octet** que les cartes (une seule
+   source de vérité) ; les indices et « À savoir » s'ouvrent par-dessus l'éditeur (comme l'atelier) plutôt que dans la
+   colonne de gauche de la maquette.

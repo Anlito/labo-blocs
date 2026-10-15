@@ -7,9 +7,17 @@
     "test": "node --test tests/*.test.js",
     "essais:firmware": "node essais/outils/construire-firmware.js",
     "essais:mesures": "node essais/outils/mesurer.js",
-    "essais:microbit": "node essais/outils/construire-microbit.js"
+    "essais:microbit": "node essais/outils/construire-microbit.js",
+    "vendor": "node tools/vendor.js",
+    "start": "node tools/serve.js",
+    "recette": "node tools/recette.js"
   },
   "devDependencies": {
-    "@microbit/microbit-fs": "^0.10.1"
+    "@fontsource/atkinson-hyperlegible": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/lexend": "^5.3.0",
+    "@microbit/microbit-fs": "^0.10.1",
+    "blockly": "^13.4.0",
+    "puppeteer-core": "^25.14.0"
   }
 }

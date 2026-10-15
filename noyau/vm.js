@@ -84,7 +84,7 @@
       const nbFils = o8(a++);
       if (nbFils > MAX.fils) return (erreur = ERREUR.tropGrand);
       for (let i = 0; i < nbFils; i++) {
-        fils.push({ type: o8(a), broche: o8(a + 1), debut: u16(a + 2), actif: false, pc: 0, reveil: 0, tour: 0, pile: [], appels: [], dernier: 0 });
+        fils.push({ type: o8(a), broche: o8(a + 1), debut: u16(a + 2), actif: false, pc: 0, ici: null, reveil: 0, tour: 0, pile: [], appels: [], dernier: 0 });
         a += 4;
       }
       return (erreur = ERREUR.ok);
@@ -93,6 +93,7 @@
     function lancer(f, t) {
       f.actif = true;
       f.pc = f.debut;
+      f.ici = null;
       f.pile = [];
       f.appels = [];
       f.reveil = t;
@@ -142,6 +143,7 @@
       try {
         for (let n = 0; n < max; n++) {
           let pc = f.pc;
+          f.ici = pc; // début de la dernière instruction exécutée (bloc à surligner)
           const op = o8(pc++);
           let a;
           let b;

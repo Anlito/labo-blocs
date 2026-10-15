@@ -127,11 +127,12 @@
         }
       });
     }
-    // Un fil qui attend est encore dans le bloc « attendre » : son adresse pointe déjà sur l'instruction suivante.
+    // Bloc en cours de chaque fil : celui de la dernière instruction exécutée (un fil qui attend est encore dans
+    // son bloc « attendre » ; un fil pas encore parti montre son premier bloc).
     function noterBlocs() {
       sim.blocsEnCours = vm.fils
         .filter((f) => f.actif)
-        .map((f) => blocA(f.reveil > sim.t ? f.pc - 1 : f.pc))
+        .map((f) => blocA(f.ici === null ? f.pc : f.ici))
         .filter((id) => id !== null);
       sim.blocEnCours = sim.blocsEnCours.length ? sim.blocsEnCours[0] : null;
     }
