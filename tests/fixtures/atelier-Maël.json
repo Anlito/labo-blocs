@@ -1,0 +1,198 @@
+{
+ "application": "atelier-cereales",
+ "formatVersion": 1,
+ "equipe": {
+  "eleves": [
+   "Maël"
+  ],
+  "classe": "5A"
+ },
+ "creeLe": "2026-10-12T10:51:00",
+ "modifieLe": "2026-10-12T11:09:00",
+ "exerciceCourant": "3",
+ "exercices": {
+  "1": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 1,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": "2026-10-12T10:55:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:53:00",
+     "type": "indice",
+     "niveau": 1
+    },
+    {
+     "date": "2026-10-12T10:55:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  },
+  "2": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 1,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": "2026-10-12T10:59:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:57:00",
+     "type": "indice",
+     "niveau": 1
+    },
+    {
+     "date": "2026-10-12T10:59:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "3": {
+   "statut": "en_cours",
+   "tentatives": 2,
+   "indicesOuverts": 2,
+   "tempsPasseSecondes": 1440,
+   "premiereReussite": null,
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T11:01:00",
+     "type": "indice",
+     "niveau": 1
+    },
+    {
+     "date": "2026-10-12T11:03:00",
+     "type": "indice",
+     "niveau": 2
+    },
+    {
+     "date": "2026-10-12T11:06:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste éteinte.",
+     "ecarts": [
+      "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T11:09:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "La LED D9 et la LED D10 devraient toujours faire l’inverse : quand l’une est allumée, l’autre est éteinte. Dans ton programme, elles sont toutes les deux allumées en même temps.",
+     "ecarts": [
+      "La LED D9 et la LED D10 devraient toujours faire l’inverse : quand l’une est allumée, l’autre est éteinte. Dans ton programme, elles sont toutes les deux allumées en même temps."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "exercice13": {
+  "versionReussie": null
+ },
+ "carnet": {
+  "idees": [
+   "Une trémie avec une trappe qui s’ouvre",
+   "Un bouton pour choisir la quantité"
+  ],
+  "definition": "Un objet fabriqué par l’homme pour répondre à un besoin.",
+  "classement": {},
+  "algos": {},
+  "couleurs": {},
+  "verifications": {}
+ }
+}

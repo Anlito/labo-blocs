@@ -1,0 +1,1335 @@
+{
+ "application": "atelier-cereales",
+ "formatVersion": 1,
+ "equipe": {
+  "eleves": [
+   "Léa",
+   "Hugo"
+  ],
+  "classe": "5A"
+ },
+ "creeLe": "2026-10-12T09:00:00",
+ "modifieLe": "2026-10-12T09:37:00",
+ "exerciceCourant": "13B",
+ "exercices": {
+  "1": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:02:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:02:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  },
+  "2": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:04:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:04:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "3": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:06:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:06:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "4": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": "2026-10-12T09:11:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:09:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand aucun bouton n’est appuyé, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand aucun bouton n’est appuyé, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T09:11:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "5": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:13:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:13:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "6": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:15:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:15:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "7": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:17:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:17:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "8": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": "2026-10-12T09:22:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:20:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Après un appui sur le bouton Trappe (D5), la LED Trappe (D11) devrait être allumée. Dans ton programme, elle reste éteinte.",
+     "ecarts": [
+      "Après un appui sur le bouton Trappe (D5), la LED Trappe (D11) devrait être allumée. Dans ton programme, elle reste éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T09:22:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 1
+         },
+         {
+          "bloc": "attendre",
+          "duree": 5
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "9": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:24:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:24:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 180
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  },
+  "10": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:26:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:26:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "11": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:28:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:28:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 180
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "12": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:30:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:30:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 90
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "13A": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": "2026-10-12T09:35:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:33:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Au démarrage, le moteur Trappe (D6) devrait être à 90°. Dans ton programme, il reste à 0°.",
+     "ecarts": [
+      "Au démarrage, le moteur Trappe (D6) devrait être à 90°. Dans ton programme, il reste à 0°."
+     ],
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "affecter",
+        "variable": "CHOIX",
+        "valeur": 0
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 0
+       }
+      ],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 3
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 7
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 1
+         },
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 0
+         },
+         {
+          "bloc": "attendre",
+          "duree": {
+           "bloc": "variable",
+           "variable": "CHOIX"
+          }
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 0
+         },
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 90
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T09:35:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "affecter",
+        "variable": "CHOIX",
+        "valeur": 0
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       }
+      ],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 3
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 7
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 1
+         },
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 0
+         },
+         {
+          "bloc": "attendre",
+          "duree": {
+           "bloc": "variable",
+           "variable": "CHOIX"
+          }
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 0
+         },
+         {
+          "bloc": "servo_angle",
+          "broche": "D6",
+          "angle": 90
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "13B": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:37:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:37:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "affecter",
+        "variable": "CHOIX",
+        "valeur": 0
+       },
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       }
+      ],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 3
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "affecter",
+          "variable": "CHOIX",
+          "valeur": 7
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "si_alors",
+          "condition": {
+           "bloc": "comparaison",
+           "op": "≠",
+           "a": {
+            "bloc": "variable",
+            "variable": "CHOIX"
+           },
+           "b": 0
+          },
+          "alors": [
+           {
+            "bloc": "led_etat",
+            "broche": "D9",
+            "etat": 0
+           },
+           {
+            "bloc": "led_etat",
+            "broche": "D10",
+            "etat": 0
+           },
+           {
+            "bloc": "led_etat",
+            "broche": "D11",
+            "etat": 1
+           },
+           {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": 0
+           },
+           {
+            "bloc": "attendre",
+            "duree": {
+             "bloc": "variable",
+             "variable": "CHOIX"
+            }
+           },
+           {
+            "bloc": "led_etat",
+            "broche": "D11",
+            "etat": 0
+           },
+           {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": 90
+           },
+           {
+            "bloc": "affecter",
+            "variable": "CHOIX",
+            "valeur": 0
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "exercice13": {
+  "versionReussie": "B"
+ },
+ "carnet": {
+  "idees": [
+   "Une trémie avec une trappe qui s’ouvre",
+   "Un bouton pour choisir la quantité"
+  ],
+  "definition": "Un objet fabriqué par l’homme pour répondre à un besoin.",
+  "classement": {
+   "Mesure la distance": "capteur",
+   "Clavier": "capteur",
+   "Bouton": "capteur",
+   "Carte Arduino": "carte",
+   "Ampoule": "actionneur",
+   "Unité centrale": "carte",
+   "Micro": "capteur",
+   "Souris": "capteur",
+   "Raspberry Pi": "carte",
+   "Pompe à eau": "actionneur",
+   "Écran": "actionneur",
+   "Enceinte": "actionneur",
+   "Mesure l'humidité": "capteur",
+   "Moteur": "actionneur",
+   "Photorésistance": "capteur"
+  },
+  "algos": {
+   "mouvement": {
+    "c1": "Lumière éteinte",
+    "c2": "Mouvement détecté ?",
+    "c3": "Lumière allumée",
+    "c4": "Plus de mouvement ?",
+    "c5": "Lumière éteinte"
+   },
+   "trappe": {
+    "c1": "Trappe à 0°",
+    "c2": "Bouton appuyé ?",
+    "c3": "Trappe à 90°",
+    "c4": "10 s écoulées ?",
+    "c5": "Trappe à 0°"
+   },
+   "final": {
+    "s1": "LED Petite dose éteinte",
+    "s2": "LED Grande dose éteinte",
+    "s3": "LED Trappe éteinte",
+    "s4": "Trappe fermée",
+    "s5L": "Bouton Petite dose appuyé ?",
+    "s6L": "LED Petite dose allumée",
+    "s7L": "LED Grande dose éteinte",
+    "s8L": "Bouton Trappe appuyé ?",
+    "s9L": "LED Trappe allumée",
+    "s10L": "Trappe ouverte",
+    "s11L": "3 secondes écoulées ?",
+    "s5R": "Bouton Grande dose appuyé ?",
+    "s6R": "LED Grande dose allumée",
+    "s7R": "LED Petite dose éteinte",
+    "s8R": "Bouton Trappe appuyé ?",
+    "s9R": "LED Trappe allumée",
+    "s10R": "Trappe ouverte",
+    "s11R": "7 secondes écoulées ?"
+   }
+  },
+  "couleurs": {
+   "D9": "rouge",
+   "D10": "rouge",
+   "D11": "rouge",
+   "D3": "rouge",
+   "D4": "rouge",
+   "D5": "rouge"
+  },
+  "verifications": {
+   "classement": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": false,
+     "bien": 13,
+     "total": 15
+    },
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 15,
+     "total": 15
+    }
+   ],
+   "mouvement": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 5,
+     "total": 5
+    }
+   ],
+   "trappe": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 5,
+     "total": 5
+    }
+   ],
+   "final": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": false,
+     "bien": 15,
+     "total": 18
+    },
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 18,
+     "total": 18
+    }
+   ]
+  }
+ }
+}

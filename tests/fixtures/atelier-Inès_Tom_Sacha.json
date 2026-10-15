@@ -1,0 +1,656 @@
+{
+ "application": "atelier-cereales",
+ "formatVersion": 1,
+ "equipe": {
+  "eleves": [
+   "Inès",
+   "Tom",
+   "Sacha"
+  ],
+  "classe": "5A"
+ },
+ "creeLe": "2026-10-12T09:37:00",
+ "modifieLe": "2026-10-12T10:04:00",
+ "exerciceCourant": "9",
+ "exercices": {
+  "1": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:39:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:39:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  },
+  "2": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:41:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:41:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "3": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:43:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:43:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "4": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:45:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:45:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "5": {
+   "statut": "reussi",
+   "tentatives": 3,
+   "indicesOuverts": 1,
+   "tempsPasseSecondes": 540,
+   "premiereReussite": "2026-10-12T09:55:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:47:00",
+     "type": "indice",
+     "niveau": 1
+    },
+    {
+     "date": "2026-10-12T09:50:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T09:53:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte.",
+     "ecarts": [
+      "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T09:55:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "6": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:57:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:57:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "7": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T09:59:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T09:59:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "8": {
+   "statut": "reussi",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 180,
+   "premiereReussite": "2026-10-12T10:01:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:01:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D4"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ]
+       },
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D5"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 1
+         },
+         {
+          "bloc": "attendre",
+          "duree": 5
+         },
+         {
+          "bloc": "led_etat",
+          "broche": "D11",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "9": {
+   "statut": "en_cours",
+   "tentatives": 1,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 360,
+   "premiereReussite": null,
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:04:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Au bout de 1 s, le moteur D6 devrait être à 180°. Dans ton programme, il reste à 90°.",
+     "ecarts": [
+      "Au bout de 1 s, le moteur D6 devrait être à 180°. Dans ton programme, il reste à 90°."
+     ],
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "servo_angle",
+        "broche": "D6",
+        "angle": 90
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  }
+ },
+ "exercice13": {
+  "versionReussie": null
+ },
+ "carnet": {
+  "idees": [
+   "Une trémie avec une trappe qui s’ouvre",
+   "Un bouton pour choisir la quantité"
+  ],
+  "definition": "Un objet fabriqué par l’homme pour répondre à un besoin.",
+  "classement": {
+   "Mesure la distance": "capteur",
+   "Clavier": "capteur",
+   "Bouton": "capteur",
+   "Carte Arduino": "carte",
+   "Ampoule": "actionneur",
+   "Unité centrale": "carte",
+   "Micro": "capteur",
+   "Souris": "capteur",
+   "Raspberry Pi": "carte",
+   "Pompe à eau": "actionneur",
+   "Écran": "actionneur",
+   "Enceinte": "actionneur",
+   "Mesure l'humidité": "capteur",
+   "Moteur": "actionneur",
+   "Photorésistance": "capteur"
+  },
+  "algos": {
+   "mouvement": {
+    "c1": "Lumière éteinte",
+    "c2": "Mouvement détecté ?",
+    "c3": "Lumière allumée",
+    "c4": "Plus de mouvement ?",
+    "c5": "Lumière éteinte"
+   },
+   "trappe": {
+    "c1": "Trappe à 0°",
+    "c2": "Bouton appuyé ?",
+    "c3": "Trappe à 90°",
+    "c4": "10 s écoulées ?",
+    "c5": "Trappe à 0°"
+   }
+  },
+  "couleurs": {},
+  "verifications": {
+   "classement": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": false,
+     "bien": 13,
+     "total": 15
+    },
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 15,
+     "total": 15
+    }
+   ],
+   "mouvement": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 5,
+     "total": 5
+    }
+   ],
+   "trappe": [
+    {
+     "date": "2026-10-15T14:39:22",
+     "reussi": true,
+     "bien": 5,
+     "total": 5
+    }
+   ]
+  }
+ }
+}

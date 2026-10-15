@@ -1,0 +1,588 @@
+{
+ "application": "atelier-cereales",
+ "formatVersion": 1,
+ "equipe": {
+  "eleves": [
+   "Noah",
+   "Jade"
+  ],
+  "classe": "5A"
+ },
+ "creeLe": "2026-10-12T10:04:00",
+ "modifieLe": "2026-10-12T10:51:00",
+ "exerciceCourant": "5",
+ "exercices": {
+  "1": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 240,
+   "premiereReussite": "2026-10-12T10:09:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:07:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Au bout de 1 s, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc.",
+     "ecarts": [
+      "Au bout de 1 s, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc."
+     ],
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       }
+      ],
+      "boucle": []
+     }
+    },
+    {
+     "date": "2026-10-12T10:09:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ],
+      "boucle": []
+     }
+    }
+   ]
+  },
+  "2": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 240,
+   "premiereReussite": "2026-10-12T10:14:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:12:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:14:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "3": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 240,
+   "premiereReussite": "2026-10-12T10:19:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:17:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste éteinte.",
+     "ecarts": [
+      "La LED D9 devrait s’allumer et s’éteindre en changeant toutes les 2 s. Dans ton programme, elle reste éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:19:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 0
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 0
+       },
+       {
+        "bloc": "led_etat",
+        "broche": "D10",
+        "etat": 1
+       },
+       {
+        "bloc": "attendre",
+        "duree": 2
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "4": {
+   "statut": "reussi",
+   "tentatives": 2,
+   "indicesOuverts": 0,
+   "tempsPasseSecondes": 240,
+   "premiereReussite": "2026-10-12T10:24:00",
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:22:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand aucun bouton n’est appuyé, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand aucun bouton n’est appuyé, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "led_etat",
+        "broche": "D9",
+        "etat": 1
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:24:00",
+     "type": "verification",
+     "reussi": true,
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "5": {
+   "statut": "en_cours",
+   "tentatives": 7,
+   "indicesOuverts": 3,
+   "tempsPasseSecondes": 1560,
+   "premiereReussite": null,
+   "programme": null,
+   "historique": [
+    {
+     "date": "2026-10-12T10:26:00",
+     "type": "indice",
+     "niveau": 1
+    },
+    {
+     "date": "2026-10-12T10:28:00",
+     "type": "indice",
+     "niveau": 2
+    },
+    {
+     "date": "2026-10-12T10:30:00",
+     "type": "indice",
+     "niveau": 3
+    },
+    {
+     "date": "2026-10-12T10:33:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:36:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte.",
+     "ecarts": [
+      "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:39:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc.",
+     "ecarts": [
+      "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:42:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:45:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte.",
+     "ecarts": [
+      "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle est éteinte."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 0
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:48:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc.",
+     "ecarts": [
+      "Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. Ton programme agit sur la broche D10 : vérifie la broche choisie dans le bloc."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_sinon",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 1
+         }
+        ],
+        "sinon": [
+         {
+          "bloc": "led_etat",
+          "broche": "D10",
+          "etat": 0
+         }
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "date": "2026-10-12T10:51:00",
+     "type": "verification",
+     "reussi": false,
+     "message": "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée.",
+     "ecarts": [
+      "Quand le bouton D3 est relâché, la LED D9 devrait être éteinte. Dans ton programme, elle reste allumée."
+     ],
+     "programme": {
+      "demarrage": [],
+      "boucle": [
+       {
+        "bloc": "si_alors",
+        "condition": {
+         "bloc": "comparaison",
+         "op": "=",
+         "a": {
+          "bloc": "bouton_etat",
+          "broche": "D3"
+         },
+         "b": {
+          "bloc": "valeur_haut_bas",
+          "valeur": 1
+         }
+        },
+        "alors": [
+         {
+          "bloc": "led_etat",
+          "broche": "D9",
+          "etat": 1
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "exercice13": {
+  "versionReussie": null
+ },
+ "carnet": {
+  "idees": [
+   "Une trémie avec une trappe qui s’ouvre",
+   "Un bouton pour choisir la quantité"
+  ],
+  "definition": "Un objet fabriqué par l’homme pour répondre à un besoin.",
+  "classement": {},
+  "algos": {},
+  "couleurs": {},
+  "verifications": {}
+ }
+}
