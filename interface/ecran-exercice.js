@@ -1,4 +1,4 @@
-// A4 · Écran d'exercice (repris de l'atelier) : consigne, composants, indices, éditeur de blocs, code Arduino
+// A4 · Écran d'exercice (repris de l'atelier) : consigne en bandeau, composants, indices, éditeur de blocs, code Arduino
 // (niveau 3), simulateur, vérification et son résultat (A5).
 (function (global) {
   'use strict';
@@ -193,6 +193,11 @@
       $('.bulle-mot', bulle).textContent = entree.mot;
       $('.bulle-definition', bulle).textContent = entree.definition;
       bulle.hidden = false;
+      // Sous le mot cliqué, sans sortir du bandeau de la consigne.
+      const cadre = $('.consigne', ecran).getBoundingClientRect();
+      const r = mot.getBoundingClientRect();
+      bulle.style.left = Math.max(8, Math.min(r.left - cadre.left, cadre.width - bulle.offsetWidth - 8)) + 'px';
+      bulle.style.top = r.bottom - cadre.top + 6 + 'px';
       $('.bulle-fermer', bulle).focus();
     });
     $('.bulle-fermer', ecran).addEventListener('click', fermerBulle);
@@ -210,7 +215,7 @@
     // ----- Colonnes repliables : plus de place pour le programme (choix gardé sur ce poste) -----
 
     const CLE_COLONNES = 'labo-blocs-colonnes';
-    const replie = { gauche: false, droite: false };
+    const replie = { gauche: false, droite: false, consigne: false };
     try {
       Object.assign(replie, JSON.parse(localStorage.getItem(CLE_COLONNES)) || {});
     } catch {
@@ -219,7 +224,7 @@
     function majColonnes() {
       for (const cote of ['gauche', 'droite']) {
         ecran.classList.toggle('replie-' + cote, !!replie[cote]);
-        const nom = cote === 'gauche' ? 'la consigne' : 'le simulateur';
+        const nom = cote === 'gauche' ? 'les composants et l’aide' : 'le simulateur';
         for (const b of ecran.querySelectorAll(`.btn-plier[data-colonne="${cote}"]`)) {
           b.setAttribute('aria-expanded', String(!replie[cote]));
           $('.texte-plier', b).textContent = (replie[cote] ? 'Afficher ' : 'Replier ') + nom;
@@ -229,6 +234,12 @@
           if (icone) icone.outerHTML = A.icone(vers, { epaisseur: 2.8 });
         }
       }
+      // Texte de la consigne masqué : il reste le titre, « À savoir » et « Lexique ».
+      $('.consigne', ecran).classList.toggle('reduite', !!replie.consigne);
+      const bouton = $('.btn-reduire-consigne', ecran);
+      bouton.setAttribute('aria-expanded', String(!replie.consigne));
+      $('.texte-reduire', bouton).textContent = replie.consigne ? 'Afficher le texte' : 'Masquer le texte';
+      if (replie.consigne) fermerBulle();
     }
     function basculerColonne(cote) {
       replie[cote] = !replie[cote];
@@ -240,6 +251,7 @@
       majColonnes();
     }
     for (const b of ecran.querySelectorAll('.btn-plier, .bande-repliee')) b.addEventListener('click', () => basculerColonne(b.dataset.colonne));
+    $('.btn-reduire-consigne', ecran).addEventListener('click', () => basculerColonne('consigne'));
     majColonnes();
 
     // ----- Niveaux : 3 = code Arduino en lecture seule, relié aux blocs -----

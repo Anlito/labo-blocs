@@ -30,7 +30,7 @@ dossiers du réseau, l'écran du collège, et l'avis du professeur.
 
 | # | Action | Attendu | ✔/✘ |
 |---|---|---|---|
-| 3.1 | Lire la consigne, ouvrir « À savoir », cliquer sur un mot souligné, ouvrir « Lexique » | Fiche, définition et lexique comme dans l'atelier | |
+| 3.1 | Lire la consigne (bandeau en haut), ouvrir « À savoir », cliquer sur un mot souligné, ouvrir « Lexique » | Fiche, définition (sous le mot) et lexique comme dans l'atelier ; « Besoin d'aide ? » et les composants restent visibles à gauche, même au 8 et au 13A | |
 | 3.2 | Construire le programme, « Lancer », cliquer sur les boutons du simulateur | Les LED, le servo et le bloc en cours (contour jaune) suivent | |
 | 3.3 | « Pas » plusieurs fois | Un bloc à la fois, surligné | |
 | 3.4 | « Vérifier mon programme » avec un programme incomplet | Une phrase en **ambre**, qui décrit ce que fait le programme, sans la réponse ; « Voir le test » rejoue le test | |
@@ -38,7 +38,7 @@ dossiers du réseau, l'écran du collège, et l'avis du professeur.
 | 3.6 | « Besoin d'aide ? » : ouvrir les 3 indices | Ils s'ouvrent un par un, le compteur passe à « 3 sur 3 utilisés », la silhouette a des cases « ? » | |
 | 3.7 | Niveau « 3 · Code » puis cliquer sur un bloc | Le code Arduino s'affiche en bas, les lignes du bloc sont surlignées | |
 | 3.8 | Exercice 13A (7 composants + distributeur) sur l'écran du collège | Tout est visible et lisible sans faire défiler le simulateur | |
-| 3.9 | Cliquer sur les languettes bleues à mi-hauteur, entre les colonnes (‹ et ›), puis sur les bandes verticales | La zone de programmation s'agrandit, les colonnes se rouvrent ; le choix est gardé après rechargement | |
+| 3.9 | Cliquer sur les languettes bleues à mi-hauteur, entre les colonnes (‹ et ›), puis sur les bandes verticales ; « Masquer le texte » puis « Afficher le texte » dans la consigne | La zone de programmation s'agrandit, les colonnes se rouvrent ; le choix est gardé après rechargement | |
 | 3.10 | Lire la consigne des exercices 5 et 7 | Les mots **si**, **alors**, **sinon** sont surlignés comme les blocs ; chaque « si » commence une ligne, « alors » et « sinon » sont en retrait dessous | |
 
 ## 4. Enregistrement

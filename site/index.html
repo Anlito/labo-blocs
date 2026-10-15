@@ -124,31 +124,35 @@
 
 <!-- A4 · Exercice -->
 <div class="ecran ecran-exercice" hidden>
-  <aside class="colonne-consigne">
-    <button type="button" class="bande-repliee" data-colonne="gauche" aria-expanded="false" title="Afficher la consigne">
-      <span data-icone="chevronDroite" data-epaisseur="2.8"></span><span class="bande-texte">Consigne</span>
-    </button>
-    <section class="carte consigne" aria-label="Consigne">
+  <section class="carte consigne" aria-label="Consigne">
+    <div class="consigne-tete">
       <span class="consigne-numero"></span>
       <h1 class="titre-exercice"></h1>
-      <div class="consigne-texte"></div>
-      <div class="rangee">
+      <div class="consigne-actions">
         <button type="button" class="btn-aide" data-aide="fiche" aria-expanded="false"><span data-icone="info"></span>À savoir</button>
         <button type="button" class="btn-aide btn-lexique"><span data-icone="livre"></span>Lexique</button>
+        <button type="button" class="btn-reduire-consigne" aria-expanded="true"><span class="texte-reduire">Masquer le texte</span></button>
       </div>
-      <div class="bulle" role="dialog" aria-label="Définition" hidden>
-        <div class="bulle-entete"><strong class="bulle-mot"></strong><button type="button" class="bulle-fermer" aria-label="Fermer">×</button></div>
-        <p class="bulle-definition"></p>
-      </div>
-    </section>
-    <section class="carte composants-liste" aria-label="Composants">
-      <h2>Composants</h2>
-      <ul class="liste-composants"></ul>
-    </section>
+    </div>
+    <div class="consigne-texte"></div>
+    <div class="bulle" role="dialog" aria-label="Définition" hidden>
+      <div class="bulle-entete"><strong class="bulle-mot"></strong><button type="button" class="bulle-fermer" aria-label="Fermer">×</button></div>
+      <p class="bulle-definition"></p>
+    </div>
+  </section>
+
+  <aside class="colonne-aide">
+    <button type="button" class="bande-repliee" data-colonne="gauche" aria-expanded="false" title="Afficher les composants et l’aide">
+      <span data-icone="chevronDroite" data-epaisseur="2.8"></span><span class="bande-texte">Composants et aide</span>
+    </button>
     <section class="carte carte-aide" aria-label="Indices">
       <div class="aide-tete"><h2>Besoin d’aide ?</h2><span class="compteur compteur-indices"></span></div>
       <p class="aide-texte">Les indices s’ouvrent un par un. Ton professeur voit combien tu en as utilisé.</p>
       <button type="button" class="btn-secondaire btn-indice" data-aide="indice" aria-expanded="false"><span data-icone="ampoule"></span><span class="texte-indice">Ouvrir l’indice 1</span></button>
+    </section>
+    <section class="carte composants-liste" aria-label="Composants">
+      <h2>Composants</h2>
+      <ul class="liste-composants"></ul>
     </section>
   </aside>
 
@@ -193,8 +197,8 @@
       <pre class="code-lignes"></pre>
     </section>
     <!-- Languettes sur les bords : replier ou rouvrir la colonne voisine -->
-    <button type="button" class="btn-plier" data-colonne="gauche" aria-expanded="true" title="Replier la consigne pour agrandir le programme">
-      <span data-icone="chevronGauche" data-epaisseur="2.8"></span><span class="texte-plier">Replier la consigne</span>
+    <button type="button" class="btn-plier" data-colonne="gauche" aria-expanded="true" title="Replier les composants et l’aide pour agrandir le programme">
+      <span data-icone="chevronGauche" data-epaisseur="2.8"></span><span class="texte-plier">Replier les composants et l’aide</span>
     </button>
     <button type="button" class="btn-plier" data-colonne="droite" aria-expanded="true" title="Replier le simulateur pour agrandir le programme">
       <span class="texte-plier">Replier le simulateur</span><span data-icone="chevronDroite" data-epaisseur="2.8"></span>
