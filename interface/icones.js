@@ -9,6 +9,8 @@
     livre: 'M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5',
     chevronHaut: 'M6 15l6-6 6 6',
     chevronBas: 'M6 9l6 6 6-6',
+    chevronGauche: 'M15 6l-6 6 6 6',
+    chevronDroite: 'M9 6l6 6-6 6',
     horloge: 'M12 5a8 8 0 1 0 0.01 0zM12 9v4l2.5 2M9.5 2.5h5',
     pause: 'M8 5v14M16 5v14',
     recommencer: 'M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5',

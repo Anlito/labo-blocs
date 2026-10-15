@@ -180,6 +180,41 @@
       }
     });
 
+    // ----- Colonnes repliables : plus de place pour le programme (choix gardé sur ce poste) -----
+
+    const CLE_COLONNES = 'labo-blocs-colonnes';
+    const replie = { gauche: false, droite: false };
+    try {
+      Object.assign(replie, JSON.parse(localStorage.getItem(CLE_COLONNES)) || {});
+    } catch {
+      /* stockage indisponible : tout est déplié */
+    }
+    function majColonnes() {
+      for (const cote of ['gauche', 'droite']) {
+        ecran.classList.toggle('replie-' + cote, !!replie[cote]);
+        const nom = cote === 'gauche' ? 'la consigne' : 'le simulateur';
+        for (const b of ecran.querySelectorAll(`.btn-plier[data-colonne="${cote}"]`)) {
+          b.setAttribute('aria-expanded', String(!replie[cote]));
+          $('.texte-plier', b).textContent = (replie[cote] ? 'Afficher ' : 'Replier ') + nom;
+          b.title = replie[cote] ? `Afficher ${nom}` : `Replier ${nom} pour agrandir le programme`;
+          const icone = b.querySelector('.icone');
+          const vers = (cote === 'gauche') === !replie[cote] ? 'chevronGauche' : 'chevronDroite';
+          if (icone) icone.outerHTML = A.icone(vers, { epaisseur: 2.8 });
+        }
+      }
+    }
+    function basculerColonne(cote) {
+      replie[cote] = !replie[cote];
+      try {
+        localStorage.setItem(CLE_COLONNES, JSON.stringify(replie));
+      } catch {
+        /* rien */
+      }
+      majColonnes();
+    }
+    for (const b of ecran.querySelectorAll('.btn-plier, .bande-repliee')) b.addEventListener('click', () => basculerColonne(b.dataset.colonne));
+    majColonnes();
+
     // ----- Niveaux : 3 = code Arduino en lecture seule, relié aux blocs -----
 
     function choisirNiveau(n) {

@@ -1,6 +1,6 @@
 # Recette automatique — jalon 1
 
-15/10/2026 14:53:15 · chromium · page ouverte en file:// · 12/12 critères
+15/10/2026 15:01:14 · chromium · page ouverte en file:// · 13/13 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -14,5 +14,6 @@
 | Simulateur : un appui sur le bouton allume la LED, le bloc en cours est surligné | ✔ |  |
 | Niveau 3 : code Arduino en lecture seule, un clic sur un bloc surligne ses lignes | ✔ |  |
 | Indices : trois niveaux ouverts un par un, compteur visible, la solution jamais montrée | ✔ |  |
+| Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé | ✔ | 534 → 1230 px |
 | Reprendre le travail après fermeture de l’onglet (copie de secours) | ✔ |  |
 | Aucune erreur dans la console du navigateur | ✔ |  |

@@ -198,7 +198,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 /* ---------- A4 · Exercice : consigne | programme | tester ---------- */
 
 .ecran-exercice {
-  display: grid; grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr) minmax(22rem, 27rem);
+  --col-gauche: minmax(16rem, 19rem); --col-droite: minmax(22rem, 27rem);
+  display: grid; grid-template-columns: var(--col-gauche) minmax(0, 1fr) var(--col-droite);
   gap: 0.75rem; padding: 0.75rem; min-height: 0; overflow: hidden;
 }
 .colonne-consigne, .colonne-test { display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; overflow-y: auto; }
@@ -295,16 +296,39 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
 /* Petits écrans (1366 et moins) : colonnes plus étroites */
 @media (max-width: 1400px) {
-  .ecran-exercice { grid-template-columns: minmax(14.5rem, 16.5rem) minmax(0, 1fr) minmax(20rem, 24rem); }
+  .ecran-exercice { --col-gauche: minmax(14.5rem, 16.5rem); --col-droite: minmax(20rem, 24rem); }
+  .texte-plier { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .btn-niveau { padding: 0 0.5rem; }
 }
 
 /* Beaucoup de composants : colonne de test plus large, consigne plus étroite (comme l'atelier : simulateur ≈ 40 %) */
-.ecran-exercice.beaucoup { grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr) minmax(28rem, 33rem); }
+.ecran-exercice.beaucoup { --col-gauche: minmax(14rem, 16rem); --col-droite: minmax(28rem, 33rem); }
 .beaucoup .simu-carte { max-height: 7rem; min-height: 5rem; }
 .beaucoup .composant-dessin { width: 2rem; height: 2rem; }
 .beaucoup .bouton-poussoir { width: 2.5rem; height: 2.5rem; min-width: 2.5rem; min-height: 2.5rem; }
 .beaucoup .composant-aide { display: none; }
+
+/* Colonnes repliées : une bande verticale à cliquer pour les rouvrir */
+.ecran-exercice.replie-gauche { --col-gauche: 2.75rem; }
+.ecran-exercice.replie-droite { --col-droite: 2.75rem; }
+.bande-repliee { display: none; }
+.replie-gauche .colonne-consigne > :not(.bande-repliee),
+.replie-droite .colonne-test > :not(.bande-repliee) { display: none; }
+.replie-gauche .colonne-consigne > .bande-repliee,
+.replie-droite .colonne-test > .bande-repliee {
+  display: flex; flex-direction: column; align-items: center; gap: 0.75rem; flex: 1; width: 100%; padding: 0.75rem 0;
+  border: 1px solid var(--bord); border-radius: 1rem; background: #FFFFFF; color: var(--action); cursor: pointer;
+  font-family: var(--titres); font-weight: 500; font-size: 0.9375rem;
+}
+.bande-repliee:hover { background: var(--action-pale); }
+.bande-texte { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.btn-plier {
+  display: inline-flex; align-items: center; gap: 0.25rem; height: 2.5rem; padding: 0 0.625rem; border: none; border-radius: 0.625rem;
+  background: transparent; color: var(--action); font-weight: 700; font-size: 0.8125rem; cursor: pointer;
+}
+.btn-plier:hover { background: var(--action-pale); }
+.btn-plier .icone { width: 1rem; height: 1rem; }
+.programme-tete h2 { margin-right: auto; }
 
 /* Vidéoprojecteur (?projecteur=1) : tout est plus grand (réglage de l'échelle dans app.js) */
 .projecteur .consigne-texte p { font-size: 1.25rem; }

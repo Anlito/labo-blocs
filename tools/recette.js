@@ -180,6 +180,25 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(!(await p.$('.btn-indice-suivant')), 'un 4e indice est proposé');
   });
 
+  await critere('Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé', async () => {
+    const p = await page(PAGE + '?enseignant=1&exercice=dist-13a');
+    const largeur = () => p.$eval('.editeur', (e) => e.getBoundingClientRect().width);
+    const avant = await largeur();
+    await p.click('.btn-plier[data-colonne="gauche"]');
+    await p.click('.btn-plier[data-colonne="droite"]');
+    await pause(300);
+    const apres = await largeur();
+    verifier(apres > avant * 1.8, `${Math.round(avant)} → ${Math.round(apres)} px`);
+    await p.reload();
+    await pause(600);
+    verifier(Math.abs((await largeur()) - apres) < 2, 'choix non gardé');
+    await p.click('.bande-repliee[data-colonne="gauche"]');
+    await p.click('.bande-repliee[data-colonne="droite"]');
+    await pause(300);
+    verifier(await visible(p, '.btn-verifier'), 'colonne de test non rouverte');
+    return `${Math.round(avant)} → ${Math.round(apres)} px`;
+  });
+
   await critere('Reprendre le travail après fermeture de l’onglet (copie de secours)', async () => {
     const p = await page(PAGE, { sansDossiers: true });
     await p.type('.champ-prenom', 'Inès');
