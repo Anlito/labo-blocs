@@ -457,10 +457,29 @@
     action('#btn-mbot-bouton', () => direct('X 1 4', 'Bouton de la carte (1 = appuyé)'));
     action('#btn-mbot-lumiere', () => direct('X 1 5', 'Capteur de lumière'));
     action('#btn-mbot-rouge', () => direct('X 1 6 0 60 0 0', 'LED RGB rouges'));
-    action('#btn-mbot-moteurs', async () => {
-      await direct('X 1 1 40 40', 'Moteurs à 40 % (avancer)');
-      await attendre(700);
+    const rouler = async (gauche, droite, quoi) => {
+      await direct(`X 1 1 ${gauche} ${droite}`, quoi);
+      await attendre(1000);
       await direct('X 1 1 0 0', 'Moteurs arrêtés');
+    };
+    action('#btn-mbot-moteurs', async () => {
+      await rouler(50, 50, 'Avancer 1 s à 50 % (comme le programme)');
+      demander('À 50 %, les deux roues ont-elles tourné vers l’avant ?', true);
+    });
+    action('#btn-mbot-gauche', () => rouler(50, 0, 'Moteur gauche seul, 50 %'));
+    action('#btn-mbot-droite', () => rouler(0, 50, 'Moteur droit seul, 50 %'));
+    action('#btn-mbot-plein', () => rouler(100, 100, 'Avancer 1 s à 100 %'));
+    action('#btn-mbot-ports', async () => {
+      // Pour retrouver le port de l'ultrason : 3 mesures sur chaque port (400 = pas d'écho).
+      for (let port = 1; port <= 4; port++) {
+        const valeurs = [];
+        for (let i = 0; i < 3; i++) {
+          const r = await direct(`X 1 2 ${port}`, `Ultrasons port ${port}`);
+          valeurs.push(r ? r.replace(/^V /, '') : '?');
+          await attendre(150);
+        }
+        noter(`Ultrasons sur le port ${port} : ${valeurs.join(' ; ')} cm (400 = pas d’écho)`);
+      }
     });
     action('#btn-mbot-bip', () => direct('T 8 880 200', 'Bip du buzzer (D8)'));
     action('#btn-mb-coeur', async () => {

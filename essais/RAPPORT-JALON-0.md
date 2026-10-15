@@ -179,7 +179,9 @@ Carte mCore (USB 0x1a86:0x7523, puce CH340) :
 | Programme « attendre 3 s, avancer 1 s, s'arrêter » | ✔ tourne : **moteurs commandés par un programme venu de blocs** |
 | Sans signe de vie, tout s'éteint au bout de 3 s | ✔ |
 | Vérifier juste après l'installation | ⚠ « réponse inattendue » (octets parasites au redémarrage) — la page réessaie maintenant jusqu'à 3 fois |
-| Mode direct (ultrasons, suiveur de ligne, sens des moteurs), coupure, « Vider la carte » | compte rendu coupé : à compléter |
+| Mode direct « Avancer 0,7 s » (40 %) | ⚠ seul le moteur gauche tourne — même commande pour les deux moteurs (vérifié dans le mCore émulé : D5 et D6 reçoivent la même PWM) ; le programme à 50 % fait tourner les deux : sans doute un moteur qui ne démarre pas à 40 %. Boutons ajoutés : 50 %, 100 %, chaque moteur seul |
+| Ultrasons (port 3) | ✘ toujours la même valeur (laquelle ? 400 = pas d'écho). Bouton ajouté : mesure sur les 4 ports |
+| Suiveur de ligne, coupure, « Vider la carte » | à compléter |
 
 ## Réponses de Thomas (14/10/2026)
 
