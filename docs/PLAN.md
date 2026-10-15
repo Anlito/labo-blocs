@@ -218,3 +218,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    l'intégration au distributeur, jalon 1 bis) ; le simulateur exécute le **même code octet** que les cartes (une seule
    source de vérité) ; les indices et « À savoir » s'ouvrent par-dessus l'éditeur (comme l'atelier) plutôt que dans la
    colonne de gauche de la maquette.
+11. **Retours de Thomas sur le jalon 1 (15/10/2026), intégrés et validés** : colonnes repliables par des languettes à
+   mi-hauteur entre les colonnes ; mots si / alors / sinon (et tant que, répéter…) mis en évidence dans la consigne, une
+   ligne par « si », « alors » et « sinon » en retrait ; consigne en **bandeau au-dessus des composants et du programme**
+   (la colonne Tester garde toute la hauteur pour le simulateur du 13A), « Besoin d'aide ? » au-dessus des composants,
+   « Masquer le texte » ; bouton **Plein écran** dans le bandeau.
