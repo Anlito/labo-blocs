@@ -164,7 +164,7 @@ Fichier `labo_blocs_microbit_v2.hex` copié sans erreur : **MicroPython + interp
 | Mode direct : cœur, effacer l'écran | ✔ affiché tout de suite |
 | Bouton A, température (25 °C), accéléromètre (900 mg sur x) | ✔ |
 | P0 à HAUT / BAS | commandes acceptées, effet non vérifié |
-| Surveiller un bouton entre P1 et GND | ✘ aucun événement — un bouton était-il branché ? |
+| Surveiller un bouton entre P1 et GND | ✔ le 15/10 (bouton branché) : appuis et relâchements reçus (`E 1 0`, `E 1 1`) |
 | Envoi d'un programme, coupure, « Vider la carte » | pas encore fait |
 | micro:bit V1 (mémoire) | pas encore essayé |
 
