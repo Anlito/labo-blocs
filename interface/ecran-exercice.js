@@ -27,8 +27,34 @@
   // Les broches (D3, P0, A1) en pastille, comme dans la maquette.
   const broches = (html) => html.replace(/(?<![\p{L}\d>])([DPA]\d{1,2})(?![\p{L}\d])/gu, '<span class="broche">$1</span>');
 
+  // Mots qui construisent le programme, mis en évidence (comme les blocs « Décisions » et « Boucles »).
+  const STRUCTURE = /(?<![\p{L}\d])(sinon|si|alors|tant que|répéter|jusqu’à|jusqu'à|quand)(?![\p{L}\d])/giu;
+  // Dans du HTML : seulement le texte, jamais l'intérieur des balises.
+  const marquerStructure = (html) =>
+    html
+      .split(/(<[^>]+>)/)
+      .map((morceau) => (morceau.startsWith('<') ? morceau : morceau.replace(STRUCTURE, '<strong class="mot-structure">$1</strong>')))
+      .join('');
+
+  // Une phrase « si … alors … sinon … » est coupée comme les blocs : chaque « si » commence une ligne,
+  // « alors » et « sinon » vont à la ligne, en retrait.
+  function decouper(phrase) {
+    const coupe = /(?<![\p{L}\d])(sinon|si|alors)(?![\p{L}\d])/giu;
+    const morceaux = [];
+    let debut = 0;
+    let niveau = 0;
+    for (const m of phrase.matchAll(coupe)) {
+      if (m.index > debut && phrase.slice(debut, m.index).trim()) morceaux.push({ texte: phrase.slice(debut, m.index).trim(), niveau });
+      if (m.index > debut || !morceaux.length) debut = m.index;
+      niveau = m[1].toLowerCase() === 'si' ? 0 : 1;
+    }
+    morceaux.push({ texte: phrase.slice(debut).trim(), niveau });
+    return morceaux.filter((x) => x.texte);
+  }
+
   function consigneHtml(texte, lexique) {
     const vus = new Set();
+    const rendre = (t) => marquerStructure(broches(souligner(echapper(t), lexique, vus)));
     let html = '';
     let etiquettes = [];
     const vider = () => {
@@ -36,11 +62,12 @@
       etiquettes = [];
     };
     for (const l of texte.split('\n')) {
-      const contenu = broches(souligner(echapper(l), lexique, vus));
-      if (/^\s*-\s/.test(l)) etiquettes.push(`<span class="consigne-etiquette">${contenu.replace(/^\s*-\s/, '')}</span>`);
+      if (/^\s*-\s/.test(l)) etiquettes.push(`<span class="consigne-etiquette">${rendre(l.replace(/^\s*-\s/, ''))}</span>`);
       else {
         vider();
-        html += `<p>${contenu}</p>`;
+        const morceaux = decouper(l);
+        if (morceaux.length > 1) html += `<p class="consigne-structure">${morceaux.map((m) => `<span class="consigne-ligne niveau-${m.niveau}">${rendre(m.texte)}</span>`).join('')}</p>`;
+        else html += `<p>${rendre(l)}</p>`;
       }
     }
     vider();
