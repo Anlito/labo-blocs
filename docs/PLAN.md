@@ -211,3 +211,5 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
 6. Brief design : version du 14/10 (style des blocs de l'atelier).
 7. **mBot** : ultrasons toujours sur le **port 3**, suiveur de ligne sur le **port 2** (imposé aux élèves) : blocs sans choix de port.
 8. **Boutons** (distributeur) : poussoirs à 2 fils vers GND, résistance interne de la carte.
+9. **Jalon 0 terminé le 15/10/2026** (`essais/RAPPORT-JALON-0.md`) : Uno, mBot, micro:bit V2 validés ; **micro:bit V1
+   abandonnée** (pas en salle).

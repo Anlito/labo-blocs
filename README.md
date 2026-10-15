@@ -22,8 +22,8 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 
 ## État
 
-Plan validé le 14/10/2026. Jalon 0 (essais) : Uno validée sur une vraie carte (sauf le servo), micro:bit V1/V2 prêt à
-essayer, mBot prêt à essayer — voir [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
+Plan validé le 14/10/2026. **Jalon 0 terminé le 15/10/2026** : Uno, mBot et micro:bit V2 reçoivent un programme venu de
+blocs, le gardent après une coupure et se vident — voir [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
 
 ```bash
 npm test                 # tests (gcc ; simavr en option : apt install gcc libsimavr-dev libelf-dev)

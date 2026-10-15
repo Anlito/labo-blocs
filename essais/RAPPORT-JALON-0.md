@@ -1,7 +1,27 @@
 # Jalon 0 — Essais : rapport
 
-14/10/2026 · État : **Uno validée sur une vraie carte (sauf le servo, en cours)** · **mBot validé** (envoi, coupure, vider, moteurs, LED RGB, buzzer, bouton, ultrasons) ·
-micro:bit V1/V2 : prototype prêt à essayer · essai (e) : avec la page d'essai.
+14-15/10/2026 · **Jalon 0 terminé : Uno, mBot et micro:bit V2 validés sur de vraies cartes.**
+
+## Bilan et décisions
+
+| Carte | Envoi d'un programme venu de blocs | Survit à la coupure | Vider la carte | Mode direct |
+|---|---|---|---|---|
+| Arduino Uno (clone CH340) | ✔ | ✔ | ✔ | ✔ LED, bouton (anti-rebond), servo, arrêt après 3 s |
+| mBot (mCore) | ✔ | ✔ | ✔ | ✔ moteurs, LED RGB, buzzer, bouton, ultrasons, suiveur de ligne |
+| micro:bit V2 | ✔ | ✔ | ✔ | ✔ écran, boutons A/B, bouton sur P1, accéléromètre, température |
+| micro:bit V1 | — | — | — | **abandonnée** (pas de V1 en salle, décision de Thomas du 15/10) |
+
+Décisions pour la suite :
+1. **Option C confirmée** : un firmware fixe par carte + le programme de l'élève en **code octet** (1 Ko d'EEPROM suffit :
+   130 octets pour le distributeur 13B, 524 pour un Simon complet). Pas de compilation, pas de serveur, hors ligne.
+2. **Un seul code octet et un seul protocole** (direct v2) pour toutes les cartes. Interpréteur en C (Uno, mCore) et en
+   MicroPython (micro:bit V2), vérifiés identiques au simulateur à la milliseconde par les tests.
+3. **micro:bit** : MicroPython officiel + interpréteur Python, installé en copiant **un fichier par version** sur le
+   lecteur MICROBIT (le fichier universel V1+V2 est refusé par les puces USB anciennes). V2 seulement.
+4. **mBot** : ultrasons sur le port 3, suiveur de ligne sur le port 2, imposés. Un capteur en panne renvoie toujours
+   400 : l'outil devra le dire en clair (« Le capteur ne voit rien : vérifie qu'il est branché sur le port 3 »).
+5. **Liaison série** (module carte du jalon 3) : à l'ouverture du port, la carte redémarre et envoie des octets
+   parasites → retirer les caractères invisibles, réessayer PING, attendre la réponse avant tout ordre.
 
 Les essais sont jetables (dossier `essais/`), mais le format du code octet, l'interpréteur C et le protocole v2 sont
 faits pour être repris au jalon 1 s'ils tiennent sur les vraies cartes.
@@ -14,7 +34,7 @@ faits pour être repris au jalon 1 s'ils tiennent sur les vraies cartes.
 | b. mBot mCore | même firmware compilé avec `CARTE_MCORE` : moteurs, ultrasons, suiveur de ligne, bouton et capteur de lumière de la carte, 2 LED RGB, buzzer | compilation seulement (simavr n'émule pas le mBot) |
 | c. micro:bit V1 / V2 | `microbit/main.py` (MicroPython), `firmware/labo_blocs_microbit_v1.hex` et `_v2.hex` | ✔ tests automatiques (python3 et MicroPython) |
 | d. Protocole direct v2 | dans le même firmware | ✔ dans la Uno émulée |
-| e. Web Serial sur les postes | `page-essai/index.html` (champ « Poste » dans le compte rendu) | à faire sur place |
+| e. Web Serial | `page-essai/index.html` | ✔ Chrome 154-155 sous Windows (poste de Thomas) ; autres postes du collège : à refaire en classe |
 
 Commandes : `npm test` (tests), `npm run essais:mesures` (tailles), `npm run essais:firmware` (recompiler le firmware :
 arduino-cli, ou avr-gcc + `ARDUINO_CORE` et `SERVO`, voir l'en-tête du script).
@@ -187,6 +207,12 @@ Carte mCore (USB 0x1a86:0x7523, puce CH340) :
 | Moteurs (gauche seul, droit seul, 50 %, 100 %) | ✔ |
 | Suiveur de ligne (port 2) | 0 (« noir/noir ») — normal si le robot était roues en l'air, à refaire posé sur une feuille blanche |
 | « Vider la carte » | ✔ la carte est bien vidée (« programme gardé : aucun » ensuite) ; la page affichait « échec (OK) » à cause d'octets parasites invisibles collés devant « OK » après un redémarrage — la page les retire maintenant de chaque réponse (à faire aussi dans le module carte du jalon 3) |
+
+## Derniers essais (15/10/2026)
+
+- **Uno, servo** : ✔ fonctionne (essai de Thomas).
+- **micro:bit V2** : ✔ envoi d'un programme, coupure, « Vider la carte ».
+- **micro:bit V1** : pas de V1 en salle → abandonnée.
 
 ## Réponses de Thomas (14/10/2026)
 
