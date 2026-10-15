@@ -89,7 +89,9 @@
               tampon += decodeur.decode(value, { stream: true });
               let i;
               while ((i = tampon.indexOf('\n')) >= 0) {
-                const ligne = tampon.slice(0, i).replace(/\r$/, '');
+                // Sans les caractères invisibles : au redémarrage, la carte envoie quelques octets parasites qui se
+                // collaient devant la réponse suivante (« Vider la carte : échec (OK) », essai mBot du 15/10).
+                const ligne = tampon.slice(0, i).replace(/[^\x20-\x7e]/g, '');
                 tampon = tampon.slice(i + 1);
                 if (/^E /.test(ligne)) l.surEvenement(ligne);
                 else if (attentes.length) attentes.shift()(ligne);

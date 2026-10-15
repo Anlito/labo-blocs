@@ -184,7 +184,7 @@ Carte mCore (USB 0x1a86:0x7523, puce CH340) :
 | Essai de coupure (15/10, 16 h) | ✔ **le programme repart tout seul** |
 | Ultrasons sur les 4 ports | ✘ toujours 400 (aucun écho) — firmware : diagnostic ajouté (mesure sur chaque fil S1/S2 de chaque port, commande `X 1 7 <broche>`) |
 | Suiveur de ligne (port 2) | 0 (« noir/noir ») — normal si le robot était roues en l'air, à refaire posé sur une feuille blanche |
-| « Vider la carte » | ⚠ réponse brouillée — la page redemande une fois |
+| « Vider la carte » | ✔ la carte est bien vidée (« programme gardé : aucun » ensuite) ; la page affichait « échec (OK) » à cause d'octets parasites invisibles collés devant « OK » après un redémarrage — la page les retire maintenant de chaque réponse (à faire aussi dans le module carte du jalon 3) |
 
 ## Réponses de Thomas (14/10/2026)
 
