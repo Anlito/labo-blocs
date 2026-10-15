@@ -219,12 +219,21 @@
   // ---------- 2. Vérifier la carte ----------
   async function ping() {
     if (!(await connecter())) return;
-    const debut = performance.now();
-    const r = await liaison.commande('PING', 1500);
-    const ms = Math.round(performance.now() - debut);
+    // Juste après l'ouverture du port (ou une installation), la carte redémarre et peut envoyer quelques octets
+    // parasites : jusqu'à 3 essais, on cherche « PONG v2 » dans la ligne reçue.
+    let r = null;
+    let pong = null;
+    let ms = 0;
+    for (let essai = 0; essai < 3 && !pong; essai++) {
+      const debut = performance.now();
+      r = await liaison.commande('PING', 1500);
+      ms = Math.round(performance.now() - debut);
+      pong = r && /PONG v2 .*/.exec(r);
+      if (!pong) await attendre(300);
+    }
     if (!r) return noter('La carte ne répond pas. Installe le firmware (étape 1), ou débranche et rebranche le câble USB.', 'ecart');
-    if (!/^PONG v2 /.test(r)) return noter(`Réponse inattendue : « ${r} » — la carte n’a pas le firmware Labo Blocs (étape 1).`, 'ecart');
-    const [, , version, nom, octets, capacite] = r.split(' ');
+    if (!pong) return noter(`Réponse inattendue : « ${r.replace(/[^\x20-\x7e]/g, '?')} » — la carte n’a pas le firmware Labo Blocs (étape 1).`, 'ecart');
+    const [, , version, nom, octets, capacite] = pong[0].split(' ');
     noter(`Carte prête : firmware ${version}, carte « ${nom} », programme gardé : ${octets === '0' ? 'aucun' : octets + ' octets'} (place : ${capacite} octets). Réponse en ${ms} ms.`, 'ok');
   }
 

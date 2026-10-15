@@ -168,6 +168,19 @@ Fichier `labo_blocs_microbit_v2.hex` copié sans erreur : **MicroPython + interp
 | Envoi d'un programme, coupure, « Vider la carte » | pas encore fait |
 | micro:bit V1 (mémoire) | pas encore essayé |
 
+## Cinquième essai : mBot (Thomas, 15/10/2026, 15 h 47)
+
+Carte mCore (USB 0x1a86:0x7523, puce CH340) :
+
+| Étape | Résultat |
+|---|---|
+| Installation du firmware mcore depuis le navigateur | ✔ 7,6 s, bootloader à 115200 bauds (comme une Uno) |
+| Programme « LED vertes, bouton de la carte = LED rouges + bip » | ✔ tourne : **LED RGB, bouton de la carte et buzzer marchent** |
+| Programme « attendre 3 s, avancer 1 s, s'arrêter » | ✔ tourne : **moteurs commandés par un programme venu de blocs** |
+| Sans signe de vie, tout s'éteint au bout de 3 s | ✔ |
+| Vérifier juste après l'installation | ⚠ « réponse inattendue » (octets parasites au redémarrage) — la page réessaie maintenant jusqu'à 3 fois |
+| Mode direct (ultrasons, suiveur de ligne, sens des moteurs), coupure, « Vider la carte » | compte rendu coupé : à compléter |
+
 ## Réponses de Thomas (14/10/2026)
 
 1. **mBot : ports imposés** — les élèves branchent toujours les **ultrasons sur le port 3** et le **suiveur de ligne sur le
