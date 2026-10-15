@@ -154,9 +154,6 @@
 
   <main class="colonne-programme">
     <div class="programme-tete">
-      <button type="button" class="btn-plier" data-colonne="gauche" aria-expanded="true" title="Replier la consigne pour agrandir le programme">
-        <span data-icone="chevronGauche" data-epaisseur="2.8"></span><span class="texte-plier">Replier la consigne</span>
-      </button>
       <h2>Mon programme</h2>
       <div class="niveaux" role="group" aria-label="Niveau">
         <span class="niveaux-libelle">Niveau</span>
@@ -164,9 +161,6 @@
         <button type="button" class="btn-niveau" data-niveau="2" aria-pressed="false">2 · Boucles</button>
         <button type="button" class="btn-niveau" data-niveau="3" aria-pressed="false">3 · Code</button>
       </div>
-      <button type="button" class="btn-plier" data-colonne="droite" aria-expanded="true" title="Replier le simulateur pour agrandir le programme">
-        <span class="texte-plier">Replier le simulateur</span><span data-icone="chevronDroite" data-epaisseur="2.8"></span>
-      </button>
     </div>
     <section class="editeur" aria-label="Éditeur de blocs">
       <div class="editeur-blockly"></div>
@@ -198,6 +192,13 @@
       <div class="code-tete"><strong>Code Arduino · niveau 3, lecture seule</strong><span>Clique sur un bloc : ses lignes se surlignent</span></div>
       <pre class="code-lignes"></pre>
     </section>
+    <!-- Languettes sur les bords : replier ou rouvrir la colonne voisine -->
+    <button type="button" class="btn-plier" data-colonne="gauche" aria-expanded="true" title="Replier la consigne pour agrandir le programme">
+      <span data-icone="chevronGauche" data-epaisseur="2.8"></span><span class="texte-plier">Replier la consigne</span>
+    </button>
+    <button type="button" class="btn-plier" data-colonne="droite" aria-expanded="true" title="Replier le simulateur pour agrandir le programme">
+      <span class="texte-plier">Replier le simulateur</span><span data-icone="chevronDroite" data-epaisseur="2.8"></span>
+    </button>
   </main>
 
   <aside class="colonne-test">
