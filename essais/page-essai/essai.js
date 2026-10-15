@@ -331,12 +331,13 @@
   async function vider() {
     if (!(await connecter())) return;
     arreterDirect();
-    const r = await liaison.commande('EFFACE', 2000);
+    let r = await liaison.commande('EFFACE', 2000);
+    if (r !== 'OK') r = await liaison.commande('EFFACE', 2000); // la 1re réponse peut être brouillée (redémarrage)
     if (r === 'OK') {
       noter('Carte vidée : le programme est effacé.', 'ok');
       demander('Après « Vider la carte », tout est-il arrêté sur la carte ?');
     }
-    else noter(`Vider la carte : échec (${r || 'pas de réponse'}).`, 'ecart');
+    else noter(`Vider la carte : échec (${r ? r.replace(/[^\x20-\x7e]/g, '?') : 'pas de réponse'}).`, 'ecart');
   }
 
   // ---------- 4. Mode direct ----------
@@ -479,6 +480,16 @@
           await attendre(150);
         }
         noter(`Ultrasons sur le port ${port} : ${valeurs.join(' ; ')} cm (400 = pas d’écho)`);
+      }
+      // Diagnostic : chaque fil de signal de chaque port (S1 et S2), au cas où le capteur ne serait pas sur S2.
+      const FILS = { 1: [11, 12], 2: [9, 10], 3: [16, 17], 4: [14, 15] };
+      for (const [port, broches] of Object.entries(FILS)) {
+        const v = [];
+        for (const b of broches) {
+          const r = await direct(`X 1 7 ${b}`, `Ultrasons sur la broche ${b}`);
+          v.push(r ? r.replace(/^V /, '') : '?');
+        }
+        noter(`Diagnostic port ${port} : fil S1 → ${v[0]}, fil S2 → ${v[1]}`);
       }
     });
     action('#btn-mbot-bip', () => direct('T 8 880 200', 'Bip du buzzer (D8)'));

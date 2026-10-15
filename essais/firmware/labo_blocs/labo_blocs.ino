@@ -86,9 +86,7 @@ static void moteurs(float gauche, float droite) {
 }
 // Ports RJ25 du mCore : broches S1 et S2.
 static const uint8_t PORTS[5][2] = {{0, 0}, {11, 12}, {9, 10}, {A2, A3}, {A0, A1}};
-static float ultrason(int port) {
-  if (port < 1 || port > 4) return 0;
-  int b = PORTS[port][1];
+static float ultrasonBroche(int b) {
   pinMode(b, OUTPUT);
   digitalWrite(b, LOW);
   delayMicroseconds(2);
@@ -99,6 +97,8 @@ static float ultrason(int port) {
   unsigned long d = pulseIn(b, HIGH, 25000UL); // 25 ms : au-delà de 4 m
   return d ? d / 58.0f : 400;
 }
+// Le capteur ultrasons de Makeblock n'a qu'un fil de signal : le 2e du port (S2), comme dans la bibliothèque Makeblock.
+static float ultrason(int port) { return port >= 1 && port <= 4 ? ultrasonBroche(PORTS[port][1]) : 0; }
 static float ligne(int port) {
   if (port < 1 || port > 4) return 0;
   pinMode(PORTS[port][0], INPUT);
@@ -158,6 +158,11 @@ float lb_ext(uint8_t extension, uint8_t commande, uint8_t n, const float *a) {
       case 4: return analogRead(A7) < 100 ? 1 : 0;
       case 5: return analogRead(A6);
       case 6: ledRgb((int)a[0], (int)a[1], (int)a[2], (int)a[3]); return 0;
+      case 7: { // diagnostic (jalon 0) : mesure ultrasons sur une broche donnée des ports (9 à 12, A0 à A3)
+        int b = (int)a[0];
+        return (b >= 9 && b <= 12) || (b >= 14 && b <= 17) ? ultrasonBroche(b) : -1;
+      }
+      case 8: return analogRead((int)a[0] - 14 >= 0 && (int)a[0] <= 21 ? (int)a[0] - 14 : 0); // diagnostic : niveau analogique
     }
   }
 #else
