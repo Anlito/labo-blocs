@@ -44,6 +44,8 @@
     reglages: 'M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1M15 4v4M9 10v4M17 16v4',
     alerte: 'M12 3l9.5 16.5h-19zM12 10v4M12 17.5v.01',
     cadenas: 'M5 11h14v10H5zM8 11V8a4 4 0 0 1 8 0v3',
+    pleinEcran: 'M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5',
+    quitterPleinEcran: 'M9 4v5H4M15 4v5h5M20 15h-5v5M4 15h5v5',
   };
 
   // <svg> prêt à insérer dans du HTML.

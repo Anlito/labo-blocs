@@ -24,6 +24,31 @@
     }
   }
 
+  // Plein écran du navigateur : plus de place pour le programme (Échap ou le même bouton pour en sortir).
+  function preparerPleinEcran() {
+    const bouton = $('.btn-plein-ecran');
+    if (!bouton || !document.fullscreenEnabled) return;
+    bouton.hidden = false;
+    const maj = () => {
+      const actif = !!document.fullscreenElement;
+      bouton.querySelector('.icone').outerHTML = A.icone(actif ? 'quitterPleinEcran' : 'pleinEcran', { epaisseur: 2.4 });
+      $('.texte-plein-ecran', bouton).textContent = actif ? 'Quitter le plein écran' : 'Plein écran';
+      bouton.title = actif ? 'Revenir à la fenêtre normale (touche Échap)' : 'Afficher Labo Blocs sur tout l’écran';
+    };
+    bouton.addEventListener('click', () => {
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      else document.documentElement.requestFullscreen().catch(() => {
+        const t = $('.message-bref');
+        if (!t) return;
+        t.textContent = 'Le plein écran n’est pas possible sur ce poste : appuie sur la touche F11.';
+        t.hidden = false;
+        setTimeout(() => (t.hidden = true), 5000);
+      });
+    });
+    document.addEventListener('fullscreenchange', maj);
+    maj();
+  }
+
   function erreurFatale(texte) {
     document.body.innerHTML = `<main class="erreur-fatale"><h1>Labo Blocs ne peut pas démarrer</h1><p>${echapper(texte)}</p><p>Demande à ton professeur.</p></main>`;
   }
@@ -34,6 +59,7 @@
     ajusterEchelle();
     addEventListener('resize', ajusterEchelle);
     poserIcones(document);
+    preparerPleinEcran();
 
     const projet = A.projet;
     if (!projet) return erreurFatale('Le fichier du projet (projet.js) est absent.');

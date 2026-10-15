@@ -40,6 +40,7 @@ dossiers du réseau, l'écran du collège, et l'avis du professeur.
 | 3.8 | Exercice 13A (7 composants + distributeur) sur l'écran du collège | Tout est visible et lisible sans faire défiler le simulateur | |
 | 3.9 | Cliquer sur les languettes bleues à mi-hauteur, entre les colonnes (‹ et ›), puis sur les bandes verticales ; « Masquer le texte » puis « Afficher le texte » dans la consigne | La zone de programmation s'agrandit, les colonnes se rouvrent ; le choix est gardé après rechargement | |
 | 3.10 | Lire la consigne des exercices 5 et 7 | Les mots **si**, **alors**, **sinon** sont surlignés comme les blocs ; chaque « si » commence une ligne, « alors » et « sinon » sont en retrait dessous | |
+| 3.11 | « Plein écran » en haut à droite, puis « Quitter le plein écran » (ou la touche Échap) | La page occupe tout l'écran (plus de barre d'onglets ni d'adresse), puis revient à la fenêtre normale | |
 
 ## 4. Enregistrement
 
