@@ -25,28 +25,42 @@
   }
 
   // Plein écran du navigateur : plus de place pour le programme (Échap ou le même bouton pour en sortir).
-  function preparerPleinEcran() {
-    const bouton = $('.btn-plein-ecran');
+  function preparerPleinEcran(racine) {
+    const bouton = $('.btn-plein-ecran', racine);
     if (!bouton || !document.fullscreenEnabled) return;
     bouton.hidden = false;
     const maj = () => {
       const actif = !!document.fullscreenElement;
       bouton.querySelector('.icone').outerHTML = A.icone(actif ? 'quitterPleinEcran' : 'pleinEcran', { epaisseur: 2.4 });
       $('.texte-plein-ecran', bouton).textContent = actif ? 'Quitter le plein écran' : 'Plein écran';
-      bouton.title = actif ? 'Revenir à la fenêtre normale (touche Échap)' : 'Afficher Labo Blocs sur tout l’écran';
+      bouton.title = actif ? 'Revenir à la fenêtre normale (touche Échap)' : 'Afficher la page sur tout l’écran';
     };
     bouton.addEventListener('click', () => {
       if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-      else document.documentElement.requestFullscreen().catch(() => {
-        const t = $('.message-bref');
-        if (!t) return;
-        t.textContent = 'Le plein écran n’est pas possible sur ce poste : appuie sur la touche F11.';
-        t.hidden = false;
-        setTimeout(() => (t.hidden = true), 5000);
-      });
+      else
+        document.documentElement.requestFullscreen().catch(() => {
+          const t = $('.message-bref');
+          if (!t) return;
+          t.textContent = 'Le plein écran n’est pas possible sur ce poste : appuie sur la touche F11.';
+          t.hidden = false;
+          setTimeout(() => (t.hidden = true), 5000);
+        });
     });
     document.addEventListener('fullscreenchange', maj);
     maj();
+  }
+
+  // Avancement dans le bandeau : « Exercice 4 sur 14 » et un segment par exercice (réussi, en cours, à faire).
+  function majAvancement(bandeau, D, paquet, ex, options) {
+    const liste = paquet.exercices;
+    const rang = liste.indexOf(ex);
+    $('.avancement-texte', bandeau).textContent = `Exercice ${rang + 1} sur ${liste.length}`;
+    const a = A.avancement(D, paquet);
+    const segments = $('.segments', bandeau);
+    segments.setAttribute('aria-label', `Progression : ${a.reussis} exercices réussis sur ${a.total}`);
+    segments.innerHTML = liste
+      .map((e, i) => `<span class="segment segment-${A.etat(D, paquet, e.id, options)}${i === rang ? ' segment-courant' : ''}"></span>`)
+      .join('');
   }
 
   function erreurFatale(texte) {
@@ -58,8 +72,9 @@
     if (q.has('projecteur')) document.body.classList.add('projecteur');
     ajusterEchelle();
     addEventListener('resize', ajusterEchelle);
+    A.poserGabarits(document);
     poserIcones(document);
-    preparerPleinEcran();
+    preparerPleinEcran(document);
 
     const projet = A.projet;
     if (!projet) return erreurFatale('Le fichier du projet (projet.js) est absent.');
@@ -70,6 +85,7 @@
     const paquet = A.preparer(brut);
 
     document.documentElement.style.setProperty('--accent', projet.accent || '#2547D0');
+    for (const el of document.querySelectorAll('.bandeau .logo')) el.src = projet.logo || 'img/logo.svg';
     for (const el of document.querySelectorAll('.titre-projet')) el.textContent = projet.titre;
     document.title = `${projet.titre} — Labo Blocs`;
 
@@ -100,23 +116,9 @@
       $('.bandeau-avancement', bandeau).hidden = nom !== 'exercice';
     }
 
-    // Avancement dans le bandeau : « Exercice 4 sur 14 » et un segment par exercice (réussi, en cours, à faire).
-    function majBandeau(ex) {
-      const liste = paquet.exercices;
-      const rang = liste.indexOf(ex);
-      $('.avancement-texte', bandeau).textContent = `Exercice ${rang + 1} sur ${liste.length}`;
-      const a = A.avancement(D, paquet);
-      const segments = $('.segments', bandeau);
-      segments.setAttribute('aria-label', `Progression : ${a.reussis} exercices réussis sur ${a.total}`);
-      segments.innerHTML = liste
-        .map((e, i) => {
-          const etat = A.etat(D, paquet, e.id, options);
-          return `<span class="segment segment-${etat}${i === rang ? ' segment-courant' : ''}"></span>`;
-        })
-        .join('');
-    }
+    const majBandeau = (ex) => majAvancement(bandeau, D, paquet, ex, options);
 
-    const ecranExercice = A.creerEcranExercice({ session, paquet, toutDebloquer: options.toutDebloquer, majBandeau });
+    const ecranExercice = A.creerEcranExercice({ session, paquet, toutDebloquer: options.toutDebloquer, solution: session.lecture, majBandeau });
     const ecranParcours = A.creerEcranParcours({
       session,
       paquet,
@@ -143,5 +145,5 @@
     A.app = { session, paquet, ecranExercice, ecranParcours, versParcours };
   }
 
-  Object.assign(A, { demarrerApplication, ajusterEchelle, poserIcones });
+  Object.assign(A, { demarrerApplication, ajusterEchelle, poserIcones, preparerPleinEcran, majAvancement });
 })(this);

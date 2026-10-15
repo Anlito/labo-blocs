@@ -77,7 +77,9 @@
   const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer' };
   const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son' };
 
-  // contexte : { session, paquet, toutDebloquer, retourParcours(), majBandeau(exercice) }
+  // contexte : { session, paquet, toutDebloquer, majBandeau(exercice), solution (bouton « Solution » du mode enseignant),
+  //   actionsReussite(exercice) → [{ texte, principal, action }] (boutons ajoutés au message de réussite, ex. envoi dans
+  //   la carte du projet) }
   function creerEcranExercice(contexte) {
     const { session, paquet } = contexte;
     const D = session.donnees;
@@ -142,7 +144,8 @@
 
     // ----- Ouverture d'un exercice -----
 
-    function ouvrir(ex) {
+    // programme : sauvegarde Blockly ou programme à montrer à la place de celui de l'équipe (lecture par le professeur).
+    function ouvrir(ex, programme) {
       if (!A.estDebloque(D, paquet, ex.id, opts)) return false;
       if (etat.exercice) A.noterProgramme(D, etat.exercice.id, editeur.sauvegarder());
       A.aideLed = !!ex.aideLed; // menu de la LED : « HAUT (1) : allumée » pendant les premiers exercices
@@ -166,7 +169,7 @@
         .join('');
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
-      editeur.charger(ex, avant.programme);
+      editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
       vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { basculerBouton });
       afficher();
       A.noterOuverture(D, ex.id);
@@ -174,7 +177,7 @@
       majIndices();
       majCode();
       if (avant.aReverifier) montrerRevoir();
-      contexte.majBandeau(ex);
+      if (contexte.majBandeau) contexte.majBandeau(ex);
       // Rouvrir un exercice déjà commencé n'est pas un travail à enregistrer.
       if (A.progressionExercice(D, ex.id).statut !== statutAvant) session.aEnregistrer(true);
       return true;
@@ -449,7 +452,7 @@
       A.noterProgramme(D, ex.id, editeur.sauvegarder());
       A.noterVerification(D, ex, { reussi: r.reussi, message: r.message, programme });
       session.aEnregistrer(true, true);
-      contexte.majBandeau(ex);
+      if (contexte.majBandeau) contexte.majBandeau(ex);
       resultat.className = 'resultat ' + (r.reussi ? 'reussi' : 'ecart');
       if (r.reussi) {
         const suivant = suivantDe(ex);
@@ -461,6 +464,16 @@
           (suivant ? `<button type="button" class="btn-principal btn-suivant">Exercice suivant${A.icone('suivant', { epaisseur: 2.8 })}</button>` : '') +
           `<button type="button" class="btn-secondaire btn-rester">${suivant ? 'Rester sur cet exercice' : 'Fermer'}</button></div>`;
         if (suivant) $('.btn-suivant', resultat).addEventListener('click', () => ouvrir(suivant));
+        // Actions propres au projet (ex. « Envoyer dans la carte Arduino » après l'exercice 13).
+        const actions = (contexte.actionsReussite && contexte.actionsReussite(ex)) || [];
+        for (const a of actions.slice().reverse()) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = a.principal ? 'btn-principal' : 'btn-secondaire';
+          b.textContent = a.texte;
+          b.addEventListener('click', a.action);
+          $('.resultat-actions', resultat).prepend(b);
+        }
         $('.btn-rester', resultat).addEventListener('click', fermerResultat);
       } else {
         resultat.innerHTML =
@@ -471,6 +484,7 @@
         $('.btn-voir-test', resultat).addEventListener('click', () => rejouer(r));
       }
       resultat.hidden = false;
+      resultat.scrollIntoView({ block: 'nearest' });
     }
     function montrerRevoir() {
       resultat.className = 'resultat ecart';
@@ -493,6 +507,16 @@
       resultat.hidden = true;
     }
     $('.btn-verifier', ecran).addEventListener('click', verifier);
+
+    // Mode enseignant : remplacer le programme par la solution de référence (démonstration en classe).
+    const btnSolution = $('.btn-solution', ecran);
+    btnSolution.hidden = !contexte.solution;
+    btnSolution.addEventListener('click', () => {
+      if (!etat.exercice || !confirm('Remplacer le programme affiché par la solution de référence ?')) return;
+      arreter();
+      editeur.charger(etat.exercice, A.versBlockly(etat.exercice.solutionReference));
+      majCode();
+    });
 
     // ----- Outils de l'espace de travail -----
 

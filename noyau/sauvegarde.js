@@ -18,7 +18,7 @@
   const APPLICATION = 'labo-blocs';
   const FORMAT_FICHIER = 1;
   // Applications dont Labo Blocs sait lire le fichier (chaque projet garde le sien).
-  const APPLICATIONS = { 'labo-blocs': 1, 'atelier-cereales': 1 };
+  const APPLICATIONS = { 'labo-blocs': 1, 'atelier-cereales': 2 };
 
   // Date et heure locales : 2026-10-12T09:03:00
   function maintenant() {

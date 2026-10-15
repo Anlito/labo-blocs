@@ -1,0 +1,40 @@
+# Publie Labo Blocs sur GitHub Pages à chaque envoi sur main : l'application et les parcours exportés
+# (adresse utilisée par « Mettre à jour les exercices › Chercher en ligne » dans les projets).
+# Dans les réglages du dépôt : Settings › Pages › Source : GitHub Actions.
+name: Publier Labo Blocs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      # Les tests du moteur doivent passer avant toute publication.
+      - run: npm test
+      - run: node tools/publier.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deploiement
+        uses: actions/deploy-pages@v4

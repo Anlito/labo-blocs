@@ -16,7 +16,7 @@
   const P = typeof module === 'object' && module.exports ? require('./programme.js') : global.LaboBlocs;
 
   const FORMAT = 'labo-blocs/parcours';
-  const VERSION_MOTEUR = '0.1.0';
+  const VERSION_MOTEUR = '0.2.0';
 
   // JSON aux clés triées : deux objets égaux donnent toujours le même texte.
   function canonique(x) {
@@ -112,8 +112,17 @@
     return exercice.silhouette || P.versV1(exercice.solutionReference);
   }
 
+  // Texte du fichier parcours d'un projet (site/parcours/<id>.js) : un script, pour rester lisible en file://.
+  function scriptParcours(paquet) {
+    return (
+      `// Parcours « ${paquet.titre} », version ${paquet.versionParcours} (Labo Blocs).\n` +
+      '// Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.\n' +
+      `definirParcours(${JSON.stringify(paquet, null, 2)});\n`
+    );
+  }
+
   const parcoursDefinis = [];
-  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis };
+  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, scriptParcours, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else {
     Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);

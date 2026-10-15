@@ -53,6 +53,17 @@
     };
   }
 
+  // v1 → programme simplifié de l'atelier { demarrage, boucle } (outils des projets qui lisent encore ce format).
+  // Les autres fils (« quand on appuie… ») sont gardés à part dans « fils ».
+  function versSimplifie(p) {
+    if (!p || !Array.isArray(p.fils)) return p;
+    const corps = (quand) => p.fils.filter((f) => f.quand === quand).flatMap((f) => f.corps || []);
+    const autres = p.fils.filter((f) => f.quand !== 'demarrage' && f.quand !== 'boucle');
+    const r = { demarrage: corps('demarrage'), boucle: corps('boucle') };
+    if (autres.length) r.fils = autres;
+    return r;
+  }
+
   // Lit une sauvegarde Blockly. Renvoie le programme v1, les blocs restés seuls hors du programme et les blocs
   // incomplets (une entrée vide).
   function depuisBlockly(sauvegarde) {
@@ -351,7 +362,7 @@
     return types;
   }
 
-  const api = { depuisBlockly, versBlockly, versV1, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  const api = { depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

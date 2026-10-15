@@ -223,3 +223,28 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    ligne par « si », « alors » et « sinon » en retrait ; consigne en **bandeau au-dessus des composants et du programme**
    (la colonne Tester garde toute la hauteur pour le simulateur du 13A), « Besoin d'aide ? » au-dessus des composants,
    « Masquer le texte » ; bouton **Plein écran** dans le bandeau.
+12. **Jalon 1 bis livré le 15/10/2026** (recette à faire, `RECETTE.md` §6). L'atelier du distributeur
+   (`atelier-cereales`, même branche) utilise le module de Labo Blocs : écran d'exercice, moteur (simulation,
+   vérification, code Arduino), sauvegarde. Ce qui a été décidé en le faisant :
+   - **Module construit** (`npm run module`) : `labo-blocs-noyau.js` (aussi `require()` sous Node pour les tests des
+     projets), `labo-blocs-interface.js`, `labo-blocs.css` dont chaque règle est limitée à `.labo-blocs` (les pages
+     du projet ne changent pas), polices, Blockly, `VERSION.json`. Copié dans `site/vendor/labo-blocs/` du projet par
+     `npm run vers-projet`. Moteur 0.2.0. Écran d'exercice décrit une seule fois (`interface/gabarits.js`), posé
+     dans la page d'un projet par `LaboBlocs.monterExercice(element, options)` : retour au carnet, mode enseignant
+     (« Solution », liste des exercices), actions après réussite (envoi dans la carte).
+   - **Atelier** : `site/parcours/distributeur.js` remplace `site/exercices/` ; l'ancien moteur, les blocs et l'écran
+     d'exercice de l'atelier sont supprimés. Fichier d'équipe au **format 2** : les exercices sont dans la rubrique
+     `programmation` (identifiants `dist-01`…) ; le carnet, l'outil du professeur et la notation les lisent toujours
+     par numéro (vue calculée, jamais écrite). Les fichiers au format 1 se lisent et sont recopiés sans perte.
+   - **Mettre à jour les exercices** dans `prof.html` (bouton « Exercices ») : version installée, nouvelle version en
+     ligne (`https://anlito.github.io/labo-blocs/parcours/distributeur.labo-parcours.json`, publiée par
+     `.github/workflows/pages.yml` — Pages à activer dans les réglages du dépôt) ou par fichier ; contrôle (format,
+     identifiant, moteur minimum) ; différences avec aperçu (consigne avant / après) ; validation = réécriture de
+     `parcours/distributeur.js` dans le dossier du site choisi par le professeur, l'ancien gardé dans
+     `distributeur-precedent.js` (« Revenir à la version précédente ») ; Firefox ou site en ligne : téléchargement.
+   - **Carte du distributeur** : les programmes 13A/13B restent précompilés (firmware Labo Blocs au jalon 3) ; leur
+     empreinte (solution + broches) est rangée avec les `.hex`. Si une mise à jour change le 13, l'outil le signale et
+     l'atelier refuse d'envoyer l'ancien programme (« demande à ton professeur »).
+   - **Pas encore** : verrouillage d'une évaluation (jalon 5) ; l'écran de mise à jour devra le respecter.
+   - Corrigé au passage dans le module : quand le message de résultat s'affiche, le dessin de la carte rétrécit et la
+     colonne défile, au lieu de cacher « Lancer / Pause / Pas » (exercice 13 à 1366 × 768).

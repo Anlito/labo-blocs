@@ -25,7 +25,7 @@
       toolbox: { kind: 'categoryToolbox', contents: [] },
       renderer: 'zelos',
       // Images de Blockly (corbeille…) copiées dans le dépôt : aucun appel réseau.
-      media: 'vendor/blockly/media/',
+      media: A.mediaBlockly || 'vendor/blockly/media/', // un projet le règle (monterExercice)
       theme: A.themeBlockly,
       trashcan: true,
       sounds: false,

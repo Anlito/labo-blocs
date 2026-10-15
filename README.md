@@ -25,12 +25,13 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 | Dossier | Contenu |
 |---|---|
 | `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression |
-| `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur, aides, fichiers, écrans élève, charte (`css/`) |
+| `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur, aides, fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
 | `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique) |
 | `site/` | application Labo Blocs : `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
 | `tests/` | tests Node (`node:test`) |
-| `tools/` | serveur local, copie de Blockly et des polices, recette dans un vrai navigateur, conversion du distributeur |
+| `tools/` | serveur local, copie de Blockly et des polices, recette dans un vrai navigateur, conversion du distributeur, construction du module (`construire-module.js`), copie dans un projet (`vers-projet.js`), publication (`publier.js`) |
+| `dist/` | (construit, ignoré par git) `labo-blocs-<version>/` : le module que chaque projet copie dans `site/vendor/labo-blocs/` ; `parcours/` : parcours exportés (`.labo-parcours.json`) |
 
 ## Commandes
 
@@ -40,6 +41,9 @@ npm run vendor           # copie Blockly et les polices dans site/vendor
 npm test                 # tests (gcc ; simavr en option : apt install gcc libsimavr-dev libelf-dev)
 npm start                # http://localhost:8080
 npm run recette          # critères du jalon dans Chrome/Edge (file://) → RECETTE-AUTO.md
+npm run module           # construit le module dans dist/labo-blocs-<version>/ et exporte les parcours
+npm run vers-projet -- ../atelier-cereales [--parcours distributeur]   # copie le module (et le parcours) dans un projet
+npm run publier          # dossier _site/ publié sur GitHub Pages (application + parcours en ligne)
 npm run essais:mesures   # taille du code octet des programmes
 npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARDUINO_CORE et SERVO)
 npm run essais:microbit  # refaire les fichiers micro:bit
@@ -51,6 +55,9 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 
 - **Jalon 0 terminé (15/10/2026)** : Uno, mBot et micro:bit V2 reçoivent un programme venu de blocs, le gardent après
   une coupure et se vident — [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
-- **Jalon 1 (noyau) livré, recette à faire** : le parcours du distributeur (01 à 13B) tourne dans Labo Blocs —
+- **Jalon 1 (noyau) validé (15/10/2026)** : le parcours du distributeur (01 à 13B) tourne dans Labo Blocs —
   [RECETTE.md](RECETTE.md), [RECETTE-AUTO.md](RECETTE-AUTO.md).
+- **Jalon 1 bis (intégration) livré, recette à faire** : l'atelier du distributeur utilise le module de Labo Blocs
+  (écran d'exercice, moteur, sauvegarde) ; son outil du professeur a « Mettre à jour les exercices » (en ligne ou par
+  fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
 

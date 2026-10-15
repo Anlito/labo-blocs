@@ -2,3 +2,4 @@ node_modules/
 dist/
 *.elf
 *.o
+_site/

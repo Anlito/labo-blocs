@@ -56,3 +56,29 @@ dossiers du réseau, l'écran du collège, et l'avis du professeur.
 - Textes (consignes, messages, indices) : à reprendre ?
 - Écran d'exercice en trois colonnes (consigne · programme · tester) : lisible à 1366 × 768 ?
 - Vidéoprojecteur : `index.html?enseignant=1&projecteur=1` (tout plus grand) : suffisant pour montrer un exemple ?
+
+## 6. Jalon 1 bis — l'atelier du distributeur avec le moteur de Labo Blocs
+
+Dépôt `atelier-cereales`, branche `claude/nice-volta-xpl2bp` (pas encore publiée : le site en ligne ne change pas tant
+qu'elle n'est pas fusionnée dans `main`). Copier le dossier `site/` de cette branche dans un dossier de test du réseau.
+
+> **Travailler sur des copies des fichiers d'équipes.** Un fichier réenregistré par cette version (format 2) ne s'ouvre
+> plus dans l'atelier actuel, qui répond « Cette sauvegarde vient d'une version plus récente ». Rien n'est perdu, mais
+> les élèves ne doivent passer à la nouvelle version qu'une fois la recette faite.
+La recette automatique de l'atelier (`npm run recette`, 21 vérifications) fait déjà le parcours complet avec une équipe
+test : ici, les vrais fichiers des élèves, l'écran du collège, la carte Arduino et l'avis du professeur.
+
+| # | Action | Attendu | ✔/✘ |
+|---|---|---|---|
+| 6.1 | Ouvrir `index.html` de la copie, « Ouvrir notre sauvegarde » avec le fichier d'une équipe de cette année | Carnet retrouvé ; onglet Programmation : mêmes exercices réussis qu'avant, mêmes tentatives | |
+| 6.2 | « Continuer » | L'écran d'exercice est celui de Labo Blocs (consigne en bandeau, languettes, Plein écran) ; les blocs de l'équipe sont là ; « Carnet » ramène au carnet | |
+| 6.3 | Vérifier un exercice, puis « Carnet » | Le fichier de l'équipe est réenregistré (« Enregistré à hh:mm ») ; il se rouvre normalement | |
+| 6.4 | Réussir le 13A (mode enseignant : « Solution »), puis « Envoyer dans la carte Arduino » dans le message de réussite, carte Uno branchée | Le programme arrive dans la carte, la maquette fonctionne comme avant | |
+| 6.5 | `prof.html` : ouvrir le dossier d'une classe (fichiers anciens et réenregistrés mélangés) | Même tableau et mêmes notes qu'avec l'atelier actuel ; Historique › « Voir les blocs » et « Lancer ce programme » marchent | |
+| 6.6 | `prof.html` › « Exercices » › « Choisir un fichier… » : `labo-blocs/tests/fixtures/distributeur-1.0.1-essai.labo-parcours.json` | Version 1.0.1 : exercice 1 modifié (consigne avant / après), exercice 3 « texte retouché » ; message sur le travail des élèves | |
+| 6.7 | « Valider la mise à jour », choisir le dossier de la copie du site (celui qui contient `index.html`) | « Mise à jour installée : version 1.0.1 » ; `parcours/distributeur-precedent.js` apparaît dans le dossier | |
+| 6.8 | Côté élève (équipe qui avait réussi l'exercice 1) : recharger l'atelier (F5), reprendre | Message « Ton professeur a modifié l'exercice 1… » ; dans le carnet, exercice 1 « ↻ modifié, à revérifier » ; ses blocs sont gardés, l'exercice 2 reste ouvert ; nouvelle consigne affichée | |
+| 6.9 | `prof.html` › « Exercices » › « Revenir à la version précédente » | Retour à la version 1.0.0 ; l'élève retrouve l'ancienne consigne après F5 | |
+| 6.10 | « Chercher en ligne » | Sans le site de Labo Blocs publié (à activer : Settings › Pages du dépôt labo-blocs) : message « La version en ligne est introuvable… » ; ensuite : la dernière version publiée | |
+| 6.11 | Firefox : « Valider la mise à jour » | Le fichier `distributeur.js` est téléchargé, avec l'explication pour le copier dans `parcours/` | |
+
