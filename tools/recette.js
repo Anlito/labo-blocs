@@ -104,7 +104,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.select('.champ-classe', '5A');
     await p.click('.formulaire-equipe button[type=submit]');
     await pause(200);
-    verifier((await texte(p, '.chemin')).includes('Léa'), 'chemin du dossier');
+    verifier((await texte(p, '[data-panneau="dossier"]')).includes('Léa'), 'dossier de l’équipe');
     await p.click('.btn-commencer-sans-dossier');
     await pause(300);
     verifier(await visible(p, '.ecran-parcours'), 'parcours non affiché');
@@ -752,7 +752,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       await p.select('.champ-classe', '4C');
       await p.click('.formulaire-equipe button[type=submit]');
       await pause(200);
-      const chemin = (await texte(p, '.chemin')).replace(/\s+/g, ' ');
+      const chemin = (await texte(p, '.chemin')).replace(/\s+/g, ' ') + ' › ' + (await texte(p, '.dossier-equipe-auto .nom-dossier-equipe'));
       verifier(/4C ?› ?COMMUN ?› ?ROBOT ?› ?Inès/.test(chemin), 'dossier : ' + chemin);
       await p.close();
       // Le distributeur garde les classes du site (projet.js).
@@ -817,6 +817,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       await pause(600);
       const conflit = await p.$eval('.composants-note', (e) => [e.textContent, e.classList.contains('ecart'), getComputedStyle(e).backgroundColor]);
       verifier(conflit[1] && /D2 sert à deux composants/.test(conflit[0]), 'conflit : ' + conflit.join(' · '));
+      // Les deux composants restent dans le simulateur, marqués « broche partagée ».
+      const marques = await p.$$eval('.simu-composants .composant.conflit', (l) => l.map((x) => x.textContent.replace(/\s+/g, ' ')));
+      verifier(marques.length === 2 && marques.every((m) => /Broche partagée/.test(m)), 'cartes en conflit : ' + marques.join(' | '));
       // « J'ai terminé » : enregistré, exercice suivant ouvert.
       await p.click('.btn-terminer');
       await pause(300);
@@ -891,6 +894,106 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `${cartes.length} parcours (${cartes.map((c) => c[0]).join(', ')}) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code`;
   });
 
+  await critere('Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe', async () => {
+    const p = await page(PAGE);
+    // Dossiers simulés dans le stockage du navigateur : le dossier du projet, un dossier d'équipe déjà là, un autre.
+    await p.evaluate(async () => {
+      const racine = await navigator.storage.getDirectory();
+      for await (const [n] of racine.entries()) await racine.removeEntry(n, { recursive: true });
+      window.__dossiers = {};
+      for (const n of ['DISTRIBUTEUR DE CEREALES', 'Ana_Ben', 'Documents']) window.__dossiers[n] = await racine.getDirectoryHandle(n, { create: true });
+      window.showDirectoryPicker = async () => window.__dossiers[window.__choix];
+    });
+    await p.type('.champ-prenom', 'ana');
+    await p.type('.formulaire-equipe label:nth-of-type(2) .champ-prenom', 'ben');
+    await p.select('.champ-classe', '5B');
+    await p.click('.formulaire-equipe button[type=submit]');
+    await pause(200);
+    const aide = (await texte(p, '[data-panneau="dossier"]')).replace(/\s+/g, ' ');
+    verifier(/DISTRIBUTEUR DE CEREALES/.test(aide) && /Ana_Ben/.test(aide) && /ne le crée pas toi-même/.test(aide), 'aide : ' + aide);
+    const choisir = async (nom) => {
+      await p.evaluate((n) => (window.__choix = n), nom);
+      const b = (await p.$('.dossier-resultat .btn-autre-dossier')) || (await p.$('.btn-choisir-dossier'));
+      await b.click();
+      await pause(500);
+      return p.evaluate(() => [document.querySelector('.dossier-resultat').textContent.replace(/\s+/g, ' '), !!document.querySelector('.btn-garder'), !!document.querySelector('.btn-creer-ici'), !!document.querySelector('.dossier-resultat .confirmation')]);
+    };
+    const equipe = await choisir('Ana_Ben');
+    verifier(/Choisis plutôt le dossier qui le contient/.test(equipe[0]) && !equipe[3], 'dossier de l’équipe : ' + equipe[0]);
+    const autre = await choisir('Documents');
+    verifier(/Le dossier du projet s’appelle/.test(autre[0]) && autre[2] && !autre[1] && !autre[3], 'autre dossier : ' + autre[0]);
+    const projet = await choisir('DISTRIBUTEUR DE CEREALES');
+    const cree = await p.evaluate(async () => {
+      const d = await window.__dossiers['DISTRIBUTEUR DE CEREALES'].getDirectoryHandle('Ana_Ben');
+      return JSON.parse(await (await (await d.getFileHandle('Ana_Ben.json')).getFile()).text()).equipe;
+    });
+    verifier(projet[3] && /Le dossier « Ana_Ben » est prêt dans « DISTRIBUTEUR DE CEREALES »/.test(projet[0]) && cree.eleves.join() === 'Ana,Ben', 'projet : ' + projet[0]);
+    await p.close();
+    return `dossier de l’équipe refusé (« choisis celui qui le contient ») ; autre dossier : créer dedans ou rechoisir (plus de « utiliser quand même ») ; dossier du projet : « Ana_Ben/Ana_Ben.json » créé`;
+  });
+
+  // ---------- Variables créées par les élèves ----------
+
+  await critere('Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié', async () => {
+    const { creerProjet } = require('./nouveau-projet.js');
+    const { lireTexteParcours } = require('./parcours-depot.js');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-variables-'));
+    try {
+      const base = lireTexteParcours(fs.readFileSync(path.join(RACINE, 'parcours', 'distributeur', 'parcours.js'), 'utf8'));
+      const blocs = ['affecter', 'ajouter_a', 'variable', 'nombre', 'attendre', 'led_etat'];
+      const ex1 = { id: 'var-1', numero: '1', titre: 'Compter', consigne: 'Crée ta variable et compte.', libre: true, composants: [], blocsAutorises: blocs, variables: [], variablesLibres: true };
+      const ex2 = { id: 'var-2', numero: '2', titre: 'Le score', consigne: 'Utilise la variable score.', libre: true, composants: [], blocsAutorises: blocs, variables: ['score'] };
+      const paquet = Object.assign(base, { id: 'variables', titre: 'Variables', versionParcours: '1.0.0', exercices: [ex1, ex2] });
+      const fichier = path.join(tmp, 'variables-1.0.0.labo-parcours.json');
+      fs.writeFileSync(fichier, JSON.stringify(paquet));
+      const r = creerProjet({ dossier: path.join(tmp, 'projet'), titre: 'Variables', parcours: fichier, classes: ['5A'] });
+      const p = await page(pathToFileURL(path.join(r.site, 'programmation.html')).href + '?enseignant=1&exercice=var-1', { sansDossiers: true });
+      await pause(600);
+      const palette = () =>
+        p.evaluate(() => {
+          const t = LaboBlocs.app.ecranExercice.editeur.ws.options.languageTree;
+          const cat = t.contents.find((c) => c.name === 'Variables');
+          return cat ? cat.contents.map((x) => (x.kind === 'button' ? 'bouton' : x.type + (x.fields && x.fields.VAR ? ':' + x.fields.VAR : ''))) : [];
+        });
+      // Exercice 1 : aucune variable donnée → seulement « Créer une variable » (et le nombre).
+      const avant = await palette();
+      verifier(avant.join() === 'bouton,nombre', 'palette avant : ' + avant.join());
+      // Nom refusé (mot du langage), puis accepté (« ma vitesse » → ma_vitesse).
+      const reponses = ['delay', 'ma vitesse'];
+      const messages = [];
+      const repondre = async (d) => {
+        if (d.type() !== 'prompt') return;
+        messages.push(d.message());
+        await d.accept(reponses.shift());
+      };
+      p.removeAllListeners('dialog');
+      p.on('dialog', repondre);
+      await p.evaluate(() => LaboBlocs.app.ecranExercice.editeur.ws.getButtonCallback('creerVariable')());
+      await pause(300);
+      const apres = await palette();
+      verifier(apres.join() === 'bouton,affecter:ma_vitesse,ajouter_a:ma_vitesse,variable:ma_vitesse,nombre' && /mot du langage/.test(messages[1] || ''), JSON.stringify({ apres, messages }));
+      // La variable créée s'utilise dans le programme et la simulation.
+      await p.evaluate(() => {
+        const ws = LaboBlocs.app.ecranExercice.editeur.ws;
+        Blockly.serialization.workspaces.load(LaboBlocs.versBlockly({ demarrage: [{ bloc: 'affecter', variable: 'ma_vitesse', valeur: { bloc: 'nombre', valeur: 7 } }], boucle: [] }), ws);
+      });
+      await pause(400);
+      await p.click('.btn-lancer');
+      await pause(400);
+      const valeur = await p.evaluate(() => LaboBlocs.app.ecranExercice.etat.sim.variables.ma_vitesse);
+      verifier(valeur === 7, 'ma_vitesse = ' + valeur);
+      // Exercice 2 : la variable donnée par le professeur, pas de bouton.
+      await p.evaluate(() => LaboBlocs.app.ecranExercice.ouvrir(LaboBlocs.app.paquet.exercices[1]));
+      await pause(500);
+      const ex2Palette = await palette();
+      verifier(ex2Palette.join() === 'affecter:score,ajouter_a:score,variable:score,nombre', 'exercice 2 : ' + ex2Palette.join());
+      await p.close();
+      return `créée par l’élève : « delay » refusé, « ma vitesse » → ma_vitesse (= 7 en simulation) ; donnée par le professeur : score (sans bouton)`;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   // ---------- Kit nouveau projet ----------
 
   await critere('Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file://', async () => {
@@ -906,7 +1009,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       await p.select('.champ-classe', '4B');
       await p.click('.formulaire-equipe button[type=submit]');
       await pause(200);
-      const chemin = await texte(p, '.chemin');
+      const chemin = (await texte(p, '.chemin')) + ' › ' + (await texte(p, '.dossier-equipe-auto .nom-dossier-equipe'));
       verifier(/PONT-LEVIS/.test(chemin) && chemin.includes('Zoé'), 'chemin : ' + chemin);
       await p.click('.btn-commencer-sans-dossier');
       await pause(300);

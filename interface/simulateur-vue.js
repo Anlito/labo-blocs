@@ -449,10 +449,15 @@
     grille.classList.toggle('compact', compact);
     grille.innerHTML = composants.map((c) => carteComposant(c, compact)).join('');
 
-    const cartes = {};
-    for (const el of grille.querySelectorAll('.composant')) {
+    // Une carte par composant (dans un exercice libre, deux composants peuvent partager une broche : signalé).
+    const cartes = [];
+    for (const [k, el] of [...grille.querySelectorAll('.composant')].entries()) {
       const broche = el.dataset.broche;
-      cartes[broche] = el;
+      cartes[k] = el;
+      if (composants[k] && composants[k].conflit) {
+        el.classList.add('conflit');
+        el.insertAdjacentHTML('beforeend', '<span class="composant-conflit" role="note">⚠ Broche partagée avec un autre composant</span>');
+      }
       el.addEventListener('mouseenter', () => {
         surlignerBroche(racine, broche);
         el.classList.add('survol');
@@ -465,12 +470,12 @@
       if (b) poussoir(b, (valeur) => rappels.appuyerBouton(broche, valeur));
     }
 
-    const memoire = {};
-    function maj(broche, valeur, quoi) {
-      if (memoire[broche] === valeur) return;
-      memoire[broche] = valeur;
-      const el = cartes[broche];
-      const c = composants.find((x) => x.broche === broche);
+    const memoire = [];
+    function maj(k, valeur, quoi) {
+      if (memoire[k] === valeur) return;
+      memoire[k] = valeur;
+      const el = cartes[k];
+      const c = composants[k];
       if (el && c) {
         const pastille = el.querySelector('.pastille-etat');
         if (c.type === 'led') {
@@ -517,7 +522,11 @@
     // etats : { broche: valeur } (LED 0/1, servo en degrés, boutons 0/1)
     // sim : le simulateur en cours (écran de la micro:bit, moteurs du mBot…), ou rien s'il est arrêté.
     function afficher(etats, enMarche, sim) {
-      for (const c of composants) maj(c.broche, etats[c.broche] || 0);
+      // État par « broche|sorte » s'il est donné (deux composants sur une broche), sinon par broche.
+      composants.forEach((c, k) => {
+        const cle = c.broche + '|' + c.type;
+        maj(k, (cle in etats ? etats[cle] : etats[c.broche]) || 0);
+      });
       majDistributeur(etats, enMarche);
       if (vueDeCarte) vueDeCarte.afficher(sim || null);
     }

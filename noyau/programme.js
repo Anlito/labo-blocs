@@ -391,17 +391,15 @@
   }
 
   // Exercice libre (Arduino Uno) : les composants que le programme utilise, dans l'ordre où ils apparaissent.
-  //   → { composants: [{ type, broche }], conflits: [{ broche, types: ['led', 'bouton'] }] }
-  // Une broche employée pour deux sortes de composants est un conflit : on garde la première.
+  //   → { composants: [{ type, broche, conflit? }], conflits: [{ broche, types: ['led', 'bouton'] }] }
+  // Une broche employée pour deux sortes de composants est un conflit : les deux composants restent (l'élève les voit
+  // dans le simulateur), marqués « conflit », et le conflit est signalé.
   const SORTE_DU_BLOC = { led_etat: 'led', servo_angle: 'servo', son: 'buzzer', bouton_etat: 'bouton' };
   function composantsDuProgramme(programme) {
-    const parBroche = new Map();
-    const conflits = new Map();
+    const composants = [];
     const voir = (type, broche) => {
-      if (!broche) return;
-      const deja = parBroche.get(broche);
-      if (!deja) parBroche.set(broche, type);
-      else if (deja !== type) conflits.set(broche, [...new Set([...(conflits.get(broche) || [deja]), type])]);
+      if (!broche || composants.some((c) => c.type === type && c.broche === broche)) return;
+      composants.push({ type, broche });
     };
     (function parcourir(x) {
       if (Array.isArray(x)) return x.forEach(parcourir);
@@ -410,13 +408,52 @@
       if (SORTE_DU_BLOC[x.bloc]) voir(SORTE_DU_BLOC[x.bloc], x.broche);
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
     })(programme ? versV1(programme).fils : []);
-    return {
-      composants: [...parBroche].map(([broche, type]) => ({ type, broche })),
-      conflits: [...conflits].map(([broche, types]) => ({ broche, types })),
-    };
+    const conflits = [];
+    for (const c of composants) {
+      const memes = composants.filter((x) => x.broche === c.broche);
+      if (memes.length < 2) continue;
+      c.conflit = true;
+      if (!conflits.some((x) => x.broche === c.broche)) conflits.push({ broche: c.broche, types: memes.map((x) => x.type) });
+    }
+    return { composants, conflits };
   }
 
-  const api = { composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  // Nom d'une variable créée par un élève (« ma vitesse » → « ma_vitesse ») : lettres sans accent, chiffres et « _ »,
+  // une lettre au début, 16 caractères au plus, pas un mot du langage Arduino, pas déjà pris (majuscules comprises).
+  //   → { ok, nom } ou { ok: false, message }
+  const MOTS_RESERVES = new Set(
+    'if else for while do switch case break continue return int float long char bool boolean byte void true false const static setup loop delay millis digitalWrite digitalRead analogRead analogWrite pinMode tone noTone random HIGH LOW INPUT OUTPUT Serial Servo'
+      .toLowerCase()
+      .split(' '),
+  );
+  function nomDeVariable(texte, existantes) {
+    const nom = String(texte || '')
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[\s'’-]+/g, '_')
+      .replace(/[^A-Za-z0-9_]/g, '');
+    if (!nom) return { ok: false, message: 'Écris un nom pour ta variable (par exemple : vitesse).' };
+    if (!/^[A-Za-z]/.test(nom)) return { ok: false, message: 'Le nom d’une variable commence par une lettre.' };
+    if (nom.length > 16) return { ok: false, message: 'Ce nom est trop long : 16 lettres au plus.' };
+    if (MOTS_RESERVES.has(nom.toLowerCase())) return { ok: false, message: `« ${nom} » est déjà un mot du langage de la carte : choisis un autre nom.` };
+    if ((existantes || []).some((v) => v.toLowerCase() === nom.toLowerCase())) return { ok: false, message: `La variable « ${nom} » existe déjà.` };
+    return { ok: true, nom };
+  }
+
+  // Noms des variables d'une sauvegarde Blockly (champs VAR), pour que les menus les connaissent avant le chargement.
+  function variablesDeSauvegarde(sauvegarde) {
+    const noms = new Set();
+    (function parcourir(x) {
+      if (Array.isArray(x)) return x.forEach(parcourir);
+      if (!x || typeof x !== 'object') return;
+      if (x.fields && typeof x.fields.VAR === 'string' && x.fields.VAR) noms.add(x.fields.VAR);
+      for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
+    })(sauvegarde);
+    return [...noms];
+  }
+
+  const api = { nomDeVariable, variablesDeSauvegarde, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

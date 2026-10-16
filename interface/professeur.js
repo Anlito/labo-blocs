@@ -394,7 +394,9 @@
     const chemin = A.projet && A.projet.cheminSauvegarde;
     if (chemin && chemin.length > 1) {
       const classe = (A.projet.classes && A.projet.classes[0]) || '5A';
-      const dossier = chemin.slice(0, chemin.indexOf('{equipe}') >= 0 ? chemin.indexOf('{equipe}') : chemin.length).map((x) => x.replace('{classe}', classe));
+      // À partir du dossier de la classe (« Bureau › Classe » avant lui n'aide pas à reconnaître le dossier).
+      const debut = Math.max(0, chemin.indexOf('{classe}'));
+      const dossier = chemin.slice(debut, chemin.indexOf('{equipe}') >= 0 ? chemin.indexOf('{equipe}') : chemin.length).map((x) => x.replace('{classe}', classe));
       const court = dossier.length > 2 ? [dossier[0], '…', dossier[dossier.length - 1]] : dossier;
       ouvrir.querySelector('span').textContent = `Ex. ${court.join(' › ')}. Relu toutes les 30 secondes (Chrome, Edge).`;
     }

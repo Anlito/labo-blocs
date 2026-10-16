@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-16/10/2026 21:34:39 · chromium · page ouverte en file:// · 31/31 critères
+16/10/2026 22:03:04 · chromium · page ouverte en file:// · 33/33 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -29,9 +29,11 @@
 | Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-16.csv + labo-blocs-distributeur-5A-2026-10-16.labo-resultats.json (compétences C6, C9) |
 | Code professeur : accueil, éditeur, suivi et mode enseignant cachés sans le code ; page des élèves libre | ✔ | accueil.html : code demandé ; mauvais code : « Ce n’est pas le code professeur. Vérifie-le et recommence. » (ambre) ; editeur.html : code demandé ; prof.html : code demandé ; index.html (enseignant) : code demandé ; index.html : libre ; « Verrouiller » redemande le code |
 | Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant | ✔ | Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit ; « Découverte du mBot — Labo Blocs » ouvert en mode enseignant ; lien Accueil dans l’éditeur |
-| Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours | ✔ | « Robot du couloir » publié et proposé à l’accueil ; élèves : classes 4A, 4C, dossier « 4C›COMMUN›ROBOT›Inès » ; distributeur : 5A, 5B, 5C, 5D, 5E, 5F |
-| Exercice libre : composants qui suivent le programme, broche en double signalée, « J’ai terminé », pas de niveau | ✔ | composants : LED D5, Bouton D2, LED D6 ; LED D5 allumée en simulation ; « La broche D2 sert à deux composants (LED et bouton) : une br… » en ambre ; terminé, exercice 2 ouvert, sans niveau |
+| Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours | ✔ | « Robot du couloir » publié et proposé à l’accueil ; élèves : classes 4A, 4C, dossier « 4C›COMMUN›ROBOT › Inès » ; distributeur : 5A, 5B, 5C, 5D, 5E, 5F |
+| Exercice libre : composants qui suivent le programme, broche en double signalée, « J’ai terminé », pas de niveau | ✔ | composants : LED D5, Bouton D2, LED D6 ; LED D5 allumée en simulation ; « La broche D2 sert à deux composants (LED et bouton). Une bro… » en ambre ; terminé, exercice 2 ouvert, sans niveau |
 | Mise en ligne directe : clé enregistrée dans l’accueil, « Publier » envoie le parcours dans parcours/ du dépôt | ✔ | clé enregistrée (vide refusée) ; « Version 1.3.0 mise en ligne.Le site de Labo Blocs se met à j… » ; envoyé : parcours/decouverte-mbot-1.3.0.labo-parcours.json (version 1.3.0) |
 | Page des élèves : tous les parcours, sans code professeur, chacun ouvre l’accueil de l’équipe | ✔ | 3 parcours (Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code |
-| Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « 4B›COMMUN›TECHNOLOGIE›PONT-LEVIS›Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
+| Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe | ✔ | dossier de l’équipe refusé (« choisis celui qui le contient ») ; autre dossier : créer dedans ou rechoisir (plus de « utiliser quand même ») ; dossier du projet : « Ana_Ben/Ana_Ben.json » créé |
+| Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié | ✔ | créée par l’élève : « delay » refusé, « ma vitesse » → ma_vitesse (= 7 en simulation) ; donnée par le professeur : score (sans bouton) |
+| Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « Bureau›Classe›4B›COMMUN›TECHNOLOGIE›PONT-LEVIS › Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
 | Aucune erreur dans la console du navigateur | ✔ |  |

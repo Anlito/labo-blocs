@@ -390,3 +390,18 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    d'origine. Les tests ne dépendent plus des parcours ajoutés par le professeur. `site/eleves.html` (demande de
    Thomas) : tous les parcours, sans code professeur, chacun ouvre l'accueil de l'équipe ; lien (et « Copier le lien »)
    dans l'accueil du professeur.
+25. **Dossier de l'équipe toujours créé par Labo Blocs (16/10/2026)**, demande de Thomas : l'élève sélectionne le
+   dossier du projet (avant-dernier du chemin, surligné), Labo Blocs y crée ou retrouve le dossier de l'équipe. Le
+   dossier de l'équipe choisi directement est refusé avec « choisis le dossier qui le contient » ; un autre dossier :
+   « créer dedans » ou rechoisir (plus de « utiliser ce dossier quand même »). Chemin du distributeur et des nouveaux
+   projets aligné sur l'atelier : `Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE › … › {equipe}`.
+26. **Exercice libre : composants sur une même broche (16/10/2026)**, retour de Thomas : les deux composants restent
+   (simulateur et liste, marqués « broche partagée », en ambre), tous les conflits sont décrits, dès l'ouverture ;
+   l'aperçu de l'éditeur les signale aussi. Vue du simulateur : une carte par composant (plus par broche).
+27. **Variables créées par les élèves (16/10/2026)**, demande de Thomas : par exercice, « Variables données aux élèves »
+   (absent : CHOIX, comme avant) et « Les élèves créent leurs propres variables » (bouton « Créer une variable » dans la
+   palette). Nom vérifié (`nomDeVariable` : sans accent ni espace, une lettre au début, 16 caractères, pas un mot du
+   langage de la carte, pas déjà pris) ; menus des blocs de variables avec toutes les variables connues. Simulateur,
+   carte et code Arduino acceptaient déjà tout nom.
+   - Pages du kit nouveau projet : `html { height: 100% }` (l'espace de programmation était trop petit en mode
+     enseignant).

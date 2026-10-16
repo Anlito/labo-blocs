@@ -39,10 +39,27 @@ test('composants déduits : LED, bouton (condition et « quand »), servo, buzze
   assert.deepStrictEqual(composantsDuProgramme({ demarrage: [led('D4', 1)], boucle: [] }).composants, [{ type: 'led', broche: 'D4' }]);
 });
 
-test('une broche pour deux composants : conflit signalé, le premier est gardé', () => {
-  const r = composantsDuProgramme(programme([led('D2', 1), { bloc: 'si_alors', condition: { bloc: 'bouton_etat', broche: 'D2' }, alors: [] }]));
-  assert.deepStrictEqual(r.composants, [{ type: 'led', broche: 'D2' }]);
-  assert.deepStrictEqual(r.conflits, [{ broche: 'D2', types: ['led', 'bouton'] }]);
+test('une broche pour deux composants : les deux restent, marqués, et le conflit est signalé', () => {
+  const r = composantsDuProgramme(
+    programme([
+      led('D2', 1),
+      { bloc: 'si_alors', condition: { bloc: 'bouton_etat', broche: 'D2' }, alors: [] },
+      { bloc: 'son', broche: 'D5', frequence: { bloc: 'nombre', valeur: 440 }, duree: { bloc: 'nombre', valeur: 1 } },
+      { bloc: 'servo_angle', broche: 'D5', angle: { bloc: 'nombre', valeur: 90 } },
+      led('D7', 1),
+    ]),
+  );
+  assert.deepStrictEqual(r.composants, [
+    { type: 'led', broche: 'D2', conflit: true },
+    { type: 'bouton', broche: 'D2', conflit: true },
+    { type: 'buzzer', broche: 'D5', conflit: true },
+    { type: 'servo', broche: 'D5', conflit: true },
+    { type: 'led', broche: 'D7' },
+  ]);
+  assert.deepStrictEqual(r.conflits, [
+    { broche: 'D2', types: ['led', 'bouton'] },
+    { broche: 'D5', types: ['buzzer', 'servo'] },
+  ]);
 });
 
 const base = lireTexteParcours(fs.readFileSync(path.join(__dirname, '..', 'parcours', 'distributeur', 'parcours.js'), 'utf8'));
