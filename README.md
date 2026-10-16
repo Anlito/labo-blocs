@@ -72,6 +72,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 - **Jalon 4 (en direct) validé** (Uno et micro:bit ; clé 2.4G du mBot en V2) : mode « En direct » (le programme
   tourne dans l'ordinateur, la carte obéit, ses boutons et capteurs remontent), clé 2.4G du mBot, modes par parcours
   et par exercice — [RECETTE.md](RECETTE.md) §9.
-- **Jalon 5 (professeur) livré (20/10/2026), recette à faire** : suivi de classe et fiche d'équipe (`site/prof.html`),
+- **Jalon 5 (professeur) validé (16/10/2026)** : suivi de classe et fiche d'équipe (`site/prof.html`),
   niveaux par compétence du programme de cycle 4 et note, exports CSV et « résultats » importés par le Carnet de
   classe — [RECETTE.md](RECETTE.md) §10.
