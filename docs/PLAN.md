@@ -296,3 +296,20 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **À vérifier avec le matériel** : sens des moteurs du mBot (« tourner à gauche »), quelle LED est « gauche »
      (commande 6 : 1 = droite, 2 = gauche supposé), port des capteurs (ultrasons 3, ligne 2), copie du fichier
      micro:bit puis envoi par le câble.
+16. **Jalon 4 livré le 16/10/2026** (recette avec le matériel à faire, `RECETTE.md` §9). Mode « En direct » :
+   - `noyau/direct.js` : le simulateur tourne au rythme de l'horloge ; chaque sortie changée part en commande v2 (`D`, `A`,
+     `S`, `T`, `X` arrondis à l'entier), boutons surveillés (`M`, `W` → événements `E`), capteurs relus (`X` de lecture
+     trouvés dans le programme), ordres répétés filtrés (boucle sans attente), arrêt `W` + `OFF`.
+   - `interface/carte.js` : une connexion pour la page ; file de commandes (une réponse attendue à la fois), lectures
+     quand rien n'attend, `PING` au moins toutes les 0,8 s ; 3 réponses manquées → « La carte ne répond plus » ; onglet
+     fermé → `OFF` (sinon la carte éteint tout après 3 s). Aucun changement des programmes de carte (0.2).
+   - **mBot : clé 2.4G** (réponse de Thomas, 16/10) : c'est un périphérique HID pour l'ordinateur (pas un port série) →
+     WebHID, rapports « longueur + octets » portant le même protocole ; direct et envoi dans le robot par la clé ;
+     l'installation du programme de base reste au câble (redémarrage nécessaire). **Format des rapports à confirmer
+     avec la vraie clé** (recette 9.9) ; la clé virtuelle de la recette suit ce format.
+   - Bluetooth de l'ordinateur : il ne parle pas au module 2.4G (autre radio). Il faudrait le module Bluetooth de
+     Makeblock sur le robot (Web Bluetooth, Chrome/Edge) : piste possible plus tard.
+   - Modes par parcours (`modes`) et par exercice (`exercice.modes`, prioritaire) ; le simulateur reste toujours
+     (« Vérifier »). Éditeur : réglages du parcours et « Modes pour tester » de chaque exercice. Distributeur 1.2.0 et
+     découvertes 1.1.0 avec les trois modes ; atelier : « Essayer en direct sur la maquette ».
+   - Recette automatique : Labo Blocs 23/23, atelier 24/24.

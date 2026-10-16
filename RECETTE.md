@@ -1,4 +1,4 @@
-# Recette — jalons 1 à 3 (noyau, parcours du distributeur, éditeur, cartes)
+# Recette — jalons 1 à 4 (noyau, parcours du distributeur, éditeur, cartes, mode direct)
 
 À faire par Thomas sur un poste du collège, avec **Chrome ou Edge**, en ouvrant `site/index.html` depuis le dossier
 réseau (double-clic). Compter 30 à 40 minutes. Noter ✔ ou ✘ et une remarque pour chaque ligne.
@@ -136,3 +136,33 @@ juste, puis à droite **« Tester » › « Dans la carte »**.
 | 8.18 | Atelier du distributeur (ZIP) : exercice 13A réussi → « Envoyer dans la carte Arduino » ; carnet › Programmation › « Envoyer mon programme dans la carte Arduino », puis « Vider la carte » | Le mode « Dans la carte » s'ouvre sur l'exercice 13 ; la maquette fonctionne avec le programme de l'équipe ; « Vider la carte » efface ; `prof.html` › équipe › Bilan : « Programme envoyé dans la carte : n fois » | |
 | 8.19 | Éditeur (`site/editeur.html`) : « Nouveau parcours » › Réglages › Carte « micro:bit V2 » + « Dans la carte » | Composants P0–P2, catégories lilas Écran / Boutons / Capteurs / Musique ; étape « Régler un capteur de la carte » dans les scénarios | |
 | 8.20 | Avis | Les mots des blocs mBot et micro:bit, les messages de la carte, le tableau du mBot vous conviennent ? | |
+
+## 9. Jalon 4 — « En direct » : le programme tourne dans l'ordinateur, la carte obéit
+
+Matériel : la maquette du distributeur (Uno câblée), le mBot **avec sa clé 2.4G**, la micro:bit V2 ; Chrome ou Edge.
+Les cartes ont déjà leur programme de base (jalon 3). La recette automatique (`npm run recette`, 23 critères) fait le
+chemin avec une carte et une clé virtuelles ; ici, le vrai matériel. Réussite du jalon : **un même exercice tourne en
+simulateur, en direct, puis dans la carte**.
+
+Dans un exercice : « Solution », puis à droite **« Tester » › « En direct »**, « Connecter la carte », « Lancer ».
+
+| # | Action | Attendu | ✔/✘ |
+|---|---|---|---|
+| 9.1 | Distributeur, exercice 7 (`site/index.html?enseignant=1&exercice=dist-07`) : « Vérifier » dans le simulateur | Réussi | |
+| 9.2 | « En direct » › « Connecter la carte » › « Lancer » | Bandeau « Garde le câble branché… s'arrête si tu fermes l'onglet » ; « Lancer » est actif | |
+| 9.3 | Appuyer sur le **vrai** bouton PetiteDose (D3), puis GrandeDose (D4) | Les vraies LED D9 / D10 changent tout de suite, et l'écran montre la même chose. Le bouton à l'écran ne fait rien (« appuie sur le vrai bouton ») | |
+| 9.4 | Exercice 13A en direct | La trappe (servo) et les LED obéissent aux vrais boutons, avec les bonnes durées | |
+| 9.5 | « Arrêter » (ou modifier un bloc) | Tout s'éteint sur la maquette | |
+| 9.6 | En direct, fermer l'onglet | La maquette s'éteint (au plus tard 3 s après) | |
+| 9.7 | Même exercice : « Dans la carte » › « Envoyer mon programme », débrancher | Le programme tourne seul sur la maquette | |
+| 9.8 | Atelier (ZIP) : carnet › Programmation › « Essayer en direct sur la maquette » | L'exercice 13 s'ouvre en mode « En direct » | |
+| 9.9 | **mBot, clé 2.4G** : brancher la clé, allumer le robot (programme de base déjà installé au câble), découverte mBot ex. 3 › « En direct » › **« Connecter par la clé 2.4G »** | Une fenêtre liste la clé (« Makeblock », « HID »…) ; après « Connexion » : « Carte connectée · mBot (carte mCore) (clé 2.4G) ». **Sinon : noter ce qui s'affiche et le nom de la clé dans la fenêtre** | |
+| 9.10 | « Lancer », robot par terre ; mettre la main devant les ultrasons | Le robot avance, s'arrête sous 20 cm ; le curseur « Distance » montre la vraie mesure (verrouillé) | |
+| 9.11 | mBot par la clé : « Dans la carte » › « Envoyer mon programme », puis « Vider la carte » | Envoyé sans fil : le robot garde le programme ; vidé : il ne bouge plus | |
+| 9.12 | mBot neuf (programme de mBlock) par la clé | « Il s'installe avec le câble USB (une seule fois) » | |
+| 9.13 | micro:bit en direct (découverte micro:bit ex. 1 et 3) | Bouton A de la vraie carte → cœur et LED P0 ; ex. 3 : le curseur température montre la vraie température | |
+| 9.14 | Éditeur : Réglages › « En direct » ; un exercice › « Modes pour tester » : « Simulateur seulement » | Chez l'élève, cet exercice n'a plus le choix du mode ; les autres gardent ceux du parcours | |
+| 9.15 | Avis | Les messages du direct, le bandeau, le choix câble / clé vous conviennent ? | |
+
+Limite connue : en direct, une note de la micro:bit dure au moins 1 s (la suivante la remplace à son heure). Dans la
+carte et dans le simulateur, la durée est exacte.

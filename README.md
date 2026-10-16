@@ -68,3 +68,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
   blocs mBot (comme mBlock) et micro:bit, simulateur micro:bit et tableau du mBot, mode « Dans la carte » (installer le
   programme de la carte, envoyer le programme de l'élève, « Vider la carte ») ; l'atelier du distributeur envoie le
   programme de l'élève — [RECETTE.md](RECETTE.md) §8.
+- **Jalon 4 (en direct) livré (16/10/2026), recette avec le matériel à faire** : mode « En direct » (le programme
+  tourne dans l'ordinateur, la carte obéit, ses boutons et capteurs remontent), clé 2.4G du mBot, modes par parcours
+  et par exercice — [RECETTE.md](RECETTE.md) §9.
