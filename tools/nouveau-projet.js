@@ -53,7 +53,8 @@ function chargerParcours(quoi) {
 function page(source, { titre, css, demarrer, classesBody, commentaire }) {
   const texte = readFileSync(join(RACINE, 'site', source), 'utf8');
   const corps = texte.slice(texte.indexOf('<body'), texte.indexOf('<!-- Bibliothèques'));
-  const body = corps.replace(/^<body([^>]*)>/, (m, attrs) => {
+  // Le lien « Accueil » de Labo Blocs n'a pas de sens dans un projet.
+  const body = corps.replace(/ *<a class="ed-btn ed-vers-accueil"[^\n]*\n/, '').replace(/^<body([^>]*)>/, (m, attrs) => {
     const classe = (attrs.match(/class="([^"]*)"/) || [])[1] || '';
     return `<body class="${[classesBody, classe].filter(Boolean).join(' ')}">`;
   });

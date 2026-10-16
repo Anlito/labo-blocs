@@ -54,7 +54,9 @@ npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARD
 npm run essais:microbit  # refaire les fichiers micro:bit
 ```
 
-Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier (file://), sans serveur ni internet.
+Le site marche aussi en ouvrant directement `site/accueil.html` depuis un dossier (file://), sans serveur ni internet :
+accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant). En ligne :
+https://anlito.github.io/labo-blocs/ ouvre cet accueil.
 
 ## État
 

@@ -31,6 +31,7 @@ test('un projet créé : pages, réglages, parcours, module, consignes', () => {
     const html = fs.readFileSync(path.join(site, page), 'utf8');
     assert.doesNotMatch(html, /https?:\/\//, page);
     assert.doesNotMatch(html, /\.\.\//, page);
+    assert.doesNotMatch(html, /accueil\.html/, page); // lien vers l'accueil de Labo Blocs retiré
     const liens = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map((m) => m[1]);
     assert.ok(liens.length > 5, page);
     for (const l of liens) assert.ok(fs.existsSync(path.join(site, l)), `${page} : ${l} absent`);

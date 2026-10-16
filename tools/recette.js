@@ -654,6 +654,25 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     }
   });
 
+  // ---------- Accueil du professeur ----------
+
+  await critere('Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant', async () => {
+    const p = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+    const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
+    const parcours = await p.$$eval('.ac-parcours a', (l) => l.map((a) => [a.getAttribute('href'), a.querySelector('strong').textContent]));
+    verifier(outils.join() === 'editeur.html,prof.html' && parcours.length === 3, JSON.stringify({ outils, parcours }));
+    await p.click('.ac-parcours a:nth-child(2)');
+    await pause(1200);
+    const equipe = await texte(p, '.equipe-texte');
+    const titre = await p.title();
+    verifier(/Mode enseignant/.test(equipe) && /mBot/.test(titre), `${equipe} · ${titre}`);
+    await p.close();
+    const e = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href);
+    verifier(await visible(e, '.ed-vers-accueil'), 'pas de lien Accueil dans l’éditeur');
+    await e.close();
+    return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur`;
+  });
+
   // ---------- Kit nouveau projet ----------
 
   await critere('Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file://', async () => {

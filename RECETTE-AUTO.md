@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-16/10/2026 17:59:28 · chromium · page ouverte en file:// · 25/25 critères
+16/10/2026 18:42:11 · chromium · page ouverte en file:// · 26/26 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -27,5 +27,6 @@
 | En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
 | En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice | ✔ | bouton A de la vraie carte → P0 allumée et « X 2 2 3 » ; exercice réglé « simulateur seulement » : sélecteur de modes caché |
 | Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-16.csv + labo-blocs-distributeur-5A-2026-10-16.labo-resultats.json (compétences C6, C9) |
+| Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant | ✔ | Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit ; « Découverte du mBot — Labo Blocs » ouvert en mode enseignant ; lien Accueil dans l’éditeur |
 | Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « 4B›COMMUN›TECHNOLOGIE›PONT-LEVIS›Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
 | Aucune erreur dans la console du navigateur | ✔ |  |

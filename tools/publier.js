@@ -24,7 +24,7 @@ for (const f of r.exportes) {
 }
 writeFileSync(
   join(OUT, 'index.html'),
-  '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=site/index.html"><title>Labo Blocs</title></head>' +
-    '<body><a href="site/index.html">Labo Blocs</a></body></html>\n',
+  '<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=site/accueil.html"><title>Labo Blocs</title></head>' +
+    '<body><a href="site/accueil.html">Labo Blocs</a></body></html>\n',
 );
 console.log(`Prêt à publier : _site/ (parcours : ${r.exportes.join(', ')})`);
