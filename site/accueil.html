@@ -17,6 +17,16 @@
   .ac-carte { cursor: default; }
   .ac-carte:hover { border-color: var(--bord); background: #FFFFFF; }
   .ac-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.375rem; }
+  .ac-github-form { display: flex; flex-direction: column; gap: 0.625rem; max-width: 36rem; }
+  .ac-github-form label { display: flex; flex-direction: column; gap: 0.375rem; font-weight: 700; font-size: 0.9375rem; }
+  .ac-github-form input { font: inherit; font-weight: 400; height: 2.75rem; padding: 0 0.75rem; border: 2px solid var(--bord-fort); border-radius: 0.625rem; background: #FFFFFF; }
+  .ac-github-form .btn-principal { height: 2.375rem; padding: 0 1rem; font-size: 0.9375rem; }
+  .ac-message { margin: 0; padding: 0.625rem 0.75rem; border-radius: 0.625rem; font-weight: 700; font-size: 0.9375rem; }
+  .ac-message.ok { background: #E1F4EA; color: var(--reussi-texte); }
+  .ac-message.ecart { background: var(--ecart-pale); color: var(--ecart-texte); }
+  .ac-message[hidden] { display: none; }
+  .ac-aide { font-size: 0.9375rem; color: var(--texte-2); line-height: 1.5; max-width: 48rem; }
+  .ac-aide summary { cursor: pointer; font-weight: 700; color: var(--action); }
   .ac-actions .btn-secondaire { height: 2.375rem; padding: 0 0.875rem; font-size: 0.875rem; display: inline-flex; align-items: center; text-decoration: none; }
 </style>
 <!-- Code professeur (porte : interface/porte-professeur.js) -->
@@ -51,6 +61,30 @@
     </div>
   </section>
 
+  <section class="ac-section ac-github" aria-labelledby="ac-github">
+    <h2 id="ac-github">Mise en ligne des parcours</h2>
+    <p class="ed-intro ac-github-etat"></p>
+    <div class="ac-github-form">
+      <label>Clé d’accès GitHub<input type="password" class="ac-cle" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+      <div class="ac-actions">
+        <button type="button" class="btn-principal ac-enregistrer-cle">Enregistrer la clé</button>
+        <button type="button" class="btn-secondaire ac-oublier-cle" hidden>Oublier la clé sur cet ordinateur</button>
+      </div>
+      <p class="ac-message" role="status" hidden></p>
+    </div>
+    <details class="ac-aide">
+      <summary>Créer la clé sur GitHub (une seule fois, 3 minutes)</summary>
+      <ol>
+        <li>Sur GitHub, connecté à ton compte : photo en haut à droite › <strong>Settings</strong> › tout en bas à gauche <strong>Developer settings</strong> › <strong>Personal access tokens</strong> › <strong>Fine-grained tokens</strong> › <strong>Generate new token</strong>.</li>
+        <li><strong>Token name</strong> : « Labo Blocs éditeur ». <strong>Expiration</strong> : 1 an (ou ce que tu veux).</li>
+        <li><strong>Repository access</strong> : <strong>Only select repositories</strong> › choisis <strong>labo-blocs</strong> (et rien d’autre).</li>
+        <li><strong>Permissions</strong> › <strong>Repository permissions</strong> › <strong>Contents</strong> : <strong>Read and write</strong>. Ne touche pas aux autres.</li>
+        <li><strong>Generate token</strong>, puis copie la clé (elle commence par <code>github_pat_</code>) et colle-la ci-dessus.</li>
+      </ol>
+      <p>La clé reste dans ce navigateur, sur cet ordinateur : enregistre-la seulement sur <strong>ton</strong> ordinateur. Pour l’annuler : même page sur GitHub › la clé › <strong>Delete</strong>.</p>
+    </details>
+  </section>
+
   <section class="ac-section" aria-labelledby="ac-essayer">
     <h2 id="ac-essayer">Essayer un parcours comme un élève</h2>
     <p class="ed-intro">« Essayer » : tous les exercices sont ouverts et rien n’est enregistré. « Copier le lien élèves » : l’adresse à donner aux élèves (prénoms, classe, dossier de l’équipe).</p>
@@ -59,6 +93,49 @@
   </section>
 </main>
 
+<!-- Clé GitHub pour la mise en ligne des parcours (interface/github-depot.js) -->
+<script src="../interface/github-depot.js"></script>
+<script>
+  (function () {
+    'use strict';
+    const L = window.LaboBlocs;
+    const $ = (s) => document.querySelector(s);
+    function dessiner() {
+      const cle = L.lireCleGithub();
+      $('.ac-github-etat').textContent = cle
+        ? 'Clé GitHub enregistrée sur cet ordinateur : dans l’éditeur, « Publier » met le parcours en ligne (2 à 3 minutes plus tard, il est ici et chez les élèves).'
+        : 'Sans clé, « Publier » télécharge le fichier du parcours, à déposer à la main sur GitHub. Avec ta clé GitHub, il part en ligne directement.';
+      $('.ac-cle').value = '';
+      $('.ac-cle').placeholder = cle ? 'Clé enregistrée (colle une nouvelle clé pour la remplacer)' : 'github_pat_…';
+      $('.ac-oublier-cle').hidden = !cle;
+    }
+    function message(texte, ok) {
+      const m = $('.ac-message');
+      m.textContent = texte;
+      m.className = 'ac-message ' + (ok ? 'ok' : 'ecart');
+      m.hidden = false;
+    }
+    $('.ac-enregistrer-cle').addEventListener('click', async () => {
+      const cle = $('.ac-cle').value.trim();
+      const b = $('.ac-enregistrer-cle');
+      b.disabled = true;
+      b.textContent = 'Vérification…';
+      const r = await L.verifierCleGithub(cle);
+      b.disabled = false;
+      b.textContent = 'Enregistrer la clé';
+      if (!r.ok) return message(r.message, false);
+      L.ecrireCleGithub(cle);
+      dessiner();
+      message('Clé enregistrée : GitHub reconnaît le dépôt labo-blocs. « Publier » mettra tes parcours en ligne.', true);
+    });
+    $('.ac-oublier-cle').addEventListener('click', () => {
+      L.ecrireCleGithub('');
+      dessiner();
+      message('Clé oubliée sur cet ordinateur. Pour l’annuler complètement, supprime-la aussi sur GitHub.', true);
+    });
+    dessiner();
+  })();
+</script>
 <!-- Liste des parcours (parcours/index.js), puis chaque parcours pour son titre et son nombre d'exercices -->
 <script>
   (function () {

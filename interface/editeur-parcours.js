@@ -1011,7 +1011,10 @@
         (local
           ? `<li>écrite dans le dossier de Labo Blocs (<code>parcours/${echapper(etat.paquet.id)}/parcours.js</code>) : choisis le dossier qui contient « site » et « parcours » ;</li>`
           : '') +
-        `<li>téléchargée : <code>${echapper(etat.paquet.id)}-${suivante}.labo-parcours.json</code>. Ce fichier sert pour le site de Labo Blocs et pour les projets (« Mettre à jour les exercices »).</li></ul>`;
+        (A.lireCleGithub()
+          ? '<li><strong>mise en ligne</strong> sur le site de Labo Blocs (dossier <code>parcours</code> du dépôt GitHub) : les élèves l’auront dans 2 à 3 minutes.</li></ul>'
+          : `<li>téléchargée : <code>${echapper(etat.paquet.id)}-${suivante}.labo-parcours.json</code>. Ce fichier sert pour le site de Labo Blocs et pour les projets (« Mettre à jour les exercices »).</li></ul>` +
+            '<p class="ed-aide">Pour mettre un parcours en ligne en un clic : enregistre ta clé GitHub dans l’accueil de Labo Blocs (« Mise en ligne des parcours »).</p>');
       actions.innerHTML = '<button type="button" class="btn-secondaire btn-fermer-publier">Annuler</button><button type="button" class="btn-principal btn-confirmer-publier">Publier</button>';
       $('.btn-confirmer-publier', actions).onclick = () => publier(local);
     }
@@ -1046,7 +1049,8 @@
           );
         }
       }
-      telecharger(nomExport(publie), JSON.stringify(publie, null, 2) + '\n');
+      // Avec la clé GitHub : le parcours part directement sur le site ; sans clé, le fichier est téléchargé.
+      if (!A.lireCleGithub()) telecharger(nomExport(publie), JSON.stringify(publie, null, 2) + '\n');
     } catch (e) {
       if (e && e.name === 'AbortError') return;
       $('.publier-contenu', d).insertAdjacentHTML('beforeend', `<p class="ed-message ed-ecart">${echapper((e && e.message) || 'L’écriture n’a pas marché.')} Rien n’a été publié.</p>`);
@@ -1061,6 +1065,24 @@
     etat.enregistreA = null;
     majBandeau();
     $('.ed-etat').textContent = `Version ${publie.versionParcours} publiée`;
+    const fichierPourProjet = () => telecharger(nomExport(publie), JSON.stringify(publie, null, 2) + '\n');
+    const cle = A.lireCleGithub();
+    if (cle) {
+      $('.publier-contenu', d).innerHTML = `<p class="ed-message">${A.icone('info', { epaisseur: 2.4 })}<span>Version ${publie.versionParcours} publiée. Envoi sur GitHub…</span></p>`;
+      $('.publier-actions', d).innerHTML = '';
+      const r = await A.mettreEnLigne(publie, cle);
+      $('.publier-contenu', d).innerHTML = r.ok
+        ? `<p class="ed-message ed-reussi">${A.icone('coche', { epaisseur: 2.6 })}<span>Version ${publie.versionParcours} mise en ligne.</span></p>` +
+          '<p>Le site de Labo Blocs se met à jour tout seul : dans 2 à 3 minutes, le parcours est dans l’accueil et chez les élèves (« Copier le lien élèves »).</p>' +
+          '<p><strong>Dans un projet</strong> (ex. le distributeur) : « Mettre à jour les exercices » › « Chercher en ligne », ou le fichier ci-dessous.</p>'
+        : `<p class="ed-message ed-ecart">${A.icone('alerte', { epaisseur: 2.4 })}<span>La version ${publie.versionParcours} est publiée dans l’éditeur, mais pas encore en ligne. ${echapper(r.message)}</span></p>` +
+          '<p>En attendant : télécharge le fichier et dépose-le sur GitHub, dans le dossier <a href="https://github.com/Anlito/labo-blocs/tree/main/parcours" target="_blank" rel="noopener">parcours</a> (« Add file › Upload files »).</p>';
+      $('.publier-actions', d).innerHTML =
+        '<button type="button" class="btn-secondaire btn-fichier-projet">Télécharger le fichier</button><button type="button" class="btn-principal btn-fermer-publier">Fermer</button>';
+      $('.btn-fichier-projet', d).onclick = fichierPourProjet;
+      $('.btn-fermer-publier', d).onclick = () => d.close();
+      return;
+    }
     $('.publier-contenu', d).innerHTML =
       `<p class="ed-message ed-reussi">${A.icone('coche', { epaisseur: 2.6 })}<span>Version ${publie.versionParcours} publiée.</span></p>` +
       `<p>Le fichier <code>${echapper(nomExport(publie))}</code> est dans tes téléchargements.</p>` +

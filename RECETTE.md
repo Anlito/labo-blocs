@@ -230,3 +230,13 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 14.3 | Poser « contrôler la LED … D5 » puis « état sur la broche D2 » | LED D5 et bouton D2 apparaissent dans la liste et dans le simulateur ; « Lancer » allume la LED | |
 | 14.4 | Mettre une LED et un bouton sur la même broche | Message en ambre : la broche sert à deux composants | |
 | 14.5 | « J'ai terminé » | Message « Ton programme est enregistré… », l'exercice suivant s'ouvre ; dans le suivi de classe, pas de niveau pour cet exercice | |
+
+## 15. Mise en ligne directe d'un parcours
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 15.1 | Créer la clé sur GitHub (accueil › « Créer la clé sur GitHub », 5 étapes) | Une clé qui commence par `github_pat_` | |
+| 15.2 | Accueil › coller la clé › « Enregistrer la clé » | « Clé enregistrée : GitHub reconnaît le dépôt labo-blocs » | |
+| 15.3 | Éditeur › un parcours › « Publier » | La fenêtre annonce « mise en ligne » ; après « Publier » : « Version … mise en ligne » | |
+| 15.4 | 2 à 3 minutes plus tard, accueil (Ctrl + F5 si besoin) | Le parcours et sa nouvelle version sont proposés | |
+| 15.5 | Sur un autre ordinateur (sans clé), « Publier » | Le fichier est téléchargé, comme avant | |

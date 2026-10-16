@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-16/10/2026 20:58:50 · chromium · page ouverte en file:// · 29/29 critères
+16/10/2026 21:10:26 · chromium · page ouverte en file:// · 30/30 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -31,5 +31,6 @@
 | Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant | ✔ | Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit ; « Découverte du mBot — Labo Blocs » ouvert en mode enseignant ; lien Accueil dans l’éditeur |
 | Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours | ✔ | « Robot du couloir » publié et proposé à l’accueil ; élèves : classes 4A, 4C, dossier « 4C›COMMUN›ROBOT›Inès » ; distributeur : 5A, 5B, 5C, 5D, 5E, 5F |
 | Exercice libre : composants qui suivent le programme, broche en double signalée, « J’ai terminé », pas de niveau | ✔ | composants : LED D5, Bouton D2, LED D6 ; LED D5 allumée en simulation ; « La broche D2 sert à deux composants (LED et bouton) : une br… » en ambre ; terminé, exercice 2 ouvert, sans niveau |
+| Mise en ligne directe : clé enregistrée dans l’accueil, « Publier » envoie le parcours dans parcours/ du dépôt | ✔ | clé enregistrée (vide refusée) ; « Version 1.3.0 mise en ligne.Le site de Labo Blocs se met à j… » ; envoyé : parcours/decouverte-mbot-1.3.0.labo-parcours.json (version 1.3.0) |
 | Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « 4B›COMMUN›TECHNOLOGIE›PONT-LEVIS›Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
 | Aucune erreur dans la console du navigateur | ✔ |  |

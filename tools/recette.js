@@ -831,6 +831,52 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     }
   });
 
+  // ---------- Mise en ligne directe d'un parcours (GitHub simulé : rien ne part vraiment) ----------
+
+  await critere('Mise en ligne directe : clé enregistrée dans l’accueil, « Publier » envoie le parcours dans parcours/ du dépôt', async () => {
+    const fauxGithub = () => {
+      window.__appelsGithub = [];
+      const vrai = window.fetch;
+      window.fetch = async (url, o) => {
+        if (!String(url).startsWith('https://api.github.com')) return vrai(url, o);
+        const methode = (o && o.method) || 'GET';
+        window.__appelsGithub.push({ url: String(url), methode, corps: o && o.body ? JSON.parse(o.body) : null });
+        const statut = methode === 'PUT' ? 201 : /\/contents\//.test(url) ? 404 : 200;
+        return new Response(JSON.stringify({}), { status: statut, headers: { 'Content-Type': 'application/json' } });
+      };
+    };
+    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+    await a.evaluate(fauxGithub);
+    await a.evaluate(() => localStorage.removeItem('labo-blocs-cle-github'));
+    await a.click('.ac-enregistrer-cle');
+    await pause(200);
+    const vide = await texte(a, '.ac-message');
+    await a.type('.ac-cle', 'github_pat_essai_recette');
+    await a.click('.ac-enregistrer-cle');
+    await pause(400);
+    const enregistree = await a.evaluate(() => [document.querySelector('.ac-message').textContent, localStorage.getItem('labo-blocs-cle-github'), document.querySelector('.ac-github-etat').textContent]);
+    verifier(/Colle/.test(vide) && /Clé enregistrée/.test(enregistree[0]) && enregistree[1] === 'github_pat_essai_recette', JSON.stringify(enregistree));
+    await a.close();
+    // Éditeur : publier « Découverte du mBot » → un PUT vers parcours/decouverte-mbot-<version>.labo-parcours.json.
+    const e = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href, { sansDossiers: true });
+    await e.evaluate(fauxGithub);
+    await e.evaluate(() => [...document.querySelectorAll('.ed-carte-choix')].find((c) => /mBot/.test(c.textContent)).click());
+    await pause(1500);
+    await e.click('.btn-publier');
+    await pause(1500);
+    const annonce = await texte(e, '.publier-contenu');
+    await e.click('.btn-confirmer-publier');
+    await pause(1500);
+    const fin = await e.evaluate(() => [document.querySelector('.publier-contenu').textContent, window.__appelsGithub]);
+    const put = fin[1].find((x) => x.methode === 'PUT');
+    verifier(/mise en ligne/.test(annonce) && put && /\/contents\/parcours\/decouverte-mbot-[\d.]+\.labo-parcours\.json$/.test(put.url) && put.corps.branch === 'main', JSON.stringify({ annonce, fin }));
+    const envoye = JSON.parse(Buffer.from(put.corps.content, 'base64').toString('utf8'));
+    verifier(envoye.id === 'decouverte-mbot' && /mise en ligne/.test(fin[0]), fin[0]);
+    await e.evaluate(() => localStorage.removeItem('labo-blocs-cle-github'));
+    await e.close();
+    return `clé enregistrée (vide refusée) ; « ${fin[0].replace(/\s+/g, ' ').slice(0, 60)}… » ; envoyé : ${put.url.split('/contents/')[1]} (version ${envoye.versionParcours})`;
+  });
+
   // ---------- Kit nouveau projet ----------
 
   await critere('Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file://', async () => {
