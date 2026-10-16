@@ -223,7 +223,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    ligne par « si », « alors » et « sinon » en retrait ; consigne en **bandeau au-dessus des composants et du programme**
    (la colonne Tester garde toute la hauteur pour le simulateur du 13A), « Besoin d'aide ? » au-dessus des composants,
    « Masquer le texte » ; bouton **Plein écran** dans le bandeau.
-12. **Jalon 1 bis livré le 15/10/2026** (recette à faire, `RECETTE.md` §6). L'atelier du distributeur
+12. **Jalon 1 bis livré le 15/10/2026, recette validée par Thomas le 16/10/2026** (`RECETTE.md` §6). L'atelier du distributeur
    (`atelier-cereales`, même branche) utilise le module de Labo Blocs : écran d'exercice, moteur (simulation,
    vérification, code Arduino), sauvegarde. Ce qui a été décidé en le faisant :
    - **Module construit** (`npm run module`) : `labo-blocs-noyau.js` (aussi `require()` sous Node pour les tests des

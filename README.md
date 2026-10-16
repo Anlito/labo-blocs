@@ -57,7 +57,7 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
   une coupure et se vident — [essais/RAPPORT-JALON-0.md](essais/RAPPORT-JALON-0.md).
 - **Jalon 1 (noyau) validé (15/10/2026)** : le parcours du distributeur (01 à 13B) tourne dans Labo Blocs —
   [RECETTE.md](RECETTE.md), [RECETTE-AUTO.md](RECETTE-AUTO.md).
-- **Jalon 1 bis (intégration) livré, recette à faire** : l'atelier du distributeur utilise le module de Labo Blocs
+- **Jalon 1 bis (intégration) validé (16/10/2026)** : l'atelier du distributeur utilise le module de Labo Blocs
   (écran d'exercice, moteur, sauvegarde) ; son outil du professeur a « Mettre à jour les exercices » (en ligne ou par
   fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
 
