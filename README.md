@@ -46,6 +46,7 @@ npm run recette          # critères du jalon dans Chrome/Edge (file://) → REC
 npm run module           # construit le module dans dist/labo-blocs-<version>/ et exporte les parcours
 npm run vers-projet -- ../atelier-cereales [--parcours distributeur]   # copie le module (et le parcours) dans un projet
 npm run nouveau-projet -- ../pont-levis --titre "Pont-levis" --parcours <id> [--classes 4A,4B]   # crée un projet relié à Labo Blocs
+npm run code-professeur  # change le code professeur (seule son empreinte est écrite, dans site/code-professeur.js)
 npm run publier          # dossier _site/ publié sur GitHub Pages (application + parcours en ligne)
 npm run firmwares        # reconstruire les programmes des cartes (cartes/ ; avr-gcc + ARDUINO_CORE et SERVO, microbit-fs)
 npm run classe-test      # classe test de 8 équipes fictives (dist/classe-test/5A)
@@ -56,7 +57,9 @@ npm run essais:microbit  # refaire les fichiers micro:bit
 
 Le site marche aussi en ouvrant directement `site/accueil.html` depuis un dossier (file://), sans serveur ni internet :
 accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant). En ligne :
-https://anlito.github.io/labo-blocs/ ouvre cet accueil.
+https://anlito.github.io/labo-blocs/ ouvre cet accueil. L'accueil, l'éditeur, le suivi de classe et le mode enseignant
+demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le redemande). C'est une barrière pour les
+élèves curieux, pas une vraie sécurité : le site est public et sans serveur, et rien de personnel n'y est en ligne.
 
 ## État
 

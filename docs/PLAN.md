@@ -343,3 +343,11 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Outil du professeur : l'exemple du dossier de la classe suit les réglages du projet.
    - `docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md` : principe, fichiers reçus, contraintes, `monterExercice`, sauvegarde,
      outil du professeur, mises à jour, recette.
+19. **Accueil du professeur et code professeur (16/10/2026)**, demandés par Thomas : l'adresse de Labo Blocs ouvrait les
+   exercices du distributeur ; elle ouvre maintenant `site/accueil.html` (créer ou modifier un parcours, suivre une
+   classe, essayer chaque parcours en mode enseignant), protégé par un **code professeur** (choix de Thomas : code
+   d'accès simple). `interface/porte-professeur.js` cache la page jusqu'au bon code (PBKDF2-SHA-256, sel, empreinte dans
+   `site/code-professeur.js`, `npm run code-professeur` ; le code n'est écrit nulle part) ; mémorisé sur l'ordinateur,
+   « Verrouiller » le redemande. Pages concernées : accueil, éditeur, suivi de classe, mode enseignant (`?enseignant`) ;
+   la page des élèves reste libre. Limite dite à Thomas : dépôt public sans serveur, barrière pour les élèves et non
+   vraie sécurité (aucune donnée d'élève en ligne).

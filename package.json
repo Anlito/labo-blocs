@@ -16,7 +16,8 @@
     "publier": "node tools/publier.js",
     "classe-test": "node tools/classe-test.js",
     "firmwares": "node tools/construire-firmwares.js",
-    "nouveau-projet": "node tools/nouveau-projet.js"
+    "nouveau-projet": "node tools/nouveau-projet.js",
+    "code-professeur": "node tools/code-professeur.js"
   },
   "devDependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
