@@ -15,7 +15,8 @@
     "vers-projet": "node tools/vers-projet.js",
     "publier": "node tools/publier.js",
     "classe-test": "node tools/classe-test.js",
-    "firmwares": "node tools/construire-firmwares.js"
+    "firmwares": "node tools/construire-firmwares.js",
+    "nouveau-projet": "node tools/nouveau-projet.js"
   },
   "devDependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.3.0",

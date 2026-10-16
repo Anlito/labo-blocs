@@ -390,6 +390,14 @@
 
     const peutDossier = 'showDirectoryPicker' in global;
     const ouvrir = $('.pr-ouvrir');
+    // Exemple du dossier d'une classe, d'après les réglages du projet (dossier des équipes sans « {equipe} »).
+    const chemin = A.projet && A.projet.cheminSauvegarde;
+    if (chemin && chemin.length > 1) {
+      const classe = (A.projet.classes && A.projet.classes[0]) || '5A';
+      const dossier = chemin.slice(0, chemin.indexOf('{equipe}') >= 0 ? chemin.indexOf('{equipe}') : chemin.length).map((x) => x.replace('{classe}', classe));
+      const court = dossier.length > 2 ? [dossier[0], '…', dossier[dossier.length - 1]] : dossier;
+      ouvrir.querySelector('span').textContent = `Ex. ${court.join(' › ')}. Relu toutes les 30 secondes (Chrome, Edge).`;
+    }
     if (!peutDossier) {
       ouvrir.disabled = true;
       ouvrir.querySelector('span').textContent = 'Avec Chrome ou Edge seulement. Ici : importe les fichiers des équipes.';

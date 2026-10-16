@@ -654,6 +654,61 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     }
   });
 
+  // ---------- Kit nouveau projet ----------
+
+  await critere('Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file://', async () => {
+    const { creerProjet } = require('./nouveau-projet.js');
+    const { creerClasse } = require('./classe-test.js');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-projet-'));
+    try {
+      const r = creerProjet({ dossier: path.join(tmp, 'pont'), titre: 'Pont-levis', parcours: 'distributeur', accent: '#0B7A75', classes: ['4A', '4B'] });
+      // Élèves : nouvelle équipe (« Firefox »), parcours, un exercice ouvert avec ses blocs, styles du module appliqués.
+      const p = await page(pathToFileURL(path.join(r.site, 'programmation.html')).href, { sansDossiers: true });
+      verifier((await p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean))).join() === '4A,4B', 'classes du projet');
+      await p.type('.champ-prenom', 'zoé');
+      await p.select('.champ-classe', '4B');
+      await p.click('.formulaire-equipe button[type=submit]');
+      await pause(200);
+      const chemin = await texte(p, '.chemin');
+      verifier(/PONT-LEVIS/.test(chemin) && chemin.includes('Zoé'), 'chemin : ' + chemin);
+      await p.click('.btn-commencer-sans-dossier');
+      await pause(300);
+      verifier(await visible(p, '.ecran-parcours'), 'parcours non affiché');
+      const style = await p.evaluate(() => {
+        const t = getComputedStyle(document.querySelector('.titre-projet'));
+        return { titre: document.querySelector('.titre-projet').textContent, police: getComputedStyle(document.body).fontFamily, accent: getComputedStyle(document.querySelector('.bandeau')).getPropertyValue('--accent').trim(), taille: parseFloat(t.fontSize) };
+      });
+      verifier(style.titre === 'Pont-levis' && /Atkinson|Lexend/.test(style.police) && style.accent === '#0B7A75' && style.taille >= 13, JSON.stringify(style));
+      await p.click('.carte-exercice');
+      await pause(900);
+      const blocs = await p.$$eval('.ecran-exercice .blocklyToolbox, .ecran-exercice .blocklyFlyout, .ecran-exercice .blocklyToolboxDiv', (l) => l.length);
+      verifier((await visible(p, '.ecran-exercice')) && blocs > 0, 'exercice non affiché');
+      const titreEx = await texte(p, '.titre-exercice');
+      await p.close();
+      // Professeur : les 8 équipes test, dont une sauvegarde « d'un autre projet » (application pont-levis).
+      const fichiers = creerClasse(path.join(tmp, '4A')).map((f, i) => {
+        const copie = path.join(tmp, `equipe${i + 1}.json`);
+        const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+        if (i === 0) Object.assign(d, { application: 'pont-levis', formatVersion: 3, carnet: { etape: 2 } });
+        fs.writeFileSync(copie, JSON.stringify(d));
+        return copie;
+      });
+      const q = await page(pathToFileURL(path.join(r.site, 'programmation-prof.html')).href);
+      const exemple = await texte(q, '.pr-ouvrir span');
+      verifier(/4A › … › PONT-LEVIS/.test(exemple), 'exemple de dossier : ' + exemple);
+      await (await q.$('.pr-accueil .pr-fichiers')).uploadFile(...fichiers);
+      await pause(800);
+      const lignes = await q.$$eval('.pr-tableau tbody tr', (l) => l.length);
+      const projet = await texte(q, '.pr-projet');
+      const largeur = await q.evaluate(() => document.querySelector('.pr-tableau').getBoundingClientRect().width);
+      verifier(lignes === 8 && /Pont-levis/.test(projet) && largeur > 900, `${lignes} lignes, « ${projet} », tableau ${Math.round(largeur)} px`);
+      await q.close();
+      return `élèves : équipe Zoé (4B), dossier « ${chemin.replace(/\s+/g, ' ')} », exercice « ${titreEx} » ; professeur : ${lignes} équipes (dont une sauvegarde d'un autre projet)`;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   await b.close();
   await critere('Aucune erreur dans la console du navigateur', async () => verifier(!erreurs.length, erreurs.join(' | ')));
 

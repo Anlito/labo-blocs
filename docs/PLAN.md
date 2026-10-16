@@ -330,3 +330,16 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Carnet de classe 1.22.0 : Notes › « Importer des résultats Labo Blocs » (fusionné dans `main` et en ligne le 16/10/2026).
    - Atelier : bouton « Carnet de classe » et compétences dans le bilan d'une équipe.
    - Recette automatique : Labo Blocs 24/24, atelier 24/24, tests du Carnet 71/71 (dont 4 nouveaux).
+18. **Kit nouveau projet (16/10/2026)**, demandé par Thomas après le jalon 5 : ce qu'il faut fournir à un futur projet
+   pour que sa partie programmation soit reliée à Labo Blocs.
+   - `npm run nouveau-projet -- <dossier> --titre … --parcours <id | fichier .labo-parcours.json> [--classes] [--chemin]
+     [--accent]` : `site/programmation.html` (élèves, tirée de `site/index.html`), `site/programmation-prof.html`
+     (professeur, tirée de `site/prof.html`), `site/projet-labo-blocs.js`, `site/parcours/<id>.js`,
+     `site/vendor/labo-blocs/`, `docs/BRIEF-LABO-BLOCS.md`, `LISEZ-MOI-LABO-BLOCS.md`. Rien n'est écrasé.
+   - Module : l'outil du professeur (`interface/professeur.js`) et `labo-blocs-professeur.css`, plus `logo.svg`.
+     Version du moteur inchangée (0.3.0) : ajout seulement, aucun parcours n'est refusé par l'atelier.
+   - Sauvegarde : le fichier d'un autre projet (son `application`, ses rubriques) est lu s'il porte une rubrique
+     `programmation` de Labo Blocs.
+   - Outil du professeur : l'exemple du dossier de la classe suit les réglages du projet.
+   - `docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md` : principe, fichiers reçus, contraintes, `monterExercice`, sauvegarde,
+     outil du professeur, mises à jour, recette.

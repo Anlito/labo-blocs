@@ -88,6 +88,8 @@
     const paquet = A.preparer(brut);
 
     document.documentElement.style.setProperty('--accent', projet.accent || '#2547D0');
+    // Page d'un projet (npm run nouveau-projet) : les couleurs de Labo Blocs sont posées sur body.labo-blocs.
+    if (document.body.classList.contains('labo-blocs')) document.body.style.setProperty('--accent', projet.accent || '#2547D0');
     for (const el of document.querySelectorAll('.bandeau .logo')) el.src = projet.logo || 'img/logo.svg';
     for (const el of document.querySelectorAll('.titre-projet')) el.textContent = projet.titre;
     document.title = `${projet.titre} — Labo Blocs`;
