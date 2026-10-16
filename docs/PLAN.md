@@ -296,7 +296,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **À vérifier avec le matériel** : sens des moteurs du mBot (« tourner à gauche »), quelle LED est « gauche »
      (commande 6 : 1 = droite, 2 = gauche supposé), port des capteurs (ultrasons 3, ligne 2), copie du fichier
      micro:bit puis envoi par le câble.
-16. **Jalon 4 livré le 16/10/2026** (recette avec le matériel à faire, `RECETTE.md` §9). Mode « En direct » :
+16. **Jalon 4 livré le 16/10/2026, recette validée par Thomas** (`RECETTE.md` §9) : Arduino Uno et micro:bit en direct et en envoi dans la carte ; clé 2.4G du mBot reportée à la V2. Mode « En direct » :
    - `noyau/direct.js` : le simulateur tourne au rythme de l'horloge ; chaque sortie changée part en commande v2 (`D`, `A`,
      `S`, `T`, `X` arrondis à l'entier), boutons surveillés (`M`, `W` → événements `E`), capteurs relus (`X` de lecture
      trouvés dans le programme), ordres répétés filtrés (boucle sans attente), arrêt `W` + `OFF`.
