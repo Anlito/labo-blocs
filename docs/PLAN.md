@@ -306,7 +306,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **mBot : clé 2.4G** (réponse de Thomas, 16/10) : c'est un périphérique HID pour l'ordinateur (pas un port série) →
      WebHID, rapports « longueur + octets » portant le même protocole ; direct et envoi dans le robot par la clé ;
      l'installation du programme de base reste au câble (redémarrage nécessaire). **Format des rapports à confirmer
-     avec la vraie clé** (recette 9.9) ; la clé virtuelle de la recette suit ce format.
+     avec la vraie clé** ; la clé virtuelle de la recette suit ce format. **Décision de Thomas (16/10/2026) : la clé
+     2.4G sera testée en V2** (pas de clé sous la main) ; le code reste, non validé avec le matériel.
    - Bluetooth de l'ordinateur : il ne parle pas au module 2.4G (autre radio). Il faudrait le module Bluetooth de
      Makeblock sur le robot (Web Bluetooth, Chrome/Edge) : piste possible plus tard.
    - Modes par parcours (`modes`) et par exercice (`exercice.modes`, prioritaire) ; le simulateur reste toujours

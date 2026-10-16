@@ -139,7 +139,7 @@ juste, puis à droite **« Tester » › « Dans la carte »**.
 
 ## 9. Jalon 4 — « En direct » : le programme tourne dans l'ordinateur, la carte obéit
 
-Matériel : la maquette du distributeur (Uno câblée), le mBot **avec sa clé 2.4G**, la micro:bit V2 ; Chrome ou Edge.
+Matériel : la maquette du distributeur (Uno câblée), le mBot, la micro:bit V2 ; Chrome ou Edge. Les points « (V2) » (clé 2.4G du mBot) sont reportés à la V2.
 Les cartes ont déjà leur programme de base (jalon 3). La recette automatique (`npm run recette`, 23 critères) fait le
 chemin avec une carte et une clé virtuelles ; ici, le vrai matériel. Réussite du jalon : **un même exercice tourne en
 simulateur, en direct, puis dans la carte**.
@@ -156,10 +156,10 @@ Dans un exercice : « Solution », puis à droite **« Tester » › « En direc
 | 9.6 | En direct, fermer l'onglet | La maquette s'éteint (au plus tard 3 s après) | |
 | 9.7 | Même exercice : « Dans la carte » › « Envoyer mon programme », débrancher | Le programme tourne seul sur la maquette | |
 | 9.8 | Atelier (ZIP) : carnet › Programmation › « Essayer en direct sur la maquette » | L'exercice 13 s'ouvre en mode « En direct » | |
-| 9.9 | **mBot, clé 2.4G** : brancher la clé, allumer le robot (programme de base déjà installé au câble), découverte mBot ex. 3 › « En direct » › **« Connecter par la clé 2.4G »** | Une fenêtre liste la clé (« Makeblock », « HID »…) ; après « Connexion » : « Carte connectée · mBot (carte mCore) (clé 2.4G) ». **Sinon : noter ce qui s'affiche et le nom de la clé dans la fenêtre** | |
+| 9.9 (V2) | **mBot, clé 2.4G** : brancher la clé, allumer le robot (programme de base déjà installé au câble), découverte mBot ex. 3 › « En direct » › **« Connecter par la clé 2.4G »** | Une fenêtre liste la clé (« Makeblock », « HID »…) ; après « Connexion » : « Carte connectée · mBot (carte mCore) (clé 2.4G) ». **Sinon : noter ce qui s'affiche et le nom de la clé dans la fenêtre** | |
 | 9.10 | « Lancer », robot par terre ; mettre la main devant les ultrasons | Le robot avance, s'arrête sous 20 cm ; le curseur « Distance » montre la vraie mesure (verrouillé) | |
-| 9.11 | mBot par la clé : « Dans la carte » › « Envoyer mon programme », puis « Vider la carte » | Envoyé sans fil : le robot garde le programme ; vidé : il ne bouge plus | |
-| 9.12 | mBot neuf (programme de mBlock) par la clé | « Il s'installe avec le câble USB (une seule fois) » | |
+| 9.11 (V2) | mBot par la clé : « Dans la carte » › « Envoyer mon programme », puis « Vider la carte » | Envoyé sans fil : le robot garde le programme ; vidé : il ne bouge plus | |
+| 9.12 (V2) | mBot neuf (programme de mBlock) par la clé | « Il s'installe avec le câble USB (une seule fois) » | |
 | 9.13 | micro:bit en direct (découverte micro:bit ex. 1 et 3) | Bouton A de la vraie carte → cœur et LED P0 ; ex. 3 : le curseur température montre la vraie température | |
 | 9.14 | Éditeur : Réglages › « En direct » ; un exercice › « Modes pour tester » : « Simulateur seulement » | Chez l'élève, cet exercice n'a plus le choix du mode ; les autres gardent ceux du parcours | |
 | 9.15 | Avis | Les messages du direct, le bandeau, le choix câble / clé vous conviennent ? | |
