@@ -57,14 +57,14 @@ test('exercice modifié par le professeur : « à revérifier », blocs et réus
   S.noterProgramme(d, 'dist-02', { blocks: { blocks: [{ type: 'boucle', id: 'boucle' }] } });
   reussir(d, 'dist-02');
   const v2 = lireParcours('distributeur');
-  v2.versionParcours = '1.3.0';
+  v2.versionParcours = '1.4.0';
   v2.exercices[1].consigne += ' Change de rythme.';
   const p2 = preparer(v2);
   assert.deepStrictEqual(S.relierParcours(d, p2), ['dist-02']);
   assert.strictEqual(S.etat(d, p2, 'dist-02'), 'a_reverifier');
   assert.strictEqual(S.estDebloque(d, p2, 'dist-03'), true, 'la réussite n’est pas effacée');
   assert.ok(d.programmation.exercices['dist-02'].programme, 'les blocs sont gardés');
-  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: '1.3.0' });
+  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: '1.4.0' });
   assert.strictEqual(S.avancement(d, p2).aReverifier, 1);
   // Revérifié : l'exercice redevient « réussi » ; relier à nouveau ne change plus rien.
   S.noterVerification(d, p2.exercices[1], { reussi: true });

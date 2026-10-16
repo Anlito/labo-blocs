@@ -335,6 +335,7 @@
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="niveauVerrouille"${e.niveauVerrouille ? ' checked' : ''}${e.niveau ? '' : ' disabled'}> Niveau imposé (évaluation)</label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="defi"${e.defi ? ' checked' : ''}> Défi facultatif</label>` +
       '</div>' +
+      `<label>Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
       `<label>Modes pour tester<select class="champ" data-champ="modes">${MODES_EXERCICE.map(([v, t]) => `<option value="${v}"${(e.modes ? e.modes.join('+') : '') === v ? ' selected' : ''}>${v ? t : `${t} (${nomsModes(etat.paquet.modes || ['simulateur'])})`}</option>`).join('')}</select></label>` +
       `<label>Fiche « À savoir »<select class="champ-fiche">${optionsFiches}</select></label>` +
       (fiche
@@ -412,6 +413,9 @@
         }
         $('[data-champ="niveauVerrouille"]', zone).disabled = !t.value;
         if (!t.value) $('[data-champ="niveauVerrouille"]', zone).checked = false;
+        modifie();
+      } else if (t.matches('[data-champ="competence"]')) {
+        e.competence = t.value;
         modifie();
       } else if (t.matches('[data-champ="modes"]')) {
         if (t.value) e.modes = t.value.split('+');

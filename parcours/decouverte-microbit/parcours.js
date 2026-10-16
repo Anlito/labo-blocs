@@ -1,12 +1,12 @@
-// Parcours « Découverte de la micro:bit », version 1.1.0 (Labo Blocs).
+// Parcours « Découverte de la micro:bit », version 1.2.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-microbit",
   "titre": "Découverte de la micro:bit",
-  "versionParcours": "1.1.0",
-  "date": "2026-10-16",
+  "versionParcours": "1.2.0",
+  "date": "2026-10-20",
   "moteurMinimum": "0.3.0",
   "carte": "microbit",
   "modes": [
@@ -103,7 +103,8 @@ definirParcours({
             ]
           }
         ]
-      }
+      },
+      "competence": "C9"
     },
     {
       "id": "mb-02",
@@ -171,7 +172,8 @@ definirParcours({
             "duree": 1
           }
         ]
-      }
+      },
+      "competence": "C9"
     },
     {
       "id": "mb-03",
@@ -283,7 +285,8 @@ definirParcours({
             ]
           }
         ]
-      }
+      },
+      "competence": "C6"
     }
   ]
 });

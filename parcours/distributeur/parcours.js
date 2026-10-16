@@ -1,12 +1,12 @@
-// Parcours « Distributeur de céréales », version 1.2.0 (Labo Blocs).
+// Parcours « Distributeur de céréales », version 1.3.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "distributeur",
   "titre": "Distributeur de céréales",
-  "versionParcours": "1.2.0",
-  "date": "2026-10-16",
+  "versionParcours": "1.3.0",
+  "date": "2026-10-20",
   "moteurMinimum": "0.1.0",
   "carte": "uno",
   "modes": [
@@ -67,7 +67,8 @@ definirParcours({
         ],
         "boucle": []
       },
-      "aideLed": true
+      "aideLed": true,
+      "competence": "C9"
     },
     {
       "id": "dist-02",
@@ -131,7 +132,8 @@ definirParcours({
           }
         ]
       },
-      "aideLed": true
+      "aideLed": true,
+      "competence": "C9"
     },
     {
       "id": "dist-03",
@@ -221,7 +223,8 @@ definirParcours({
           }
         ]
       },
-      "aideLed": true
+      "aideLed": true,
+      "competence": "C9"
     },
     {
       "id": "dist-04",
@@ -303,7 +306,8 @@ definirParcours({
           }
         ]
       },
-      "aideLed": true
+      "aideLed": true,
+      "competence": "C6"
     },
     {
       "id": "dist-05",
@@ -420,7 +424,8 @@ definirParcours({
           }
         ]
       },
-      "aideLed": true
+      "aideLed": true,
+      "competence": "C6"
     },
     {
       "id": "dist-06",
@@ -554,7 +559,8 @@ definirParcours({
             ]
           }
         ]
-      }
+      },
+      "competence": "C6"
     },
     {
       "id": "dist-07",
@@ -717,7 +723,8 @@ definirParcours({
             ]
           }
         ]
-      }
+      },
+      "competence": "C6"
     },
     {
       "id": "dist-08",
@@ -935,7 +942,8 @@ definirParcours({
           }
         ]
       },
-      "illustration": "distributeur"
+      "illustration": "distributeur",
+      "competence": "C6"
     },
     {
       "id": "dist-09",
@@ -989,7 +997,8 @@ definirParcours({
           }
         ],
         "boucle": []
-      }
+      },
+      "competence": "C9"
     },
     {
       "id": "dist-10",
@@ -1052,7 +1061,8 @@ definirParcours({
             "duree": 2
           }
         ]
-      }
+      },
+      "competence": "C9"
     },
     {
       "id": "dist-11",
@@ -1141,7 +1151,8 @@ definirParcours({
             "duree": 2
           }
         ]
-      }
+      },
+      "competence": "C9"
     },
     {
       "id": "dist-12",
@@ -1257,7 +1268,8 @@ definirParcours({
             ]
           }
         ]
-      }
+      },
+      "competence": "C6"
     },
     {
       "id": "dist-13a",
@@ -1526,7 +1538,8 @@ definirParcours({
           }
         ]
       },
-      "illustration": "distributeur"
+      "illustration": "distributeur",
+      "competence": "C9"
     },
     {
       "id": "dist-13b",
@@ -1874,7 +1887,8 @@ definirParcours({
           }
         ]
       },
-      "illustration": "distributeur"
+      "illustration": "distributeur",
+      "competence": "C9"
     }
   ],
   "fiches": {

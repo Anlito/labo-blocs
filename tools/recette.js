@@ -325,7 +325,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
         const dossier = await (await (await racine.getDirectoryHandle('labo-blocs')).getDirectoryHandle('parcours')).getDirectoryHandle('distributeur');
         return (await (await dossier.getFileHandle('parcours.js')).getFile()).text();
       });
-      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.3.0"'), 'parcours.js non écrit');
+      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.4.0"'), 'parcours.js non écrit');
       fs.writeFileSync(path.join(copie, 'parcours', 'distributeur', 'parcours.js'), ecrit);
       await p.close();
       // L'élève (mode enseignant pour aller droit à l'exercice) : consigne, palette, vérification réussie.
@@ -343,7 +343,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       const ecart = await texte(eleve, '.resultat');
       verifier(/LED D4 devrait être allumée/.test(ecart), ecart);
       await eleve.close();
-      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.3.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
+      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.4.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
     } finally {
       fs.rmSync(copie, { recursive: true, force: true });
     }

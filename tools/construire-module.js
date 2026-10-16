@@ -19,7 +19,7 @@ const { join } = require('node:path');
 const vm = require('node:vm');
 
 const RACINE = join(__dirname, '..');
-const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde'];
+const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde', 'competences'];
 const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration'];
 const { VERSION_MOTEUR } = require('../noyau/parcours.js');
 
