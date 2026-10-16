@@ -347,6 +347,8 @@
     ajouter_a: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
     son: { fields: { BROCHE: 'D2' }, inputs: { FREQUENCE: { shadow: { type: 'nombre', fields: { NUM: 440 } } }, DUREE: { shadow: { type: 'nombre', fields: { NUM: 0.5 } } } } },
     operation: { inputs: { A: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, B: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
+    // Case à droite pour taper une valeur (ex. distance < 20) ; on peut y glisser un autre bloc (HAUT / BAS, variable…).
+    comparaison: { inputs: { B: { shadow: { type: 'nombre', fields: { NUM: 0 } } } } },
     hasard: { inputs: { MIN: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, MAX: { shadow: { type: 'nombre', fields: { NUM: 6 } } } } },
   };
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
