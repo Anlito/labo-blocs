@@ -8,6 +8,7 @@ const puppeteer = require('puppeteer-core');
 
 const RACINE = path.join(__dirname, '..');
 const PAGE = pathToFileURL(path.join(RACINE, 'site', 'index.html')).href;
+const CARTE_VIRTUELLE = fs.readFileSync(path.join(RACINE, 'tests', 'outils', 'carte-virtuelle.js'), 'utf8');
 const CANDIDATS = [
   process.env.CHROME,
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -51,6 +52,8 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     p.on('dialog', (d) => d.accept());
     // « Firefox » : pas d'accès aux dossiers ni aux fichiers.
     if (options && options.sansDossiers) await p.evaluateOnNewDocument(() => ['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker'].forEach((f) => delete window[f]));
+    // Carte virtuelle à la place du câble USB (jalon 3) : { modele, firmware, occupee }.
+    if (options && options.carte) await p.evaluateOnNewDocument(`${CARTE_VIRTUELLE};installerCarteVirtuelle(${JSON.stringify(options.carte)});`);
     await p.goto(url);
     await pause(600);
     return p;
@@ -322,7 +325,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
         const dossier = await (await (await racine.getDirectoryHandle('labo-blocs')).getDirectoryHandle('parcours')).getDirectoryHandle('distributeur');
         return (await (await dossier.getFileHandle('parcours.js')).getFile()).text();
       });
-      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.1.0"'), 'parcours.js non écrit');
+      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.2.0"'), 'parcours.js non écrit');
       fs.writeFileSync(path.join(copie, 'parcours', 'distributeur', 'parcours.js'), ecrit);
       await p.close();
       // L'élève (mode enseignant pour aller droit à l'exercice) : consigne, palette, vérification réussie.
@@ -340,10 +343,156 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       const ecart = await texte(eleve, '.resultat');
       verifier(/LED D4 devrait être allumée/.test(ecart), ecart);
       await eleve.close();
-      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.1.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
+      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.2.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
     } finally {
       fs.rmSync(copie, { recursive: true, force: true });
     }
+  });
+
+  // ---------- Jalon 3 : cartes (carte virtuelle à la place du câble USB) ----------
+
+  const etatCarte = (p) => p.$eval('.panneau-carte', (e) => ({ cle: e.dataset.etat, titre: (e.querySelector('.pc-titre') || {}).textContent, message: (e.querySelector('.pc-message') || {}).textContent }));
+  // Attend la fin d'une action : un état nouveau (ou un nouveau message) qui n'est pas une attente.
+  let dernierEtat = '';
+  async function attendreCarte(p, pasCes) {
+    let e = null;
+    for (let i = 0; i < 80; i++) {
+      e = await etatCarte(p);
+      const cle = e.cle + e.message;
+      if (!pasCes.includes(e.cle) && (cle !== dernierEtat || i > 12)) break;
+      await pause(250);
+    }
+    dernierEtat = e.cle + e.message;
+    return e;
+  }
+  const ATTENTE = ['connexion', 'installation', 'envoi', 'choisir'];
+  async function ouvrirDansLaCarte(parcours, exercice, carte) {
+    const p = await page(PAGE + `?${parcours ? 'parcours=' + parcours + '&' : ''}enseignant=1&exercice=${exercice}`, { carte });
+    await charger(p, exercice, 'solution');
+    await p.click('.btn-mode[data-mode="carte"]');
+    await pause(200);
+    return p;
+  }
+  const octetsSolution = (p, id) =>
+    p.evaluate((id) => {
+      const ex = LaboBlocs.app.paquet.exercices.find((e) => e.id === id);
+      return Array.from(LaboBlocs.codeOctet.compiler(ex.solutionReference, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse }).octets, (x) => x.toString(16).padStart(2, '0')).join('');
+    }, id);
+
+  await critere('Dans la carte · Arduino Uno neuve : programme de la carte installé, programme de l’élève envoyé, carte vidée', async () => {
+    const p = await ouvrirDansLaCarte(null, 'dist-03', { modele: 'uno' });
+    verifier((await etatCarte(p)).cle === 'aucune', 'état de départ');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'a-installer', `après connexion : ${e.cle} ${e.message}`);
+    await p.click('.panneau-carte [data-action="installer"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', `après installation : ${e.cle} ${e.message}`);
+    const installe = await p.evaluate(() => carteVirtuelle.firmware);
+    await p.click('.panneau-carte [data-action="envoyer"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'envoye', `après envoi : ${e.cle} ${e.message}`);
+    const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
+    verifier(garde && garde === (await octetsSolution(p, 'dist-03')), 'le programme gardé par la carte n’est pas celui de l’élève');
+    await p.click('.panneau-carte [data-action="vider"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'vide' && !(await p.evaluate(() => carteVirtuelle.programmeHex())), `après « Vider la carte » : ${e.cle}`);
+    await p.close();
+    return `programme de la carte ${installe.version} (${installe.nom}) installé par le câble ; ${garde.length / 2} octets envoyés et gardés ; carte vidée`;
+  });
+
+  await critere('Dans la carte · mBot : envoi du programme et « Vider la carte »', async () => {
+    const p = await ouvrirDansLaCarte('decouverte-mbot', 'mbot-03', { modele: 'mcore', firmware: '0.2' });
+    await p.click('.panneau-carte [data-action="connecter"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', `connexion : ${e.cle} ${e.message}`);
+    await p.click('.panneau-carte [data-action="envoyer"]');
+    e = await attendreCarte(p, ATTENTE);
+    const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
+    verifier(e.cle === 'envoye' && garde === (await octetsSolution(p, 'mbot-03')), `envoi : ${e.cle}`);
+    await p.click('.panneau-carte [data-action="vider"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'vide' && /robot/.test(e.message), `vidage : ${e.cle}`);
+    await p.close();
+    return `${garde.length / 2} octets envoyés, puis carte vidée : « ${e.message.slice(0, 60)}… »`;
+  });
+
+  await critere('Dans la carte · micro:bit V2 : fichier du programme de la carte à copier, envoi, vidage', async () => {
+    const p = await ouvrirDansLaCarte('decouverte-microbit', 'mb-03', { modele: 'microbit-v2' });
+    await p.click('.panneau-carte [data-action="connecter"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'a-installer' && /MICROBIT/.test(e.message), `connexion : ${e.cle} ${e.message}`);
+    await p.click('.panneau-carte [data-action="installer"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(/\.hex/.test(e.message), 'fichier non proposé : ' + e.message);
+    await p.evaluate(() => carteVirtuelle.copierFichier('0.2'));
+    await p.click('.panneau-carte [data-action="reconnecter"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', `après copie : ${e.cle} ${e.message}`);
+    await p.click('.panneau-carte [data-action="envoyer"]');
+    e = await attendreCarte(p, ATTENTE);
+    const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
+    verifier(e.cle === 'envoye' && garde === (await octetsSolution(p, 'mb-03')), `envoi : ${e.cle}`);
+    await p.click('.panneau-carte [data-action="vider"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'vide', `vidage : ${e.cle}`);
+    await p.close();
+    return `fichier à copier sur MICROBIT, puis ${garde.length / 2} octets envoyés et carte vidée`;
+  });
+
+  await critere('Dans la carte · erreurs USB en français, avec la prochaine action', async () => {
+    const phrases = [];
+    const cas = [
+      ['carte déjà utilisée', null, 'dist-02', { modele: 'uno', firmware: '0.2', occupee: true }, 'occupee', /Ferme-le, puis réessaie/],
+      ['carte pas à jour', null, 'dist-02', { modele: 'uno', firmware: '0.1' }, 'pas-a-jour', /Installer le programme de la carte/],
+      ['mauvaise carte', 'decouverte-microbit', 'mb-01', { modele: 'uno', firmware: '0.2' }, 'mauvaise-carte', /Branche la bonne carte/],
+    ];
+    for (const [nom, parcours, ex, carte, cle, attendu] of cas) {
+      const p = await ouvrirDansLaCarte(parcours, ex, carte);
+      await p.click('.panneau-carte [data-action="connecter"]');
+      const e = await attendreCarte(p, ATTENTE);
+      verifier(e.cle === cle && attendu.test(e.message), `${nom} : ${e.cle} — ${e.message}`);
+      const bouton = await p.$eval('.panneau-carte button', (b) => b.textContent);
+      phrases.push(`${nom} : « ${e.message.slice(0, 50)}… » [${bouton}]`);
+      await p.close();
+    }
+    return phrases.join(' · ');
+  });
+
+  await critere('Simulateur · micro:bit (écran, bouton A, capteurs) et mBot (moteurs, distance)', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-microbit&enseignant=1&exercice=mb-01');
+    await charger(p, 'mb-01', 'solution');
+    await p.click('.btn-lancer');
+    await pause(300);
+    const a = await p.$('.mb-bouton[data-entree="A"]');
+    const r = await a.boundingBox();
+    await p.mouse.move(r.x + r.width / 2, r.y + r.height / 2);
+    await p.mouse.down();
+    await pause(400);
+    const pendant = await p.evaluate(() => ({ ecran: document.querySelector('.mb-ecran').getAttribute('aria-label'), led: document.querySelector('.composant[data-broche="P0"] .pastille-etat').textContent }));
+    await p.mouse.up();
+    await pause(300);
+    const apres = await p.evaluate(() => document.querySelector('.mb-ecran').getAttribute('aria-label'));
+    verifier(/16 points/.test(pendant.ecran) && /Allumée/.test(pendant.led) && /éteint/.test(apres), JSON.stringify({ pendant, apres }));
+    await p.close();
+    const m = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-03');
+    await charger(m, 'mbot-03', 'solution');
+    await m.click('.btn-lancer');
+    await pause(400);
+    const roule = await m.$eval('[data-etat="moteur gauche"]', (e) => e.textContent);
+    await m.evaluate(() => {
+      const r = document.querySelector('[data-capteur="distance"]');
+      r.value = 10;
+      r.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await pause(400);
+    const arrete = await m.$eval('[data-etat="moteur gauche"]', (e) => e.textContent);
+    verifier(roule === '50 % en avant' && arrete === 'arrêté', `${roule} / ${arrete}`);
+    await m.click('.btn-verifier');
+    await pause(400);
+    verifier(await m.$eval('.resultat', (e) => e.classList.contains('reussi')), 'la solution de l’exercice mBot ne réussit pas');
+    await m.close();
+    return `micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « ${roule} », obstacle à 10 cm → « ${arrete} », vérification réussie`;
   });
 
   await b.close();
@@ -351,7 +500,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
   const ok = resultats.filter((r) => r.ok).length;
   const md =
-    `# Recette automatique — jalons 1 et 2\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
+    `# Recette automatique — jalons 1 à 3\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
     '| Critère | Résultat | Détail |\n|---|---|---|\n' +
     resultats.map((r) => `| ${r.nom} | ${r.ok ? '✔' : '✘'} | ${String(r.detail).replace(/\|/g, '/').replace(/\n/g, ' ')} |`).join('\n') +
     '\n';

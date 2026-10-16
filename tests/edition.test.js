@@ -78,7 +78,7 @@ test('tester les scénarios : réussite, écart avec la phrase de l’élève, s
 
 test('étapes : chaque sorte a une valeur de départ et une phrase', () => {
   const ex = { composants: [{ type: 'bouton', broche: 'D3' }, { type: 'led', broche: 'D9' }, { type: 'led', broche: 'D10' }] };
-  const phrases = E.TYPES_ETAPES.map((t) => {
+  const phrases = E.TYPES_ETAPES.filter((t) => !t.avecCapteurs).map((t) => {
     const e = E.nouvelleEtape(t.cle, ex);
     assert.equal(E.typeEtape(e), t.cle);
     return E.decrireEtape(e, ex);
@@ -95,6 +95,15 @@ test('étapes : chaque sorte a une valeur de départ et une phrase', () => {
     'Vérifier que la LED D9 et la LED D10 s’allument en alternance',
   ]);
   assert.equal(E.decrireEtape({ contexte: 'au démarrage', verifier: { D9: 0 } }, ex), 'Au démarrage, vérifier que la LED D9 est éteinte');
+});
+
+test('étape « Régler un capteur » : seulement pour une carte qui en a (mBot, micro:bit)', () => {
+  assert.throws(() => E.nouvelleEtape('regler', { composants: [] }, 'uno'));
+  const e = E.nouvelleEtape('regler', { composants: [] }, 'mbot');
+  assert.deepEqual(e, { regler: { distance: 2 } });
+  assert.equal(E.decrireEtape({ regler: { distance: 10 } }, { composants: [] }, 'mbot'), 'Régler le capteur : l’obstacle est à 10 cm');
+  assert.equal(E.decrireEtape({ regler: { ligne: 1 } }, { composants: [] }, 'mbot'), 'Régler le capteur : le suiveur de ligne voit du noir à gauche seulement');
+  assert.equal(E.decrireEtape({ regler: { temperature: 30 } }, { composants: [] }, 'microbit'), 'Régler le capteur : la température est de 30 °C');
 });
 
 test('nouveau parcours et exercice créé de zéro : publiable, joué comme chez l’élève', () => {

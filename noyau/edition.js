@@ -224,6 +224,8 @@
     { cle: 'appuyer', nom: 'Appuyer brièvement sur un bouton', champs: [{ nom: 'appuyer', type: 'bouton', libelle: 'bouton' }] },
     { cle: 'maintenir', nom: 'Maintenir un bouton appuyé', champs: [{ nom: 'maintenir', type: 'bouton', libelle: 'bouton' }] },
     { cle: 'relacher', nom: 'Relâcher un bouton', champs: [{ nom: 'relacher', type: 'bouton', libelle: 'bouton' }] },
+    // Seulement pour une carte qui a des capteurs (mBot, micro:bit).
+    { cle: 'regler', nom: 'Régler un capteur de la carte', avecCapteurs: true, champs: [{ nom: 'regler', type: 'capteur', libelle: 'capteur' }] },
     {
       cle: 'verifier',
       nom: 'Vérifier l’état',
@@ -296,6 +298,11 @@
       case 'maintenir':
       case 'relacher':
         return { [cle]: bouton };
+      case 'regler': {
+        const capteur = K().capteursCarte(carte)[0];
+        if (!capteur) throw new Error('Cette carte n’a pas de capteur à régler.');
+        return { regler: { [capteur.nom]: capteur.options ? capteur.options[0][1] : capteur.min } };
+      }
       case 'verifier':
         return { verifier: { [sortie.broche]: valeurSortie } };
       case 'stable':
@@ -333,6 +340,8 @@
         return `Maintenir appuyé ${c(etape.maintenir)}`;
       case 'relacher':
         return `Relâcher ${c(etape.relacher)}`;
+      case 'regler':
+        return 'Régler le capteur : ' + Object.entries(etape.regler || {}).map(([n, v]) => K().decrireCapteur(n, v)).join(' et ');
       case 'verifier':
         return `${debut}érifier que ${etats(etape.verifier)}`;
       case 'stable':

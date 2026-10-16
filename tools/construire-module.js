@@ -6,6 +6,7 @@
 //   labo-blocs-interface.js  blocs, éditeur, simulateur, aides, écran d'exercice, LaboBlocs.monterExercice
 //   labo-blocs.css           styles de l'écran d'exercice, limités à l'élément .labo-blocs (n'abîment pas les pages du projet) ;
 //                            l'élément qui reçoit tout l'écran a aussi la classe .labo-blocs-page
+//   cartes/firmwares.js      programmes des cartes (Uno, mBot, micro:bit), chargés seulement pour les installer
 //   polices/ blockly/ LICENCES/   copies (aucun CDN)
 //   VERSION.json             version du moteur et date de construction
 //
@@ -19,7 +20,7 @@ const vm = require('node:vm');
 
 const RACINE = join(__dirname, '..');
 const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'validation', 'arduino', 'parcours', 'sauvegarde'];
-const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration'];
+const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration'];
 const { VERSION_MOTEUR } = require('../noyau/parcours.js');
 
 // ---------- CSS limitée à .labo-blocs ----------
@@ -107,7 +108,12 @@ function construire() {
     "\n}).call(typeof globalThis !== 'undefined' ? globalThis : this);\n" +
     "if (typeof module === 'object' && module.exports) module.exports = globalThis.LaboBlocs;\n";
   writeFileSync(join(OUT, 'labo-blocs-noyau.js'), noyau);
-  writeFileSync(join(OUT, 'labo-blocs-interface.js'), entete('interface') + assembler('interface', INTERFACE));
+  // Programmes de carte (cartes/firmwares.js) : à côté, chargés seulement pour une installation.
+  const interfaceJs = assembler('interface', INTERFACE).replace("const CHEMIN_FIRMWARES = '../cartes/firmwares.js';", "const CHEMIN_FIRMWARES = 'cartes/firmwares.js';");
+  if (!interfaceJs.includes("CHEMIN_FIRMWARES = 'cartes/firmwares.js'")) throw new Error('Chemin des programmes de carte introuvable dans interface/carte.js.');
+  writeFileSync(join(OUT, 'labo-blocs-interface.js'), entete('interface') + interfaceJs);
+  mkdirSync(join(OUT, 'cartes'), { recursive: true });
+  cpSync(join(RACINE, 'cartes', 'firmwares.js'), join(OUT, 'cartes', 'firmwares.js'));
 
   const css = ['interface/css/composants.css', 'interface/css/labo-blocs.css'].map(lire).join('\n').replace(/url\('\.\.\/\.\.\/site\/vendor\/polices\//g, "url('polices/");
   writeFileSync(join(OUT, 'labo-blocs.css'), `/* Labo Blocs ${VERSION_MOTEUR} — styles limités à l'élément .labo-blocs. Construit par « npm run module ». */\n` + prefixer(css, '.labo-blocs'));

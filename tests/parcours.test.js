@@ -49,7 +49,7 @@ test('empreinte : stable, et change quand ce qui décide de la réussite change'
 
 test('comparer deux versions : ajoutés, supprimés, modifiés, déplacés, textes', () => {
   const v2 = lireParcours('distributeur');
-  v2.versionParcours = '1.1.0';
+  v2.versionParcours = '1.2.0';
   const [un, deux] = v2.exercices.splice(0, 2);
   v2.exercices.splice(1, 0, deux, un); // 3, 2, 1, 4… : 1 et 3 ont changé de place
   v2.exercices = v2.exercices.filter((e) => e.id !== 'dist-12');

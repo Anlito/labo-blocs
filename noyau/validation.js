@@ -12,6 +12,7 @@
 //   { opposees: ['D3', 'D4'], duree: 10 }
 //   { impulsion: { D5: 1 }, duree: 5, tolerance: 0.5, delai: 0.3 }   allumé 5 s ±0,5 puis éteint
 //   { stable: { D6: 90 }, duree: 2 }
+//   { regler: { distance: 10 } }      capteur de la carte (mBot, micro:bit) réglé à cette valeur
 // Toute vérification accepte « contexte » et « attendu » pour remplacer le début de la phrase.
 
 (function (global) {
@@ -98,6 +99,15 @@
     function aChange(b, t0, t1) {
       return segments(b, t0, t1).length > 1;
     }
+    let reglage = null; // dernier capteur réglé : { nom, valeur }
+    function regler(etape) {
+      const t = (curseur = Math.max(curseur, sim.t));
+      for (const [nom, valeur] of Object.entries(etape.regler || {})) {
+        sim.planifierCapteur(t, nom, valeur);
+        entrees.push({ t, capteur: nom, valeur: Number(valeur) || 0 });
+        reglage = { nom, valeur };
+      }
+    }
     function planifier(t, broche, valeur) {
       sim.planifierEntree(t, broche, valeur);
       entrees.push({ t: Math.max(t, sim.t), broche, valeur });
@@ -115,6 +125,7 @@
           ? `après un appui sur ${derniers[0]} puis sur ${derniers[1]}`
           : `après un appui sur ${derniers[0]}`;
       }
+      if (reglage) return `quand ${CARTES().decrireCapteur(reglage.nom, reglage.valeur)}`;
       if (boutons.length) return 'quand aucun bouton n’est appuyé';
       // Sans bouton, seule une vérification d'état à un instant donné a besoin d'un repère de temps.
       return 'verifier' in etape ? `au bout de ${secondes(curseur)}` : '';
@@ -370,7 +381,8 @@
         maintenus.splice(maintenus.indexOf(etape.relacher), 1);
         appuis = [];
         relache = etape.relacher;
-      } else if ('verifier' in etape) r = verifier(etape);
+      } else if ('regler' in etape) regler(etape);
+      else if ('verifier' in etape) r = verifier(etape);
       else if ('sequence' in etape) r = sequence(etape);
       else if ('opposees' in etape) r = opposees(etape);
       else if ('impulsion' in etape) r = impulsion(etape);

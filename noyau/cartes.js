@@ -510,6 +510,51 @@
   };
   const composantsCarte = (carte) => (COMPOSANTS_CARTE[carte] || []).map((c) => Object.assign({}, c));
 
+  // Capteurs réglables à la main (simulateur) ou par un scénario de test ({ regler: { distance: 10 } }).
+  const LIGNE = [
+    ['noir sous les deux capteurs', 0],
+    ['noir à gauche seulement', 1],
+    ['noir à droite seulement', 2],
+    ['blanc sous les deux capteurs', 3],
+  ];
+  const CAPTEURS_CARTE = {
+    microbit: [
+      { nom: 'temperature', libelle: 'température', unite: '°C', min: -10, max: 50 },
+      { nom: 'lumiere', libelle: 'lumière', unite: '', min: 0, max: 255 },
+      { nom: 'x', libelle: 'accélération x', unite: 'mg', min: -1024, max: 1024 },
+      { nom: 'y', libelle: 'accélération y', unite: 'mg', min: -1024, max: 1024 },
+      { nom: 'z', libelle: 'accélération z', unite: 'mg', min: -1024, max: 1024 },
+      { nom: 'geste', libelle: 'geste', options: [['aucun', 0]].concat(GESTES.map(([t, v]) => [t, Number(v)])) },
+    ],
+    mbot: [
+      { nom: 'distance', libelle: 'distance (ultrasons)', unite: 'cm', min: 2, max: 400 },
+      { nom: 'ligne', libelle: 'suiveur de ligne', options: LIGNE },
+      { nom: 'lumiere', libelle: 'lumière', unite: '', min: 0, max: 1023 },
+    ],
+  };
+  const capteursCarte = (carte) => CAPTEURS_CARTE[carte] || [];
+
+  // « l’obstacle est à 10 cm », « la température est de 30 °C » (phrases des scénarios).
+  function decrireCapteur(nom, valeur) {
+    const v = String(valeur).replace('.', ',');
+    switch (nom) {
+      case 'distance':
+        return `l’obstacle est à ${v} cm`;
+      case 'ligne':
+        return `le suiveur de ligne voit ${((LIGNE.find((l) => l[1] === Number(valeur)) || LIGNE[3])[0]).replace('noir', 'du noir').replace('blanc', 'du blanc')}`;
+      case 'lumiere':
+        return `la lumière vaut ${v}`;
+      case 'temperature':
+        return `la température est de ${v} °C`;
+      case 'geste': {
+        const g = GESTES.find((x) => Number(x[1]) === Number(valeur));
+        return g ? `la carte est ${g[0]}` : 'la carte est immobile';
+      }
+      default:
+        return `l’accélération sur ${nom} vaut ${v} mg`;
+    }
+  }
+
   // Nom d'une couleur de LED du mBot (jamais la couleur seule à l'écran).
   function nomCouleur(rgb) {
     const r = (rgb >> 16) & 255;
@@ -519,7 +564,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte };
+  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

@@ -374,6 +374,14 @@
         }
         zone.querySelector('.mbot-son').textContent = son(sim, 'D8');
       }
+      // Curseurs des capteurs : suivent les valeurs changées par un test rejoué.
+      for (const champ of panneau.querySelectorAll('[data-capteur]')) {
+        const v = capteurs[champ.dataset.capteur];
+        if (document.activeElement === champ || String(v) === champ.value) continue;
+        champ.value = v;
+        const sortie = panneau.querySelector(`[data-valeur="${champ.dataset.capteur}"]`);
+        if (sortie) sortie.textContent = sortie.textContent.replace(/^-?[\d.]+/, String(v));
+      }
       // Boutons de la carte : appuyés tant qu'on les tient (ou dans un test rejoué).
       for (const b of zone.querySelectorAll('.poussoir-carte')) {
         const v = sim ? sim.entrees[b.dataset.entree] : appuyes[b.dataset.entree];

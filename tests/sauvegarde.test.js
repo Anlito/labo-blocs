@@ -16,7 +16,7 @@ test('nouvelle équipe : fichier Labo Blocs relié au parcours', () => {
   const d = S.creerSauvegarde({ eleves: ['léa', ' hugo ', ''], classe: '5A' }, { parcours: paquet, projet: 'distributeur' });
   assert.deepStrictEqual(d.equipe, { eleves: ['Léa', 'Hugo'], classe: '5A' });
   assert.strictEqual(S.nomEquipe(d.equipe.eleves), 'Léa_Hugo');
-  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: '1.0.0' });
+  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: paquet.versionParcours });
   const relu = S.lireSauvegarde(JSON.stringify(d));
   assert.ok(relu.ok);
   assert.deepStrictEqual(S.relierParcours(relu.donnees, paquet), []);
@@ -57,14 +57,14 @@ test('exercice modifié par le professeur : « à revérifier », blocs et réus
   S.noterProgramme(d, 'dist-02', { blocks: { blocks: [{ type: 'boucle', id: 'boucle' }] } });
   reussir(d, 'dist-02');
   const v2 = lireParcours('distributeur');
-  v2.versionParcours = '1.1.0';
+  v2.versionParcours = '1.2.0';
   v2.exercices[1].consigne += ' Change de rythme.';
   const p2 = preparer(v2);
   assert.deepStrictEqual(S.relierParcours(d, p2), ['dist-02']);
   assert.strictEqual(S.etat(d, p2, 'dist-02'), 'a_reverifier');
   assert.strictEqual(S.estDebloque(d, p2, 'dist-03'), true, 'la réussite n’est pas effacée');
   assert.ok(d.programmation.exercices['dist-02'].programme, 'les blocs sont gardés');
-  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: '1.1.0' });
+  assert.deepStrictEqual(d.programmation.parcours, { id: 'distributeur', version: '1.2.0' });
   assert.strictEqual(S.avancement(d, p2).aReverifier, 1);
   // Revérifié : l'exercice redevient « réussi » ; relier à nouveau ne change plus rien.
   S.noterVerification(d, p2.exercices[1], { reussi: true });
@@ -103,4 +103,17 @@ test('fichiers refusés : illisible, autre application, version plus récente', 
   assert.strictEqual(S.lireSauvegarde('{"application":"autre"}').ok, false);
   assert.strictEqual(S.lireSauvegarde('{"application":"labo-blocs","formatVersion":9,"equipe":{"eleves":[]}}').ok, false);
   assert.strictEqual(S.lireSauvegarde('{"application":"labo-blocs","formatVersion":1,"equipe":{"eleves":[]},"programmation":{"version":2}}').ok, false);
+});
+
+test('« Dans la carte » : chaque envoi et chaque « Vider la carte » sont gardés dans l’historique de l’exercice', () => {
+  const d = S.creerSauvegarde({ eleves: ['Léa'], classe: '5A' }, { parcours: paquet });
+  S.noterEnvoi(d, 'dist-03', { carte: 'uno', reussi: true, octets: 42, programme: { demarrage: [{ bloc: 'attendre', id: 'b1', duree: 1 }], boucle: [] } });
+  S.noterEnvoi(d, 'dist-03', { carte: 'uno', reussi: false, message: 'La carte ne répond plus.' });
+  S.noterVidage(d, 'dist-03', { carte: 'uno', reussi: true });
+  const h = d.programmation.exercices['dist-03'].historique;
+  assert.deepStrictEqual(h.map((x) => [x.type, x.reussi]), [['envoi', true], ['envoi', false], ['vider', true]]);
+  assert.strictEqual(h[0].octets, 42);
+  assert.ok(!JSON.stringify(h[0].programme).includes('"id"'));
+  assert.strictEqual(h[1].message, 'La carte ne répond plus.');
+  assert.strictEqual(d.programmation.exercices['dist-03'].statut, 'non_commence', 'un envoi ne change pas le statut');
 });

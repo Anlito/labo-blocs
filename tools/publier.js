@@ -12,6 +12,9 @@ const OUT = join(RACINE, '_site');
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 for (const d of ['site', 'noyau', 'interface', 'parcours']) cpSync(join(RACINE, d), join(OUT, d), { recursive: true });
+// Programmes des cartes (chargés par interface/carte.js pour les installer) : seulement le fichier construit.
+mkdirSync(join(OUT, 'cartes'), { recursive: true });
+cpSync(join(RACINE, 'cartes', 'firmwares.js'), join(OUT, 'cartes', 'firmwares.js'));
 
 const r = construire();
 for (const f of r.exportes) {

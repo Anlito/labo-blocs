@@ -180,6 +180,21 @@
     modifie(d);
   }
 
+  // Mode « Dans la carte » : chaque envoi du programme et chaque « Vider la carte », gardés dans l'historique de
+  // l'exercice ouvert (bilan du professeur). envoi : { carte, reussi, octets, message, programme (v1) }
+  function noterEnvoi(d, id, envoi) {
+    const trace = { date: maintenant(), type: 'envoi', carte: envoi.carte, reussi: !!envoi.reussi };
+    if (envoi.octets !== undefined) trace.octets = envoi.octets;
+    if (!envoi.reussi && envoi.message) trace.message = envoi.message;
+    if (envoi.programme) trace.programme = sansIds(envoi.programme);
+    exercice(d, id).historique.push(trace);
+    modifie(d);
+  }
+  function noterVidage(d, id, vidage) {
+    exercice(d, id).historique.push({ date: maintenant(), type: 'vider', carte: vidage.carte, reussi: !!vidage.reussi });
+    modifie(d);
+  }
+
   function ajouterTemps(d, id, secondes) {
     exercice(d, id).tempsPasseSecondes += secondes;
   }
@@ -242,6 +257,8 @@
     noterProgramme,
     noterVerification,
     noterIndice,
+    noterEnvoi,
+    noterVidage,
     ajouterTemps,
     estDebloque,
     etat,

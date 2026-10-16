@@ -368,3 +368,28 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 
 /* Vidéoprojecteur (?projecteur=1) : tout est plus grand (réglage de l'échelle dans app.js) */
 .projecteur .consigne-texte p { font-size: 1.25rem; }
+
+/* A6 · Dans la carte : connexion, installation, envoi, « Vider la carte ». Ton du panneau + pictogramme + texte. */
+.simulateur.mode-carte > :not(.simu-titre):not(.panneau-carte) { display: none !important; }
+.panneau-carte { display: flex; flex-direction: column; gap: 0.75rem; border-radius: 1rem; padding: 1rem 1.125rem; background: #FFFFFF; border: 1px solid var(--bord); }
+.panneau-carte[hidden] { display: none; }
+.panneau-carte.pc-reussi { background: #F2FAF5; border: 2px solid var(--reussi); }
+.panneau-carte.pc-blocage { background: #FDF1F0; border: 2px solid var(--blocage); }
+.panneau-carte.pc-ecart { background: var(--ecart-pale); border: 2px solid var(--ecart); color: var(--ecart-texte); }
+.pc-tete { display: flex; align-items: center; gap: 0.75rem; background: #FFFFFF; border-radius: 0.75rem; padding: 0.625rem 0.75rem; }
+.pc-carte svg { display: block; }
+.pc-titres { display: flex; flex-direction: column; gap: 0.125rem; }
+.pc-titre { font-family: var(--titres); font-weight: 700; font-size: 1.0625rem; line-height: 1.25; }
+.pc-statut { display: flex; align-items: center; gap: 0.375rem; font-weight: 700; font-size: 0.9375rem; }
+.pc-statut .icone { width: 1.25rem; height: 1.25rem; stroke: var(--action) !important; }
+.pc-reussi .pc-statut .icone { stroke: var(--reussi) !important; }
+.pc-blocage .pc-statut .icone { stroke: var(--blocage) !important; }
+.pc-ecart .pc-statut .icone { stroke: var(--ecart-fonce) !important; }
+.pc-barre { height: 0.75rem; border-radius: 0.375rem; background: var(--bord); overflow: hidden; }
+.pc-barre > div { height: 100%; background: var(--action); transition: width 0.15s; }
+.pc-avance { font-size: 0.875rem; color: var(--texte-2); margin-top: -0.375rem; }
+.pc-message { margin: 0; font-size: 1rem; line-height: 1.4; }
+.pc-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.pc-actions button { height: 2.875rem; font-size: 0.9375rem; }
+.composant-pastille.composant-carte { background: #EFE8F8; }
+.composants-carte { font-size: 0.875rem; line-height: 1.35; }

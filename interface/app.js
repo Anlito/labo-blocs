@@ -76,8 +76,11 @@
     poserIcones(document);
     preparerPleinEcran(document);
 
+    if (!A.projet) return erreurFatale('Le fichier du projet (projet.js) est absent.');
+    // ?parcours=<id> : un autre parcours chargé par la page (essais des cartes mBot et micro:bit), comme un projet à part.
+    const autre = q.get('parcours') && q.get('parcours') !== A.projet.parcours ? A.parcoursDefinis.find((p) => p.id === q.get('parcours')) : null;
+    if (autre) A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', cheminSauvegarde: ['{classe}', '{equipe}'] });
     const projet = A.projet;
-    if (!projet) return erreurFatale('Le fichier du projet (projet.js) est absent.');
     const brut = A.parcoursDefinis.find((p) => p.id === projet.parcours);
     if (!brut) return erreurFatale(`Le parcours « ${projet.parcours} » est introuvable.`);
     const problemes = A.controler(brut);

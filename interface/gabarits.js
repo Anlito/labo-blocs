@@ -121,6 +121,7 @@
           <button type="button" class="btn-mode" data-mode="carte" aria-pressed="false" hidden>Dans la carte</button>
         </div>
       </div>
+      <div class="panneau-carte" aria-live="polite" hidden></div>
       <div class="simu-carte"></div>
       <div class="simu-milieu">
         <div class="simu-composants"></div>

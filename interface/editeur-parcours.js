@@ -602,6 +602,17 @@
           `<label class="ed-champ">${libelle}<select ${att('data-rang="0"')}>${optionsBroches(sorties(e), v[0])}</select></label>` +
           `<label class="ed-champ"><span class="ed-champ-libelle">et</span><select ${att('data-rang="1"')}>${optionsBroches(sorties(e), v[1])}</select></label>`
         );
+      case 'capteur': {
+        // Un capteur et sa valeur : { distance: 10 }.
+        const [nom, val] = Object.entries(v || {})[0] || [];
+        const liste = A.capteursCarte(carteDuParcours());
+        const choisi = liste.find((x) => x.nom === nom) || liste[0];
+        const menu = liste.map((x) => `<option value="${x.nom}"${x === choisi ? ' selected' : ''}>${echapper(x.libelle)}</option>`).join('');
+        const valeur = choisi.options
+          ? `<select ${att('data-quoi="valeur-capteur"')}>${choisi.options.map(([t, o]) => `<option value="${o}"${Number(o) === Number(val) ? ' selected' : ''}>${echapper(t)}</option>`).join('')}</select>`
+          : `<input type="number" class="ed-petit" min="${choisi.min}" max="${choisi.max}" step="1" value="${val}" ${att('data-quoi="valeur-capteur"')}> ${choisi.unite}`;
+        return `<label class="ed-champ">${libelle}<select ${att('data-quoi="nom-capteur"')}>${menu}</select></label><label class="ed-champ"><span class="ed-champ-libelle">à</span>${valeur}</label>`;
+      }
       case 'valeurs':
         return `<label class="ed-champ">${libelle}<input class="ed-moyen" value="${(v || []).join(' ; ')}" ${att()} aria-describedby="aide-valeurs"></label>`;
       case 'etats': {
@@ -656,7 +667,7 @@
       });
       h +=
         '</ol><div class="ed-ajout-etape">' +
-        `<select class="ed-sorte-etape" data-s="${s}" aria-label="Sorte d’étape">${A.TYPES_ETAPES.map((t) => `<option value="${t.cle}">${t.nom}</option>`).join('')}</select>` +
+        `<select class="ed-sorte-etape" data-s="${s}" aria-label="Sorte d’étape">${A.TYPES_ETAPES.filter((t) => !t.avecCapteurs || A.capteursCarte(carteDuParcours()).length).map((t) => `<option value="${t.cle}">${t.nom}</option>`).join('')}</select>` +
         `<button type="button" class="btn-aide" data-s="${s}" data-action="ajouter-etape">Ajouter une étape</button></div></section>`;
     });
     h +=
@@ -694,7 +705,16 @@
       const etape = etapeDe(t);
       const champ = t.dataset.champ;
       const nombre = (x) => Number(String(x).replace(',', '.'));
-      if (t.dataset.etat) {
+      if (t.dataset.quoi === 'nom-capteur') {
+        const c = A.capteursCarte(carteDuParcours()).find((x) => x.nom === t.value);
+        etape.regler = { [t.value]: c.options ? c.options[0][1] : Math.max(c.min, 0) };
+        etat.resultats = null;
+        modifie();
+        return dessinerScenarios();
+      } else if (t.dataset.quoi === 'valeur-capteur') {
+        const nom = Object.keys(etape.regler)[0];
+        etape.regler = { [nom]: nombre(t.value) };
+      } else if (t.dataset.etat) {
         const objet = etape[champ];
         if (t.dataset.quoi === 'broche') {
           const nouveau = {};
@@ -865,6 +885,7 @@
     $('.reglage-moteur', d).textContent = p.moteurMinimum || A.VERSION_MOTEUR;
     $('.reglage-carte', d).value = p.carte || 'uno';
     $('.reglage-boutons', d).checked = p.boutonsVersMasse !== false;
+    $('.reglage-mode-carte', d).checked = (p.modes || ['simulateur']).includes('carte');
     const liste = $('.liste-parametres', d);
     const ligne = (nom, valeur) =>
       `<div class="ed-parametre"><label>Nom<input class="parametre-nom" value="${echapper(nom)}" pattern="[A-Za-z][A-Za-z0-9]*"></label>` +
@@ -881,6 +902,7 @@
       p.carte = $('.reglage-carte', d).value;
       const carteChangee = carteAvant !== p.carte;
       p.boutonsVersMasse = $('.reglage-boutons', d).checked;
+      p.modes = ['simulateur'].concat($('.reglage-mode-carte', d).checked ? ['carte'] : []);
       const params = {};
       for (const l of $$('.ed-parametre', liste)) {
         const nom = $('.parametre-nom', l).value.trim();

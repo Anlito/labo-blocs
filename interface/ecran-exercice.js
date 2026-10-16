@@ -167,10 +167,14 @@
             `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span></span></li>`,
         )
         .join('');
+      // Ce qui est déjà sur la carte (rien à brancher).
+      const surLaCarte = { mbot: 'Sur le robot : moteurs, LED, buzzer, bouton, capteur à ultrasons (port 3) et suiveur de ligne (port 2).', microbit: 'Sur la carte : écran 5 × 5, boutons A et B, logo tactile, haut-parleur et capteurs.' }[ex.carte];
+      if (surLaCarte) $('.liste-composants', ecran).insertAdjacentHTML('beforeend', `<li class="composants-carte"><span class="composant-pastille composant-carte">${A.icone('puzzle', { epaisseur: 2.4 })}</span><span>${surLaCarte}</span></li>`);
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
       vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
+      if (panneauCarte) panneauCarte.choisirProfil(A.profil(ex.carte));
       niveauDeLExercice(ex);
       afficher();
       A.noterOuverture(D, ex.id);
@@ -319,6 +323,37 @@
     const modes = paquet.modes || ['simulateur'];
     for (const b of ecran.querySelectorAll('.btn-mode')) b.hidden = !modes.includes(b.dataset.mode);
     ecran.querySelector('.modes').hidden = modes.length < 2;
+    etat.modeTest = 'simulateur';
+    const sectionTest = $('.simulateur', ecran);
+    function choisirModeTest(m) {
+      if (m === etat.modeTest) return;
+      if (m === 'carte' && etat.mode !== 'arrete') arreter();
+      etat.modeTest = m;
+      for (const b of ecran.querySelectorAll('.btn-mode')) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
+      sectionTest.classList.toggle('mode-carte', m === 'carte');
+      $('.panneau-carte', ecran).hidden = m !== 'carte';
+    }
+    for (const b of ecran.querySelectorAll('.btn-mode')) b.addEventListener('click', () => choisirModeTest(b.dataset.mode));
+
+    // « Dans la carte » : le programme de l'élève, compilé comme pour le simulateur, part dans la carte du parcours.
+    const panneauCarte = modes.includes('carte')
+      ? A.creerPanneauCarte($('.panneau-carte', ecran), {
+          programme() {
+            const ex = etat.exercice;
+            return A.codeOctet.compiler(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse });
+          },
+          surEnvoi(r) {
+            if (lecture || !etat.exercice) return;
+            A.noterEnvoi(D, etat.exercice.id, { carte: etat.exercice.carte, reussi: r.ok, octets: r.octets, message: r.message, programme: editeur.lire().programme });
+            session.aEnregistrer(true, true);
+          },
+          surVidage(r) {
+            if (lecture || !etat.exercice) return;
+            A.noterVidage(D, etat.exercice.id, { carte: etat.exercice.carte, reussi: r.ok });
+            session.aEnregistrer(true, true);
+          },
+        })
+      : null;
 
     // ----- Simulation -----
 
@@ -511,12 +546,15 @@
     // Rejoue le test raté dans le simulateur : les boutons s'appuient tout seuls.
     function rejouer(r) {
       fermerResultat();
+      // Les capteurs repartent des valeurs du test (celles de départ), pas de celles réglées à la main.
+      if (vue && vue.capteurs && A.capteursDepart) Object.assign(vue.capteurs, A.capteursDepart(etat.exercice.carte));
       nouvelleSimulation();
       etat.boutonsAvant = null;
-      for (const e of r.entrees) etat.sim.planifierEntree(e.t, e.broche, e.valeur);
+      for (const e of r.entrees) if (e.capteur !== undefined) etat.sim.planifierCapteur(e.t, e.capteur, e.valeur);
+        else etat.sim.planifierEntree(e.t, e.broche, e.valeur);
       etat.rejeu = { fin: r.temps + 600 };
       etat.mode = 'marche';
-      $('.simu-note', ecran).textContent = 'Le test se rejoue : les boutons s’appuient tout seuls.';
+      $('.simu-note', ecran).textContent = r.entrees.some((e) => e.capteur !== undefined) ? 'Le test se rejoue : les boutons et les capteurs changent tout seuls.' : 'Le test se rejoue : les boutons s’appuient tout seuls.';
       majCommandes();
     }
     function fermerResultat() {

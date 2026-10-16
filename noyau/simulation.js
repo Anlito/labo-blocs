@@ -44,6 +44,7 @@
       pas,
       changerEntree: (broche, valeur) => planifierEntree(sim.t, broche, valeur),
       planifierEntree,
+      planifierCapteur,
       valeur: (broche) => (broche in sim.sorties ? sim.sorties[broche] : sim.entrees[broche] || 0),
     };
 
@@ -119,9 +120,22 @@
       appliquerEntrees();
     }
 
+    // Capteur de la carte (distance, température…) réglé à l'instant t : scénarios de test et test rejoué.
+    function planifierCapteur(t, capteur, valeur) {
+      const e = { t: Math.max(t, sim.t), capteur, valeur: Number(valeur) || 0 };
+      let i = planifiees.length;
+      while (i > 0 && planifiees[i - 1].t > e.t) i--;
+      planifiees.splice(i, 0, e);
+      appliquerEntrees();
+    }
+
     function appliquerEntrees() {
       while (planifiees.length && planifiees[0].t <= sim.t) {
         const e = planifiees.shift();
+        if (e.capteur !== undefined) {
+          if (sim.capteurs) sim.capteurs[e.capteur] = e.valeur;
+          continue;
+        }
         if (sim.entrees[e.broche] !== e.valeur) {
           sim.entrees[e.broche] = e.valeur;
           sim.journal.push({ t: sim.t, broche: e.broche, valeur: e.valeur, type: 'entree' });
