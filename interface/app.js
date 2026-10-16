@@ -164,7 +164,7 @@
     const charger = (src) =>
       new Promise((ok) => {
         const s = document.createElement('script');
-        s.src = src;
+        s.src = src + '?t=' + Date.now(); // un parcours déposé ou republié apparaît tout de suite
         s.onload = ok;
         s.onerror = ok;
         document.body.append(s);

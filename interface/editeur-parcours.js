@@ -28,7 +28,7 @@
       const s = document.createElement('script');
       s.onload = () => resolve(true);
       s.onerror = () => resolve(false);
-      s.src = src;
+      s.src = src + (src.includes('?') ? '&' : '?') + 't=' + Date.now(); // jamais une copie gardée par le navigateur
       document.body.append(s);
     });
   }

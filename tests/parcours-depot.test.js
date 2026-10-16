@@ -46,9 +46,22 @@ test('publication : chaque parcours a son script et la liste les contient tous',
     // Les pages ne listent plus les parcours à la main.
     assert.doesNotMatch(fs.readFileSync(path.join(out, 'site', 'index.html'), 'utf8'), /parcours\/distributeur\/parcours\.js/);
     assert.strictEqual(r.refuses.length, 0);
+    // Scripts et styles demandés avec le numéro de la publication (pas d'ancienne copie gardée par le navigateur).
+    const editeur = fs.readFileSync(path.join(out, 'site', 'editeur.html'), 'utf8');
+    assert.match(editeur, /src="\.\.\/interface\/editeur-parcours\.js\?v=\w+"/);
+    assert.match(editeur, /href="\.\.\/interface\/css\/editeur-parcours\.css\?v=\w+"/);
+    assert.doesNotMatch(editeur, /\.js"/);
   } finally {
     fs.rmSync(out, { recursive: true, force: true });
   }
+});
+
+test('numéro de publication : seulement les fichiers du site', () => {
+  const { versionner } = require('../tools/publier.js');
+  assert.strictEqual(
+    versionner('<script src="../noyau/vm.js"></script><link href="x.css"><a href="https://a.fr/b.js">', '42'),
+    '<script src="../noyau/vm.js?v=42"></script><link href="x.css?v=42"><a href="https://a.fr/b.js">',
+  );
 });
 
 test('classes et dossier de l’équipe du parcours : lus dans l’éditeur, contrôlés', () => {
