@@ -375,3 +375,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Compétences : un exercice libre ne compte dans aucune (le professeur juge à la fiche de l'équipe).
    - Éditeur : case « Exercice libre » ; composants, scénarios et compétence masqués ; la solution devient un
      « Exemple (facultatif) » dont l'aperçu montre les composants.
+22. **Plus d'ancienne version gardée par le navigateur (16/10/2026)** : Thomas ne voyait pas la case « Exercice libre »
+   après la publication (GitHub Pages laisse les navigateurs garder les fichiers 10 min). La publication ajoute
+   `?v=<numéro>` aux scripts et aux styles des pages ; les parcours (`parcours/index.js`, `<id>/parcours.js`) sont
+   toujours relus (`?t=<instant>`).

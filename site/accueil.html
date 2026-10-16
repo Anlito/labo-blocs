@@ -67,7 +67,7 @@
     const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const charger = (src) => new Promise((ok) => {
       const s = document.createElement('script');
-      s.src = src;
+      s.src = src + '?t=' + Date.now(); // jamais une copie gardée par le navigateur
       s.onload = ok;
       s.onerror = ok;
       document.body.append(s);
