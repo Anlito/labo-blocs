@@ -1,4 +1,4 @@
-# Recette — jalon 1 (noyau et parcours du distributeur)
+# Recette — jalons 1 à 3 (noyau, parcours du distributeur, éditeur, cartes)
 
 À faire par Thomas sur un poste du collège, avec **Chrome ou Edge**, en ouvrant `site/index.html` depuis le dossier
 réseau (double-clic). Compter 30 à 40 minutes. Noter ✔ ou ✘ et une remarque pour chaque ligne.
@@ -103,3 +103,36 @@ du professeur, la souris et l'avis sur les mots.
 | 7.11 | Atelier du distributeur (copie de test) : `prof.html` › « Exercices » › « Choisir un fichier… » avec le `.labo-parcours.json` | L'exercice ajouté apparaît dans les différences ; après validation et F5, les élèves l'ont | |
 | 7.12 | Avis | Les mots des étapes, des blocs et des messages vous conviennent ? Manque-t-il une sorte d'étape ou de composant ? | |
 
+
+## 8. Jalon 3 — les cartes : Arduino Uno, mBot, micro:bit V2
+
+Matériel : une Arduino Uno (de préférence une qui a servi avec l'IDE Arduino ou l'ancien atelier), un mBot, une micro:bit
+V2, leurs câbles USB ; **Chrome ou Edge**. La recette automatique (`npm run recette`, 20 critères) fait déjà tout le chemin
+avec une carte virtuelle : ici, les vraies cartes. Succès du jalon : **les trois cartes reçoivent un programme et se vident**.
+
+Pages : `site/index.html?enseignant=1` (distributeur, Uno), `site/index.html?parcours=decouverte-mbot&enseignant=1`,
+`site/index.html?parcours=decouverte-microbit&enseignant=1`. Dans l'exercice : « Solution » pour avoir un programme
+juste, puis à droite **« Tester » › « Dans la carte »**.
+
+| # | Action | Attendu | ✔/✘ |
+|---|---|---|---|
+| 8.1 | Simulateur micro:bit (découverte micro:bit, ex. 1 à 3) : « Lancer », maintenir A, régler la température | Écran 5 × 5 (cœur, texte qui défile), LED P0, capteurs réglables à la main ; « Vérifier » : réussi avec la solution | |
+| 8.2 | Simulateur mBot (découverte mBot, ex. 1 à 3) | Tableau : roues (▲ ▼), « Moteur gauche : 50 % en avant », LED avec leur couleur écrite ; curseur « Distance » : le robot s'arrête sous 20 cm | |
+| 8.3 | **Uno** : « Connecter la carte », choisir la carte dans la fenêtre | Carte jamais utilisée avec Labo Blocs : « Installer le programme de la carte » ; sinon « Carte connectée · Arduino Uno · prête » | |
+| 8.4 | « Installer le programme de la carte » | Barre « Installation : … % » (≈ 10 s), puis « Carte connectée » | |
+| 8.5 | Exercice 2 (LED D9, câblée) : « Envoyer mon programme » | « Envoi : … % » puis « Programme envoyé » ; la LED clignote. Débrancher puis rebrancher le câble : le programme repart seul | |
+| 8.6 | « Vider la carte » | « Carte vidée » ; la LED ne clignote plus, même après avoir rebranché | |
+| 8.7 | Ouvrir l'IDE Arduino (moniteur série ouvert sur la carte), puis « Connecter la carte » dans Labo Blocs | « Carte déjà utilisée » (encadré rouge, pictogramme), « Ferme-le, puis réessaie » ; après fermeture de l'IDE : « Réessayer » marche | |
+| 8.8 | **mBot** (découverte mBot, robot sur le dos ou sur cales) : connecter | « Installer le programme de la carte » (la carte a le programme de mBlock), puis « Carte connectée · mBot (carte mCore) » | |
+| 8.9 | Ex. 1 : envoyer, poser le robot par terre, l'allumer | Il avance 2 s puis s'arrête. **Les deux roues vont-elles vers l'avant ?** | |
+| 8.10 | Ex. 2 : envoyer ; appuyer sur le bouton de la carte | Le robot avance et ses deux LED sont vertes tant qu'on appuie. **Quelle LED est à gauche ?** (essayer aussi le bloc « LED gauche en rouge ») | |
+| 8.11 | Ex. 3 : envoyer ; avancer la main devant les ultrasons (port 3) | Le robot s'arrête sous 20 cm. Faire aussi un essai « tourner à gauche » : **tourne-t-il bien à gauche ?** | |
+| 8.12 | mBot : « Vider la carte » | « Carte vidée » : le robot ne bouge plus, même après extinction et rallumage | |
+| 8.13 | **micro:bit V2** : connecter | « Installer le programme de la carte » ; « Enregistrer le fichier » télécharge `labo-blocs-microbit-0.2.hex` | |
+| 8.14 | Glisser le fichier sur le lecteur MICROBIT, attendre la fin, « Connecter la carte » | « Carte connectée · micro:bit V2 · prête » | |
+| 8.15 | Ex. 2 (LED sur P0) : envoyer | « Bonjour » défile, puis la LED P0 clignote ; ex. 3 : le bouton B affiche la température | |
+| 8.16 | micro:bit : « Vider la carte » | « Carte vidée » : plus rien ne s'affiche | |
+| 8.17 | Brancher la micro:bit mais ouvrir un exercice du distributeur (Uno) et connecter | « Ce n'est pas la bonne carte · Carte branchée : micro:bit V2 », « Branche la bonne carte » | |
+| 8.18 | Atelier du distributeur (ZIP) : exercice 13A réussi → « Envoyer dans la carte Arduino » ; carnet › Programmation › « Envoyer mon programme dans la carte Arduino », puis « Vider la carte » | Le mode « Dans la carte » s'ouvre sur l'exercice 13 ; la maquette fonctionne avec le programme de l'équipe ; « Vider la carte » efface ; `prof.html` › équipe › Bilan : « Programme envoyé dans la carte : n fois » | |
+| 8.19 | Éditeur (`site/editeur.html`) : « Nouveau parcours » › Réglages › Carte « micro:bit V2 » + « Dans la carte » | Composants P0–P2, catégories lilas Écran / Boutons / Capteurs / Musique ; étape « Régler un capteur de la carte » dans les scénarios | |
+| 8.20 | Avis | Les mots des blocs mBot et micro:bit, les messages de la carte, le tableau du mBot vous conviennent ? | |

@@ -24,9 +24,10 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 
 | Dossier | Contenu |
 |---|---|
-| `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression, édition d'un parcours (`edition.js`) |
-| `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur, aides, fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
-| `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `index.js` : la liste ouverte par l'éditeur) |
+| `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : cartes (`cartes.js` : profils Uno / mBot / micro:bit, blocs de carte, carte simulée), programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression, édition d'un parcours (`edition.js`) |
+| `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur (micro:bit, tableau du mBot), aides, mode « Dans la carte » (`carte.js`, `televersement.js`), fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
+| `cartes/` | programmes des cartes 0.2 (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
+| `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `decouverte-mbot/`, `decouverte-microbit/` : `site/index.html?parcours=…` ; `index.js` : la liste ouverte par l'éditeur) |
 | `site/` | application Labo Blocs : `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
 | `tests/` | tests Node (`node:test`) |
@@ -44,6 +45,7 @@ npm run recette          # critères du jalon dans Chrome/Edge (file://) → REC
 npm run module           # construit le module dans dist/labo-blocs-<version>/ et exporte les parcours
 npm run vers-projet -- ../atelier-cereales [--parcours distributeur]   # copie le module (et le parcours) dans un projet
 npm run publier          # dossier _site/ publié sur GitHub Pages (application + parcours en ligne)
+npm run firmwares        # reconstruire les programmes des cartes (cartes/ ; avr-gcc + ARDUINO_CORE et SERVO, microbit-fs)
 npm run essais:mesures   # taille du code octet des programmes
 npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARDUINO_CORE et SERVO)
 npm run essais:microbit  # refaire les fichiers micro:bit
@@ -62,4 +64,7 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
   fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
 - **Jalon 2 (éditeur de parcours) validé (16/10/2026)** : `site/editeur.html` crée et modifie les exercices sans
   toucher au code, teste les scénarios sur la solution et publie une nouvelle version — [RECETTE.md](RECETTE.md) §7.
-
+- **Jalon 3 (cartes) livré (16/10/2026), recette avec le matériel à faire** : profils Arduino Uno, mBot et micro:bit V2,
+  blocs mBot (comme mBlock) et micro:bit, simulateur micro:bit et tableau du mBot, mode « Dans la carte » (installer le
+  programme de la carte, envoyer le programme de l'élève, « Vider la carte ») ; l'atelier du distributeur envoie le
+  programme de l'élève — [RECETTE.md](RECETTE.md) §8.

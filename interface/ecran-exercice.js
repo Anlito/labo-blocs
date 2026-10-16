@@ -604,7 +604,7 @@
 
     choisirNiveau(1);
     majCommandes();
-    return { ouvrir, quitter, editeur, etat, arreter };
+    return { ouvrir, quitter, editeur, etat, arreter, choisirModeTest };
   }
 
   Object.assign(A, { creerEcranExercice });

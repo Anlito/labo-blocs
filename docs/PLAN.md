@@ -273,3 +273,26 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **Blocs micro:bit V2** : écran (nombre, image, pixel, effacer, texte qui défile), boutons A et B, logo tactile,
      broches P0 à P2, capteurs (secouer et pencher, température, lumière), note sur le haut-parleur.
 
+15. **Jalon 3 livré le 16/10/2026** (recette à faire avec le matériel, `RECETTE.md` §8). Ce qui a été fait :
+   - `noyau/cartes.js` : profils Uno / mBot / micro:bit V2 (broches des menus, programme de la carte, installation par
+     le câble ou par fichier), blocs de carte décrits une seule fois (Blockly, programme, compilateur les lisent) et
+     déroulés en blocs de base + commandes d'extension ; carte simulée (écran 5 × 5, boutons A/B, logo, capteurs ;
+     moteurs, LED RGB, ultrasons, suiveur de ligne, bouton du mBot). Couleur lilas + pictogramme puzzle.
+   - Une commande de carte porte 4 valeurs au plus (C et MicroPython) : le texte de la micro:bit part en morceaux de
+     4 lettres (commande 14, puis 11) ; le compilateur refuse une commande à plus de 4 valeurs.
+   - `cartes/` : programmes de carte 0.2 (Uno, mCore, micro:bit V2) et leur construction (`npm run firmwares`) ;
+     tests : même déroulé dans le simulateur, le C et le MicroPython ; une seule version partout.
+   - `interface/carte.js` + `interface/televersement.js` : mode « Dans la carte » (écran A6, 9 états de la maquette +
+     « mauvaise carte » et « programme à revoir »), Web Serial, protocole v2, installation STK500 (Uno, mBot) ou
+     fichier à copier (micro:bit), « Vider la carte » ; une seule connexion pour la page ; une carte déjà autorisée est
+     reprise sans fenêtre. Envois et vidages dans l'historique de l'exercice.
+   - Scénarios : boutons de la carte (A, B, logo, bouton du mBot) et moteurs du mBot comme des composants ; étape
+     « Régler un capteur de la carte » (distance, suiveur de ligne, lumière, température, accélération, geste).
+   - Éditeur : carte du parcours (composants, broches et blocs suivent), mode « Dans la carte » dans les réglages.
+   - Parcours de découverte `decouverte-mbot` et `decouverte-microbit` (3 exercices chacun), ouverts par
+     `site/index.html?parcours=…` ; distributeur 1.1.0 avec le mode « Dans la carte ».
+   - Atelier : l'élève envoie son programme ; « Vider la carte » du carnet ; envoi précompilé retiré.
+   - Recette automatique avec une carte virtuelle (`tests/outils/carte-virtuelle.js`) : Labo Blocs 20/20, atelier 23/23.
+   - **À vérifier avec le matériel** : sens des moteurs du mBot (« tourner à gauche »), quelle LED est « gauche »
+     (commande 6 : 1 = droite, 2 = gauche supposé), port des capteurs (ultrasons 3, ligne 2), copie du fichier
+     micro:bit puis envoi par le câble.

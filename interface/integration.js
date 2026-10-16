@@ -102,6 +102,8 @@
         return ex;
       },
       quitter: ecran.quitter,
+      // 'simulateur' | 'carte' (si le parcours propose ce mode)
+      choisirModeTest: ecran.choisirModeTest,
       ecran,
     };
   }

@@ -361,7 +361,8 @@
   // ---------- Panneau « Dans la carte » (A6) ----------
 
   // Textes des états : titre, statut (avec pictogramme : jamais la couleur seule), message, ton.
-  function decrire(e, profil) {
+  // seulementVider : fenêtre « Vider la carte » (fin de séance), sans programme à envoyer.
+  function decrire(e, profil, seulementVider) {
     const nom = profil.nom;
     const microbit = profil.installation === 'fichier';
     switch (e.cle) {
@@ -404,6 +405,18 @@
       case 'installation':
         return { ton: 'neutre', titre: 'Installer le programme de la carte', statut: 'Étape faite une seule fois', message: 'La carte reçoit son programme de base. Ne débranche pas le câble.', progression: e.fraction, libelle: 'Installation' };
       case 'connectee':
+        if (seulementVider) {
+          return {
+            ton: 'reussi',
+            titre: 'Carte connectée',
+            statut: `${nom} · prête`,
+            message: 'Clique sur « Vider la carte » : son programme sera effacé et elle ne commandera plus rien.',
+            boutons: [
+              { cle: 'vider', texte: 'Vider la carte', principal: true },
+              { cle: 'deconnecter', texte: 'Déconnecter' },
+            ],
+          };
+        }
         return {
           ton: 'reussi',
           titre: 'Carte connectée',
@@ -482,7 +495,7 @@
     const o = options || {};
     const connexion = A.connexionCarte();
     function dessiner(e) {
-      const d = decrire(e, connexion.profil);
+      const d = decrire(e, connexion.profil, !!o.seulementVider);
       const icone = A.icone ? A.icone(ICONES_TON[d.ton] || 'info', { epaisseur: 2.6 }) : '';
       let h = `<div class="pc-tete"><span class="pc-carte" aria-hidden="true">${dessinUsb()}</span><div class="pc-titres"><strong class="pc-titre">${echapper(d.titre)}</strong>`;
       h += `<span class="pc-statut">${icone}<span>${echapper(d.statut)}</span></span></div></div>`;
@@ -544,5 +557,31 @@
     );
   }
 
-  Object.assign(A, { creerPanneauCarte, lirePong, decrireEtatCarte: decrire });
+  // Fenêtre autonome (ex. « Vider la carte » en fin de séance, depuis une page du projet).
+  //   options : { carte ('uno' | 'mbot' | 'microbit'), titre, intro, seulementVider, programme(), surEnvoi(r), surVidage(r) }
+  function ouvrirDialogueCarte(options) {
+    const o = options || {};
+    const d = global.document.createElement('dialog');
+    d.className = 'dialogue-carte-hote';
+    d.setAttribute('aria-label', o.titre || 'Carte');
+    d.style.cssText = 'border:none;border-radius:16px;padding:0;width:min(34rem, calc(100% - 2rem));background:transparent';
+    d.innerHTML =
+      '<div class="labo-blocs"><div class="dialogue-carte">' +
+      `<div class="dialogue-entete"><strong>${echapper(o.titre || 'Carte')}</strong><button type="button" class="btn-fermer-carte" aria-label="Fermer">×</button></div>` +
+      (o.intro ? `<p class="dc-intro">${echapper(o.intro)}</p>` : '') +
+      '<div class="panneau-carte" aria-live="polite"></div></div></div>';
+    global.document.body.append(d);
+    const panneau = creerPanneauCarte(d.querySelector('.panneau-carte'), o);
+    panneau.choisirProfil(A.profil ? A.profil(o.carte || 'uno') : connexion.profil);
+    if (['envoye', 'vide', 'programme'].includes(panneau.connexion.etat.cle)) panneau.connexion.reprendre();
+    d.querySelector('.btn-fermer-carte').addEventListener('click', () => d.close());
+    d.addEventListener('close', () => {
+      panneau.arreter();
+      d.remove();
+    });
+    d.showModal();
+    return d;
+  }
+
+  Object.assign(A, { creerPanneauCarte, ouvrirDialogueCarte, lirePong, decrireEtatCarte: decrire });
 })(this);
