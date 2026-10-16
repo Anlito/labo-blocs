@@ -4,7 +4,8 @@
 //
 //   { format: 'labo-blocs/parcours', version: 1, id, titre, versionParcours, date, moteurMinimum, carte, modes,
 //     boutonsVersMasse, parametres, exercices: [ { id (stable, jamais réutilisé), numero, titre, defi, consigne,
-//     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, … } ],
+//     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, libre
+//     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), … } ],
 //     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
@@ -69,8 +70,9 @@
       else if (vus.has(e.id)) pb.push(`${nom} : l’identifiant « ${e.id} » est déjà utilisé.`);
       vus.add(e.id);
       if (!e.titre) pb.push(`${nom} : pas de titre.`);
-      if (!e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
-      if (!(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
+      // Exercice libre : ni solution ni scénario (l'élève fait ce qu'il veut avec les blocs proposés).
+      if (!e.libre && !e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
+      if (!e.libre && !(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
     }
     if (!(paquet.exercices || []).length) pb.push('Le parcours n’a aucun exercice.');
     // Modes proposés (parcours, ou exercice qui en choisit d'autres) : le simulateur reste toujours (« Vérifier »).

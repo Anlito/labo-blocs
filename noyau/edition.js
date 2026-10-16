@@ -369,7 +369,10 @@
 
   // L'exercice tel que l'élève le recevra (paramètres remplacés), dans son parcours.
   function exercicePrepare(paquet, exercice) {
-    return PA.preparer(Object.assign({}, paquet, { exercices: [exercice] })).exercices[0];
+    const x = PA.preparer(Object.assign({}, paquet, { exercices: [exercice] })).exercices[0];
+    // Exercice libre sur Arduino Uno : l'aperçu montre les composants de l'exemple (la « solution » facultative).
+    if (x.libre && (!x.carte || x.carte === 'uno')) x.composants = P.composantsDuProgramme(x.solutionReference).composants;
+    return x;
   }
 
   // « Tester mes scénarios sur ma solution » : chaque scénario, réussi ou non, avec la phrase que verrait l'élève.
@@ -395,6 +398,7 @@
       const nom = `Exercice ${ex.numero || ''} (${ex.titre})`;
       if (!String(ex.consigne || '').trim()) problemes.push(`${nom} : la consigne est vide.`);
       if (!(ex.blocsAutorises || []).length) problemes.push(`${nom} : aucun bloc n’est proposé aux élèves.`);
+      if (ex.libre) continue; // exercice libre : pas de solution ni de scénario à tester
       for (const r of testerScenarios(paquet, ex)) if (!r.reussi) problemes.push(`${nom}, scénario « ${r.nom} » : ${r.vide ? r.message : 'la solution ne passe pas. ' + r.message}`);
     }
     return problemes;

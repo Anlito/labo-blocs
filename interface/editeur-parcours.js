@@ -335,7 +335,8 @@
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="niveauVerrouille"${e.niveauVerrouille ? ' checked' : ''}${e.niveau ? '' : ' disabled'}> Niveau imposé (évaluation)</label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="defi"${e.defi ? ' checked' : ''}> Défi facultatif</label>` +
       '</div>' +
-      `<label>Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ" data-champ="libre"${e.libre ? ' checked' : ''}> Exercice libre : l’élève invente son programme avec les blocs proposés ; le simulateur montre les composants qu’il utilise ; pas de solution ni de test, il clique « J’ai terminé » ; pas de niveau calculé</label>` +
+      `<label class="ed-champ-competence">Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
       `<label>Modes pour tester<select class="champ" data-champ="modes">${MODES_EXERCICE.map(([v, t]) => `<option value="${v}"${(e.modes ? e.modes.join('+') : '') === v ? ' selected' : ''}>${v ? t : `${t} (${nomsModes(etat.paquet.modes || ['simulateur'])})`}</option>`).join('')}</select></label>` +
       `<label>Fiche « À savoir »<select class="champ-fiche">${optionsFiches}</select></label>` +
       (fiche
@@ -347,7 +348,9 @@
         : '') +
       '</div>' +
       // Composants
-      '<div class="carte ed-carte">' +
+      '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
+      '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
+      '<div class="carte ed-carte ed-carte-composants">' +
       '<div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<div class="ed-composants"></div>' +
       '<p class="ed-message ed-message-broche" hidden></p>' +
@@ -374,6 +377,9 @@
       '</div>';
     dessinerComposants();
     lierFormulaire();
+    // Exercice libre : pas de composants à déclarer ni de scénarios ; la solution devient un exemple facultatif.
+    $('.ed-edition').classList.toggle('ed-libre', !!e.libre);
+    $('.ed-titre-solution').textContent = e.libre ? 'Exemple (facultatif)' : 'Solution de référence';
   }
 
   function lierFormulaire() {
@@ -421,6 +427,13 @@
         if (t.value) e.modes = t.value.split('+');
         else delete e.modes;
         modifie();
+      } else if (t.matches('[data-champ="libre"]')) {
+        if (t.checked) e.libre = true;
+        else delete e.libre;
+        modifie();
+        dessinerFormulaire();
+        dessinerScenarios();
+        dessinerApercu();
       } else if (t.matches('[data-champ="niveauVerrouille"], [data-champ="defi"]')) {
         if (t.checked) e[t.dataset.champ] = true;
         else delete e[t.dataset.champ];
@@ -546,6 +559,7 @@
         const e = ex();
         const avant = JSON.stringify(e.solutionReference);
         const { programme } = etat.editeur.lire();
+        const composantsAvant = e.libre ? JSON.stringify(A.composantsDuProgramme(e.solutionReference).composants) : '';
         e.solutionReference = A.solutionDepuisProgramme(programme);
         if (avant.includes('"$')) {
           etat.messageSolution = 'Les paramètres ($…) de cette solution sont remplacés par leur valeur actuelle.';
@@ -553,7 +567,9 @@
         }
         etat.resultats = null;
         $('.ed-resultats') && ($('.ed-resultats').innerHTML = '');
-        lancerApercu();
+        // Exercice libre : l'exemple a changé de composants, le simulateur se redessine.
+        if (e.libre && JSON.stringify(A.composantsDuProgramme(e.solutionReference).composants) !== composantsAvant) dessinerApercu();
+        else lancerApercu();
         modifie();
       },
       zoom() {},

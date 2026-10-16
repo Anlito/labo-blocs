@@ -174,6 +174,18 @@
     modifie(d);
   }
 
+  // Exercice libre : l'équipe dit qu'elle a terminé. L'exercice compte comme fait (le suivant s'ouvre), sans niveau.
+  function noterTermine(d, ex, programme) {
+    const e = exercice(d, ex.id);
+    const date = maintenant();
+    e.historique.push({ date, type: 'termine', programme: sansIds(programme) });
+    e.statut = 'reussi';
+    e.empreinte = ex.empreinte;
+    delete e.aReverifier;
+    if (!e.premiereReussite) e.premiereReussite = date;
+    modifie(d);
+  }
+
   // Indices révélés un par un : on garde le plus haut niveau ouvert et chaque ouverture.
   function noterIndice(d, id, niveau) {
     const e = exercice(d, id);
@@ -247,6 +259,7 @@
   }
 
   const api = {
+    noterTermine,
     FORMAT_SAUVEGARDE: FORMAT,
     APPLICATION,
     nomEquipe,

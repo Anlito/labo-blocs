@@ -390,7 +390,33 @@
     return types;
   }
 
-  const api = { depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  // Exercice libre (Arduino Uno) : les composants que le programme utilise, dans l'ordre où ils apparaissent.
+  //   → { composants: [{ type, broche }], conflits: [{ broche, types: ['led', 'bouton'] }] }
+  // Une broche employée pour deux sortes de composants est un conflit : on garde la première.
+  const SORTE_DU_BLOC = { led_etat: 'led', servo_angle: 'servo', son: 'buzzer', bouton_etat: 'bouton' };
+  function composantsDuProgramme(programme) {
+    const parBroche = new Map();
+    const conflits = new Map();
+    const voir = (type, broche) => {
+      if (!broche) return;
+      const deja = parBroche.get(broche);
+      if (!deja) parBroche.set(broche, type);
+      else if (deja !== type) conflits.set(broche, [...new Set([...(conflits.get(broche) || [deja]), type])]);
+    };
+    (function parcourir(x) {
+      if (Array.isArray(x)) return x.forEach(parcourir);
+      if (!x || typeof x !== 'object') return;
+      if (x.quand === 'appui' || x.quand === 'relache') voir('bouton', x.broche);
+      if (SORTE_DU_BLOC[x.bloc]) voir(SORTE_DU_BLOC[x.bloc], x.broche);
+      for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
+    })(programme ? versV1(programme).fils : []);
+    return {
+      composants: [...parBroche].map(([broche, type]) => ({ type, broche })),
+      conflits: [...conflits].map(([broche, types]) => ({ broche, types })),
+    };
+  }
+
+  const api = { composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

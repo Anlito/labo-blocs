@@ -79,17 +79,19 @@
     const ex = (donnees && donnees.programmation && donnees.programmation.exercices) || {};
     const liste = paquet.exercices || [];
     const attendus = b.objectif ? liste.slice(0, b.objectif) : liste;
-    const codes = COMPETENCES.map((c) => c.code).filter((code) => liste.some((e) => competenceDe(e) === code));
+    // Exercices libres : pas de niveau (le professeur juge lui-même), ils ne comptent dans aucune compétence.
+    const evalues = liste.filter((e) => !e.libre);
+    const codes = COMPETENCES.map((c) => c.code).filter((code) => evalues.some((e) => competenceDe(e) === code));
     const competences = codes.map((code) => {
       const c = COMPETENCES.find((x) => x.code === code);
-      const siens = attendus.filter((e) => competenceDe(e) === code && !e.defi);
+      const siens = attendus.filter((e) => competenceDe(e) === code && !e.defi && !e.libre);
       const scores = siens.map((e) => scoreExercice(ex[e.id], b).score);
       let calcule = null;
       let moyenne = null;
       if (scores.length) {
         moyenne = Math.round((scores.reduce((s, x) => s + x, 0) / scores.length) * 10000) / 10000;
         calcule = moyenne < b.partiel ? 1 : moyenne < b.atteint ? 2 : 3;
-        const defis = liste.filter((e) => competenceDe(e) === code && e.defi);
+        const defis = evalues.filter((e) => competenceDe(e) === code && e.defi);
         if (calcule === 3 && defis.some((e) => ex[e.id] && ex[e.id].statut === 'reussi')) calcule = 4;
       }
       const force = forces[code] >= 1 && forces[code] <= 4 ? Number(forces[code]) : null;

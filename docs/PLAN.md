@@ -363,3 +363,15 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - « Publier » en ligne : un seul fichier téléchargé, avec la marche à suivre sur GitHub.
    - Accueil : « Essayer » et « Copier le lien élèves » pour chaque parcours.
    - Tests lancés l'un après l'autre (`--test-concurrency=1`) : plusieurs reconstruisent `dist/`.
+21. **Exercice libre (16/10/2026)**, idée de Thomas ; ses choix : composants actuels (LED, bouton, servomoteur,
+   buzzer), pas de niveau, pas de contrainte vérifiée, à faire tout de suite.
+   - Exercice `libre: true` : ni solution ni scénario exigés (`controler`, publication). Sur Arduino Uno, les composants
+     viennent des blocs posés (`composantsDuProgramme` : LED, bouton — condition ou « quand » —, servomoteur, buzzer,
+     dans l'ordre d'apparition) ; une broche employée pour deux composants est signalée en ambre (le premier est
+     gardé). mBot et micro:bit : les composants de la carte, comme d'habitude.
+   - Élève : la liste des composants et le simulateur suivent le programme ; « J'ai terminé » remplace « Vérifier »
+     (`noterTermine` : fait, le suivant s'ouvre, historique « termine ») ; pas d'indice s'il n'y en a pas, pas de
+     solution. Écran du parcours : « Exercice libre · terminé ».
+   - Compétences : un exercice libre ne compte dans aucune (le professeur juge à la fiche de l'équipe).
+   - Éditeur : case « Exercice libre » ; composants, scénarios et compétence masqués ; la solution devient un
+     « Exemple (facultatif) » dont l'aperçu montre les composants.

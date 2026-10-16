@@ -40,7 +40,9 @@
           const etat = A.etat(D, paquet, ex.id, opts);
           const courant = ex.id === reprendre.id && etat !== 'reussi' && etat !== 'verrouille';
           const e = courant ? { mot: 'En cours', icone: 'lecture' } : ETATS[etat];
-          const mot = ex.defi ? (etat === 'verrouille' ? 'Défi facultatif · verrouillé' : 'Défi facultatif · ' + e.mot.toLowerCase()) : e.mot;
+          const motEtat = ex.libre && etat === 'reussi' ? 'Terminé' : e.mot;
+          const prefixe = ex.defi ? 'Défi facultatif' : ex.libre ? 'Exercice libre' : '';
+          const mot = prefixe ? (etat === 'verrouille' ? prefixe + ' · verrouillé' : prefixe + ' · ' + motEtat.toLowerCase()) : motEtat;
           const classes = ['carte-exercice', 'etat-' + etat, courant ? 'courant' : '', ex.defi ? 'defi' : ''].join(' ');
           return (
             `<button type="button" class="${classes}" data-id="${echapper(ex.id)}"${etat === 'verrouille' ? ' aria-disabled="true"' : ''}>` +

@@ -220,3 +220,13 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 13.3 | GitHub › dépôt labo-blocs › dossier `parcours` › « Add file › Upload files » › déposer le fichier › « Commit changes » | 2 ou 3 minutes plus tard, le parcours est dans l'accueil | |
 | 13.4 | Accueil › « Copier le lien élèves », ouvrir ce lien | Classes 4A et 4B proposées ; dossier « 4A › COMMUN › TECHNOLOGIE › ROBOT › Prénom_Prénom » | |
 | 13.5 | Ouvrir la page des élèves sans parcours (distributeur) | Les classes de `site/projet.js` (5A à 5F) | |
+
+## 14. Exercice libre
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 14.1 | Éditeur › un exercice › cocher « Exercice libre » | Composants, scénarios et compétence disparaissent ; « Exemple (facultatif) » à la place de la solution | |
+| 14.2 | Publier, ouvrir l'exercice comme un élève (sur une carte Arduino Uno) | « J'ai terminé » à la place de « Vérifier » ; « Pose un bloc… » dans les composants | |
+| 14.3 | Poser « contrôler la LED … D5 » puis « état sur la broche D2 » | LED D5 et bouton D2 apparaissent dans la liste et dans le simulateur ; « Lancer » allume la LED | |
+| 14.4 | Mettre une LED et un bouton sur la même broche | Message en ambre : la broche sert à deux composants | |
+| 14.5 | « J'ai terminé » | Message « Ton programme est enregistré… », l'exercice suivant s'ouvre ; dans le suivi de classe, pas de niveau pour cet exercice | |
