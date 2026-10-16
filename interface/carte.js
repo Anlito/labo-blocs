@@ -212,7 +212,7 @@
       }
       // Jusqu'à 3 essais : juste après l'ouverture, la réponse peut être brouillée.
       for (let essai = 0; essai < 3; essai++) {
-        const r = await liaison.commande('PING', 1200);
+        const r = await liaison.commande('PING', 900);
         const pong = lirePong(r);
         if (pong) return pong;
         await pause(250);

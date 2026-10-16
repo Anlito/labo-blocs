@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 3
 
-16/10/2026 11:21:02 · chromium · page ouverte en file:// · 20/20 critères
+16/10/2026 11:30:13 · chromium · page ouverte en file:// · 20/20 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
