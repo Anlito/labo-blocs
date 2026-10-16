@@ -325,7 +325,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
         const dossier = await (await (await racine.getDirectoryHandle('labo-blocs')).getDirectoryHandle('parcours')).getDirectoryHandle('distributeur');
         return (await (await dossier.getFileHandle('parcours.js')).getFile()).text();
       });
-      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.2.0"'), 'parcours.js non écrit');
+      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.3.0"'), 'parcours.js non écrit');
       fs.writeFileSync(path.join(copie, 'parcours', 'distributeur', 'parcours.js'), ecrit);
       await p.close();
       // L'élève (mode enseignant pour aller droit à l'exercice) : consigne, palette, vérification réussie.
@@ -343,7 +343,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       const ecart = await texte(eleve, '.resultat');
       verifier(/LED D4 devrait être allumée/.test(ecart), ecart);
       await eleve.close();
-      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.2.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
+      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.3.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
     } finally {
       fs.rmSync(copie, { recursive: true, force: true });
     }
@@ -495,12 +495,119 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « ${roule} », obstacle à 10 cm → « ${arrete} », vérification réussie`;
   });
 
+  // ---------- Jalon 4 : En direct (carte virtuelle) ----------
+
+  const sorties = (p) => p.evaluate(() => JSON.stringify(carteVirtuelle.sorties));
+
+  await critere('Un même exercice : simulateur, puis En direct, puis Dans la carte (Uno, exercice 7)', async () => {
+    const p = await page(PAGE + '?enseignant=1&exercice=dist-07', { carte: { modele: 'uno', firmware: '0.2' } });
+    await charger(p, 'dist-07', 'solution');
+    // 1. Simulateur : la vérification réussit.
+    await p.click('.btn-verifier');
+    await pause(400);
+    verifier(await p.$eval('.resultat', (e) => e.classList.contains('reussi')), 'simulateur : pas de réussite');
+    await p.evaluate(() => (document.querySelector('.resultat').hidden = true));
+    // 2. En direct : la carte obéit, son vrai bouton (D3) allume la LED D9.
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle);
+    await p.click('.btn-lancer');
+    await pause(700);
+    e = await etatCarte(p);
+    verifier(e.cle === 'direct' && /câble branché/.test(e.message) && /fermes l’onglet/.test(e.message), 'bandeau du direct : ' + e.message);
+    const surveillees = await p.evaluate(() => carteVirtuelle.surveillees.join(' '));
+    await p.evaluate(() => carteVirtuelle.appuyer(3, 0));
+    await pause(500);
+    const apresAppui = await sorties(p);
+    const ecranLed = await p.$eval('.composant[data-broche="D9"] .pastille-etat', (x) => x.textContent);
+    await p.evaluate(() => carteVirtuelle.appuyer(3, 1));
+    verifier(surveillees === '3 4' && JSON.parse(apresAppui)['9'] === 1 && /Allumée/.test(ecranLed), `surveillées ${surveillees}, sorties ${apresAppui}, écran « ${ecranLed} »`);
+    // Signe de vie : la carte ne s'éteint pas toute seule pendant le direct.
+    await pause(3500);
+    verifier((await p.evaluate(() => carteVirtuelle.securite)) === 0, 'la carte a tout éteint faute de signe de vie');
+    await p.click('.panneau-carte [data-action="arreter-direct"]');
+    await pause(500);
+    const fin = await p.evaluate(() => carteVirtuelle.journal.slice(-2).join(' ; '));
+    verifier(/W ; OFF/.test(fin) && (await sorties(p)) === '{}', 'arrêt : ' + fin);
+    // 3. Dans la carte : le même programme part dans la carte.
+    await p.click('.btn-mode[data-mode="carte"]');
+    await pause(200);
+    await p.click('.panneau-carte [data-action="envoyer"]');
+    e = await attendreCarte(p, ATTENTE);
+    const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
+    verifier(e.cle === 'envoye' && garde === (await octetsSolution(p, 'dist-07')), 'envoi : ' + e.cle);
+    await p.close();
+    return `simulateur : réussi ; en direct : boutons D3 D4 surveillés, appui sur le vrai D3 → LED D9 allumée (carte et écran), signe de vie tenu 3,5 s, « Arrêter » → W, OFF ; dans la carte : ${garde.length / 2} octets envoyés`;
+  });
+
+  await critere('En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-03', { carte: { modele: 'mcore', firmware: '0.2', cle: true } });
+    await charger(p, 'mbot-03', 'solution');
+    await p.evaluate(() => (carteVirtuelle.capteurs['X 1 2 3'] = 100));
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter-cle"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion par la clé : ' + e.cle);
+    await p.click('.btn-lancer');
+    await pause(700);
+    const roule = await p.evaluate(() => carteVirtuelle.extensions.slice(-1)[0]);
+    await p.evaluate(() => (carteVirtuelle.capteurs['X 1 2 3'] = 8));
+    await pause(600);
+    const arret = await p.evaluate(() => carteVirtuelle.extensions.slice(-1)[0]);
+    const tableau = await p.$eval('[data-etat="moteur gauche"]', (x) => x.textContent);
+    const curseur = await p.$eval('[data-capteur="distance"]', (x) => `${x.value}${x.disabled ? ' verrouillé' : ''}`);
+    verifier(roule === 'X 1 1 50 50' && arret === 'X 1 1 0 0' && tableau === 'arrêté' && curseur === '8 verrouillé', `${roule} / ${arret} / ${tableau} / ${curseur}`);
+    await p.click('.btn-mode[data-mode="carte"]');
+    await pause(300);
+    await p.click('.panneau-carte [data-action="envoyer"]');
+    e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'envoye' && /robot/.test(e.message), 'envoi par la clé : ' + e.cle + ' ' + e.message);
+    await p.close();
+    // Robot sans programme de base : par la clé, on demande le câble.
+    const q = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-01', { carte: { modele: 'mcore', cle: true } });
+    await q.click('.btn-mode[data-mode="direct"]');
+    await q.click('.panneau-carte [data-action="connecter-cle"]');
+    e = await attendreCarte(q, ATTENTE);
+    verifier(e.cle === 'a-installer' && /câble USB/.test(e.message), 'robot neuf par la clé : ' + e.message);
+    await q.close();
+    return `par la clé : « ${roule} », obstacle à 8 cm → « ${arret} » (tableau : ${tableau}, curseur ${curseur}) ; envoi par la clé ; robot neuf : « ${e.message.slice(0, 60)}… »`;
+  });
+
+  await critere('En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-microbit&enseignant=1&exercice=mb-01', { carte: { modele: 'microbit-v2', firmware: '0.2' } });
+    await charger(p, 'mb-01', 'solution');
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    let e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle);
+    await p.click('.btn-lancer');
+    await pause(600);
+    await p.evaluate(() => (carteVirtuelle.capteurs['X 2 5'] = 1));
+    await pause(600);
+    const s = await sorties(p);
+    const ext = await p.evaluate(() => carteVirtuelle.extensions.join(' | '));
+    verifier(JSON.parse(s)['0'] === 1 && /X 2 2 3/.test(ext), `${s} ; ${ext}`);
+    await p.click('.panneau-carte [data-action="arreter-direct"]');
+    await pause(300);
+    // Un exercice qui ne propose que le simulateur : les autres modes disparaissent.
+    const modes = await p.evaluate(() => {
+      const ex = LaboBlocs.app.paquet.exercices.find((x) => x.id === 'mb-02');
+      ex.modes = ['simulateur'];
+      LaboBlocs.app.ecranExercice.ouvrir(ex);
+      return { boutons: [...document.querySelectorAll('.btn-mode')].filter((b) => !b.hidden).map((b) => b.dataset.mode), groupe: !document.querySelector('.modes').hidden };
+    });
+    verifier(modes.boutons.join() === 'simulateur' && !modes.groupe, JSON.stringify(modes));
+    await p.close();
+    return `bouton A de la vraie carte → P0 allumée et « ${ext.split(' | ').find((x) => /X 2 2/.test(x))} » ; exercice réglé « simulateur seulement » : sélecteur de modes caché`;
+  });
+
   await b.close();
   await critere('Aucune erreur dans la console du navigateur', async () => verifier(!erreurs.length, erreurs.join(' | ')));
 
   const ok = resultats.filter((r) => r.ok).length;
   const md =
-    `# Recette automatique — jalons 1 à 3\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
+    `# Recette automatique — jalons 1 à 4\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
     '| Critère | Résultat | Détail |\n|---|---|---|\n' +
     resultats.map((r) => `| ${r.nom} | ${r.ok ? '✔' : '✘'} | ${String(r.detail).replace(/\|/g, '/').replace(/\n/g, ' ')} |`).join('\n') +
     '\n';

@@ -175,6 +175,8 @@
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
       vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
       if (panneauCarte) panneauCarte.choisirProfil(A.profil(ex.carte));
+      montrerModes(ex);
+      if (vue.verrouillerCapteurs) vue.verrouillerCapteurs(etat.modeTest === 'direct');
       niveauDeLExercice(ex);
       afficher();
       A.noterOuverture(D, ex.id);
@@ -318,26 +320,40 @@
       if (etat.niveau === 3) dessinerCode();
     });
 
-    // ----- Modes : seulement ceux que le parcours propose (direct et carte : jalons 3 et 4) -----
+    // ----- Modes : ceux que le parcours propose, ou ceux de l'exercice s'il en choisit d'autres -----
+    //   simulateur · direct (« En direct » : le programme tourne dans l'ordinateur, la carte obéit) · carte
 
-    const modes = paquet.modes || ['simulateur'];
-    for (const b of ecran.querySelectorAll('.btn-mode')) b.hidden = !modes.includes(b.dataset.mode);
-    ecran.querySelector('.modes').hidden = modes.length < 2;
+    const modesDe = (ex) => (ex && ex.modes) || paquet.modes || ['simulateur'];
+    const tousLesModes = new Set([paquet.modes || ['simulateur'], ...exercices.map((e) => e.modes || [])].flat());
     etat.modeTest = 'simulateur';
     const sectionTest = $('.simulateur', ecran);
+    function montrerModes(ex) {
+      const m = modesDe(ex);
+      for (const b of ecran.querySelectorAll('.btn-mode')) b.hidden = !m.includes(b.dataset.mode);
+      ecran.querySelector('.modes').hidden = m.length < 2;
+      if (!m.includes(etat.modeTest)) choisirModeTest('simulateur');
+    }
     function choisirModeTest(m) {
       if (m === etat.modeTest) return;
-      if (m === 'carte' && etat.mode !== 'arrete') arreter();
+      if (etat.mode !== 'arrete') arreter();
       etat.modeTest = m;
       for (const b of ecran.querySelectorAll('.btn-mode')) b.setAttribute('aria-pressed', String(b.dataset.mode === m));
       sectionTest.classList.toggle('mode-carte', m === 'carte');
-      $('.panneau-carte', ecran).hidden = m !== 'carte';
+      sectionTest.classList.toggle('mode-direct', m === 'direct');
+      $('.panneau-carte', ecran).hidden = m === 'simulateur';
+      if (vue && vue.verrouillerCapteurs) vue.verrouillerCapteurs(m === 'direct');
+      if (panneauCarte) panneauCarte.redessiner();
+      $('.simu-note', ecran).textContent = '';
+      majCommandes();
     }
     for (const b of ecran.querySelectorAll('.btn-mode')) b.addEventListener('click', () => choisirModeTest(b.dataset.mode));
 
     // « Dans la carte » : le programme de l'élève, compilé comme pour le simulateur, part dans la carte du parcours.
-    const panneauCarte = modes.includes('carte')
+    // « En direct » : le même panneau connecte la carte ; « Lancer » fait tourner le programme et la carte obéit.
+    const panneauCarte = tousLesModes.has('carte') || tousLesModes.has('direct')
       ? A.creerPanneauCarte($('.panneau-carte', ecran), {
+          pourDirect: () => etat.modeTest === 'direct',
+          surArretDirect: () => arreter(),
           programme() {
             const ex = etat.exercice;
             return A.codeOctet.compiler(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse });
@@ -364,7 +380,28 @@
       etat.rejeu = null;
       $('.simu-note', ecran).textContent = '';
     }
+    // En direct : le programme tourne au rythme de l'horloge dans l'ordinateur (noyau/direct.js), la carte obéit.
+    async function lancerDirect() {
+      if (etat.mode === 'direct') return;
+      const connexion = A.connexionCarte();
+      if (!connexion.carte) {
+        $('.simu-note', ecran).textContent = 'Connecte d’abord la carte (au-dessus), puis clique sur « Lancer ».';
+        return;
+      }
+      const ex = etat.exercice;
+      if (vue && vue.capteurs && A.capteursDepart) Object.assign(vue.capteurs, A.capteursDepart(ex.carte));
+      const direct = A.creerDirect(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse, carte: ex.carte, capteurs: vue && vue.capteurs });
+      etat.sim = direct.sim;
+      etat.servos = {};
+      etat.rejeu = null;
+      etat.mode = 'direct';
+      $('.simu-note', ecran).textContent = '';
+      majCommandes();
+      const ok = await connexion.demarrerDirect(direct, { surErreur: () => etat.mode === 'direct' && arreter() });
+      if (!ok && etat.mode === 'direct') arreter();
+    }
     function lancer() {
+      if (etat.modeTest === 'direct') return lancerDirect();
       if (etat.mode === 'pause') etat.mode = 'marche';
       else if (etat.mode === 'arrete') {
         nouvelleSimulation();
@@ -373,6 +410,7 @@
       majCommandes();
     }
     function pause() {
+      if (etat.mode === 'direct') return arreter(); // en direct, « Pause » arrête (la carte éteint tout)
       if (etat.mode === 'marche') etat.mode = 'pause';
       majCommandes();
     }
@@ -390,6 +428,7 @@
       majCommandes();
     }
     function arreter() {
+      if (etat.mode === 'direct') A.connexionCarte().arreterDirect();
       etat.mode = 'arrete';
       etat.sim = null;
       etat.servos = {};
@@ -406,6 +445,10 @@
     // Bouton poussoir du simulateur : appuyé tant qu'on le tient. Programme arrêté : l'élève est invité à le lancer.
     function appuyerBouton(broche, valeur) {
       if (etat.rejeu) return;
+      if (etat.modeTest === 'direct') {
+        if (valeur) $('.simu-note', ecran).textContent = 'En direct, appuie sur le vrai bouton : l’écran montre ce que fait la carte.';
+        return;
+      }
       if (!etat.sim) {
         etat.boutonsAvant = etat.boutonsAvant || {};
         etat.boutonsAvant[broche] = valeur;
@@ -414,7 +457,7 @@
       afficher();
     }
     function majCommandes() {
-      const marche = etat.mode === 'marche';
+      const marche = etat.mode === 'marche' || etat.mode === 'direct';
       const b = $('.btn-lancer', ecran);
       b.classList.toggle('actif', marche);
       b.setAttribute('aria-pressed', String(marche));
@@ -481,7 +524,8 @@
         // Le journal ne sert pas à l'affichage : on évite qu'il grossisse sans fin.
         if (etat.sim.journal.length > 20000) etat.sim.journal.splice(0, 15000);
       }
-      if (etat.mode !== 'pause' || dtVirtuel) afficher(dtVirtuel);
+      if (etat.mode === 'direct') afficher(dt);
+      else if (etat.mode !== 'pause' || dtVirtuel) afficher(dtVirtuel);
       requestAnimationFrame(image);
     }
     requestAnimationFrame(image);
@@ -601,6 +645,11 @@
       arreter();
       aides.fermer();
     }
+
+    // Fermer l'onglet en direct : la carte éteint tout (sinon, au plus tard 3 s après, faute de signe de vie).
+    addEventListener('pagehide', () => {
+      if (etat.mode === 'direct') A.connexionCarte().arreterDirect();
+    });
 
     choisirNiveau(1);
     majCommandes();

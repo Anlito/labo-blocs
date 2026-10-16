@@ -1,16 +1,17 @@
-// Parcours « Distributeur de céréales », version 1.1.0 (Labo Blocs).
+// Parcours « Distributeur de céréales », version 1.2.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "distributeur",
   "titre": "Distributeur de céréales",
-  "versionParcours": "1.1.0",
+  "versionParcours": "1.2.0",
   "date": "2026-10-16",
   "moteurMinimum": "0.1.0",
   "carte": "uno",
   "modes": [
     "simulateur",
+    "direct",
     "carte"
   ],
   "boutonsVersMasse": true,

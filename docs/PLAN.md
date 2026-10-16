@@ -273,7 +273,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **Blocs micro:bit V2** : écran (nombre, image, pixel, effacer, texte qui défile), boutons A et B, logo tactile,
      broches P0 à P2, capteurs (secouer et pencher, température, lumière), note sur le haut-parleur.
 
-15. **Jalon 3 livré le 16/10/2026** (recette à faire avec le matériel, `RECETTE.md` §8). Ce qui a été fait :
+15. **Jalon 3 livré le 16/10/2026, recette validée par Thomas avec le matériel le 16/10/2026** (`RECETTE.md` §8 : Uno, mBot et micro:bit reçoivent un programme et se vident ; sens des moteurs, LED gauche/droite et ports du mBot conformes). Retour intégré : case de valeur à droite du bloc « comparaison ». Ce qui a été fait :
    - `noyau/cartes.js` : profils Uno / mBot / micro:bit V2 (broches des menus, programme de la carte, installation par
      le câble ou par fichier), blocs de carte décrits une seule fois (Blockly, programme, compilateur les lisent) et
      déroulés en blocs de base + commandes d'extension ; carte simulée (écran 5 × 5, boutons A/B, logo, capteurs ;

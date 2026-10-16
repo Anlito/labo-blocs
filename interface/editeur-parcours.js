@@ -299,6 +299,16 @@
 
   // ----- Formulaire de l'exercice -----
 
+  // Modes d'un exercice : comme le parcours, ou un choix à lui (ex. « En direct » seulement pour un exercice).
+  const MODES_EXERCICE = [
+    ['', 'Comme le parcours'],
+    ['simulateur', 'Simulateur seulement'],
+    ['simulateur+direct', 'Simulateur et En direct'],
+    ['simulateur+carte', 'Simulateur et Dans la carte'],
+    ['simulateur+direct+carte', 'Simulateur, En direct et Dans la carte'],
+  ];
+  const nomsModes = (m) => m.map((x) => ({ simulateur: 'Simulateur', direct: 'En direct', carte: 'Dans la carte' })[x]).join(', ');
+
   function dessinerFormulaire() {
     const e = ex();
     const fiches = etat.paquet.fiches || {};
@@ -325,6 +335,7 @@
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="niveauVerrouille"${e.niveauVerrouille ? ' checked' : ''}${e.niveau ? '' : ' disabled'}> Niveau imposé (évaluation)</label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="defi"${e.defi ? ' checked' : ''}> Défi facultatif</label>` +
       '</div>' +
+      `<label>Modes pour tester<select class="champ" data-champ="modes">${MODES_EXERCICE.map(([v, t]) => `<option value="${v}"${(e.modes ? e.modes.join('+') : '') === v ? ' selected' : ''}>${v ? t : `${t} (${nomsModes(etat.paquet.modes || ['simulateur'])})`}</option>`).join('')}</select></label>` +
       `<label>Fiche « À savoir »<select class="champ-fiche">${optionsFiches}</select></label>` +
       (fiche
         ? '<details class="ed-fiche"><summary>Modifier la fiche</summary>' +
@@ -401,6 +412,10 @@
         }
         $('[data-champ="niveauVerrouille"]', zone).disabled = !t.value;
         if (!t.value) $('[data-champ="niveauVerrouille"]', zone).checked = false;
+        modifie();
+      } else if (t.matches('[data-champ="modes"]')) {
+        if (t.value) e.modes = t.value.split('+');
+        else delete e.modes;
         modifie();
       } else if (t.matches('[data-champ="niveauVerrouille"], [data-champ="defi"]')) {
         if (t.checked) e[t.dataset.champ] = true;
@@ -886,6 +901,7 @@
     $('.reglage-carte', d).value = p.carte || 'uno';
     $('.reglage-boutons', d).checked = p.boutonsVersMasse !== false;
     $('.reglage-mode-carte', d).checked = (p.modes || ['simulateur']).includes('carte');
+    $('.reglage-mode-direct', d).checked = (p.modes || ['simulateur']).includes('direct');
     const liste = $('.liste-parametres', d);
     const ligne = (nom, valeur) =>
       `<div class="ed-parametre"><label>Nom<input class="parametre-nom" value="${echapper(nom)}" pattern="[A-Za-z][A-Za-z0-9]*"></label>` +
@@ -902,7 +918,7 @@
       p.carte = $('.reglage-carte', d).value;
       const carteChangee = carteAvant !== p.carte;
       p.boutonsVersMasse = $('.reglage-boutons', d).checked;
-      p.modes = ['simulateur'].concat($('.reglage-mode-carte', d).checked ? ['carte'] : []);
+      p.modes = ['simulateur'].concat($('.reglage-mode-direct', d).checked ? ['direct'] : [], $('.reglage-mode-carte', d).checked ? ['carte'] : []);
       const params = {};
       for (const l of $$('.ed-parametre', liste)) {
         const nom = $('.parametre-nom', l).value.trim();

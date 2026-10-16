@@ -234,6 +234,6 @@ test('parcours de découverte (mBot, micro:bit) : publiables, chaque solution pa
   for (const id of ['decouverte-mbot', 'decouverte-microbit']) {
     const p = lireParcours(fs.readFileSync(path.join(__dirname, '..', 'parcours', id, 'parcours.js'), 'utf8'));
     assert.deepEqual(E.controlerPublication(p), [], id);
-    assert.deepEqual(p.modes, ['simulateur', 'carte']);
+    assert.deepEqual(p.modes, ['simulateur', 'direct', 'carte']);
   }
 });

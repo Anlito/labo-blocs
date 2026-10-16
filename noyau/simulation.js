@@ -20,7 +20,8 @@
   const VITESSE_SERVO = 180 / 300; // degrés par ms : 0° → 180° en 0,3 s
 
   // options : { composants, boutonsVersMasse, graine (hasard reproductible), surSon(broche, frequence, ms),
-  //             carte ('uno' | 'microbit' | 'mbot'), capteurs (valeurs des capteurs de la carte, modifiables en marche) }
+  //             carte ('uno' | 'microbit' | 'mbot'), capteurs (valeurs des capteurs de la carte, modifiables en marche),
+  //             surExtension(e, c, args) (mode « En direct ») }
   function creerSimulation(programme, options) {
     const opts = options || {};
     const compile = N.compiler(programme || { demarrage: [], boucle: [] }, { composants: opts.composants, boutonsVersMasse: opts.boutonsVersMasse });
@@ -103,7 +104,10 @@
       },
       ext(e, c, args) {
         if (opts.extension) return Number(opts.extension(e, c, args)) || 0;
-        return carteSimulee ? Number(carteSimulee.ext(e, c, args)) || 0 : 0;
+        const r = carteSimulee ? Number(carteSimulee.ext(e, c, args)) || 0 : 0;
+        // Mode « En direct » : la commande part aussi vers la vraie carte (noyau/direct.js).
+        if (opts.surExtension) opts.surExtension(e, c, args);
+        return r;
       },
     });
     vm.charger(compile.octets);

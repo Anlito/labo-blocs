@@ -52,6 +52,7 @@
   }
 
   // Problèmes d'un paquet (liste vide : il est utilisable). Phrases pour le professeur.
+  const MODES = ['simulateur', 'direct', 'carte'];
   function controler(paquet, versionMoteur) {
     const pb = [];
     if (!paquet || paquet.format !== FORMAT) return ['Ce fichier n’est pas un parcours Labo Blocs.'];
@@ -71,6 +72,12 @@
       if (!(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
     }
     if (!(paquet.exercices || []).length) pb.push('Le parcours n’a aucun exercice.');
+    // Modes proposés (parcours, ou exercice qui en choisit d'autres) : le simulateur reste toujours (« Vérifier »).
+    const modesValides = (m) => Array.isArray(m) && m.includes('simulateur') && m.every((x) => MODES.includes(x));
+    if (paquet.modes && !modesValides(paquet.modes)) pb.push('Modes du parcours inconnus (simulateur, direct, carte ; le simulateur est obligatoire).');
+    for (const [i, e] of (paquet.exercices || []).entries()) {
+      if (e.modes && !modesValides(e.modes)) pb.push(`Exercice ${e.numero || i + 1} : modes inconnus (simulateur, direct, carte ; le simulateur est obligatoire).`);
+    }
     return pb;
   }
 

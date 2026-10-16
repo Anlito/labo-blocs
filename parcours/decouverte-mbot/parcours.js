@@ -1,16 +1,17 @@
-// Parcours « Découverte du mBot », version 1.0.0 (Labo Blocs).
+// Parcours « Découverte du mBot », version 1.1.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-mbot",
   "titre": "Découverte du mBot",
-  "versionParcours": "1.0.0",
+  "versionParcours": "1.1.0",
   "date": "2026-10-16",
   "moteurMinimum": "0.3.0",
   "carte": "mbot",
   "modes": [
     "simulateur",
+    "direct",
     "carte"
   ],
   "boutonsVersMasse": true,

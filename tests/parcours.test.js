@@ -49,7 +49,7 @@ test('empreinte : stable, et change quand ce qui décide de la réussite change'
 
 test('comparer deux versions : ajoutés, supprimés, modifiés, déplacés, textes', () => {
   const v2 = lireParcours('distributeur');
-  v2.versionParcours = '1.2.0';
+  v2.versionParcours = '1.3.0';
   const [un, deux] = v2.exercices.splice(0, 2);
   v2.exercices.splice(1, 0, deux, un); // 3, 2, 1, 4… : 1 et 3 ont changé de place
   v2.exercices = v2.exercices.filter((e) => e.id !== 'dist-12');
@@ -72,4 +72,14 @@ test('contrôle : identifiant en double, version du moteur trop ancienne', () =>
   assert.ok(pb.some((x) => x.includes('déjà utilisé')));
   assert.ok(pb.some((x) => x.includes('9.0.0')));
   assert.strictEqual(comparerVersions('1.10.0', '1.9.3'), 1);
+});
+
+test('modes : parcours et exercice, le simulateur toujours là', () => {
+  const p = lireParcours('distributeur');
+  assert.deepEqual(controler(p), []);
+  p.exercices[0].modes = ['simulateur', 'direct'];
+  assert.deepEqual(controler(p), []);
+  p.exercices[1].modes = ['direct'];
+  p.modes = ['simulateur', 'live'];
+  assert.equal(controler(p).length, 2);
 });

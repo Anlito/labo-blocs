@@ -88,6 +88,7 @@
         <option value="mbot">mBot (carte mCore)</option>
         <option value="microbit">micro:bit V2</option>
       </select></label>
+    <label class="ed-case"><input type="checkbox" class="reglage-mode-direct"> Mode « En direct » : le programme tourne dans l’ordinateur et la carte obéit tout de suite (câble ou clé 2.4G branchés)</label>
     <label class="ed-case"><input type="checkbox" class="reglage-mode-carte"> Mode « Dans la carte » : les élèves envoient leur programme dans la carte par le câble USB (Chrome ou Edge)</label>
     <label class="ed-case"><input type="checkbox" class="reglage-boutons"> Boutons poussoirs à 2 fils (signal + GND), lus avec la résistance interne de la carte</label>
     <fieldset class="reglage-parametres">
@@ -122,6 +123,7 @@
 <script src="../noyau/code-octet.js"></script>
 <script src="../noyau/vm.js"></script>
 <script src="../noyau/simulation.js"></script>
+<script src="../noyau/direct.js"></script>
 <script src="../noyau/validation.js"></script>
 <script src="../noyau/arduino.js"></script>
 <script src="../noyau/parcours.js"></script>

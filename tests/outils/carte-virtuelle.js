@@ -4,8 +4,11 @@
 //     programme de la carte démarre (s'il y en a un), envoie quelques octets parasites et répond au protocole v2 ;
 //   - micro:bit : ne redémarre pas ; son programme de base s'installe en copiant le fichier (copierFichier).
 // À injecter avant les scripts de la page (puppeteer : evaluateOnNewDocument), puis :
-//   installerCarteVirtuelle({ modele: 'uno' | 'mcore' | 'microbit-v2', firmware: null | '0.2', occupee: false })
+//   installerCarteVirtuelle({ modele: 'uno' | 'mcore' | 'microbit-v2', firmware: null | '0.2', occupee: false, cle: false })
 // La carte est ensuite dans window.carteVirtuelle (programme gardé, journal des commandes, débrancher()).
+// Mode direct (jalon 4) : sorties (D, A, S), notes (T), commandes de carte (X), boutons physiques (appuyer(broche,
+// niveau) → « E <broche> <niveau> » si la broche est surveillée), capteurs (capteurs['X 1 2 3'] = 12), sécurité 3 s.
+// cle : true → une clé 2.4G virtuelle (navigator.hid) reliée au même mBot, rapports de 32 octets [longueur, octets…].
 (function (global) {
   'use strict';
 
@@ -24,7 +27,24 @@
       occupee: !!o.occupee,
       branchee: true,
       ouvertures: 0,
+      sorties: {}, // broche → valeur (mode direct)
+      notes: [],
+      extensions: [], // commandes X qui agissent (moteurs, LED, écran…)
+      capteurs: {}, // réponse des lectures : { 'X 1 2 3': 25 }
+      niveaux: {}, // niveau électrique des entrées (boutons)
+      surveillees: [],
+      securite: 0, // nombre de fois où la carte a tout éteint faute de signe de vie
     };
+    let dernierMessage = Date.now();
+    let enDirect = false;
+    setInterval(() => {
+      if (enDirect && Date.now() - dernierMessage > 3000) {
+        enDirect = false;
+        carte.sorties = {};
+        carte.securite++;
+        carte.journal.push('securite');
+      }
+    }, 200);
     const encodeur = new TextEncoder();
     const decodeur = new TextDecoder();
     let ouvert = false;
@@ -37,7 +57,9 @@
     let envoi = null;
     const ecouteurs = { connect: [], disconnect: [] };
 
+    let emettreCle = null; // clé 2.4G ouverte : les réponses partent par elle
     function emettre(octets) {
+      if (emettreCle) return emettreCle(octets instanceof Uint8Array ? octets : Uint8Array.from(octets));
       if (!ouvert || !controleur) return;
       setTimeout(() => {
         try {
@@ -104,8 +126,41 @@
     // ---------- Programme de la carte (protocole v2) ----------
     function commande(ligne) {
       carte.journal.push(ligne.length > 40 ? ligne.slice(0, 40) + '…' : ligne);
+      dernierMessage = Date.now();
       const [c, a] = ligne.split(' ');
       const place = PLACES[modele];
+      const n = ligne.split(' ').slice(1).map(Number);
+      const direct = () => {
+        enDirect = true;
+      };
+      if (c === 'D' || c === 'A' || c === 'S') {
+        direct();
+        carte.sorties[n[0]] = n[1];
+        return repondre('OK');
+      }
+      if (c === 'T') {
+        direct();
+        carte.notes.push(n);
+        return repondre('OK');
+      }
+      if (c === 'OFF') {
+        carte.sorties = {};
+        return repondre('OK');
+      }
+      if (c === 'M') return repondre('OK');
+      if (c === 'W') {
+        direct();
+        carte.surveillees = n.filter((x) => !Number.isNaN(x));
+        return repondre('OK');
+      }
+      if (c === 'R') return repondre(`V ${n[0]} ${carte.niveaux[n[0]] === undefined ? 1 : carte.niveaux[n[0]]}`);
+      if (c === 'X') {
+        direct();
+        const lecture = ({ 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13] }[n[0]] || []).includes(n[1]);
+        if (lecture) return repondre('V ' + (carte.capteurs[ligne] || 0));
+        carte.extensions.push(ligne);
+        return repondre('V 0');
+      }
       if (c === 'PING') return repondre(`PONG v2 ${carte.firmware.version} ${carte.firmware.nom} ${carte.programme ? carte.programme.length : 0} ${place}`);
       if (c === 'PROG') {
         const n = Number(a);
@@ -222,6 +277,69 @@
       ouvert = false;
       for (const f of ecouteurs.disconnect) f({ target: port });
     };
+    // Bouton physique : niveau électrique (bouton vers la masse : appuyé = 0).
+    carte.appuyer = (broche, niveau) => {
+      carte.niveaux[broche] = niveau;
+      if (carte.surveillees.includes(broche)) repondre(`E ${broche} ${niveau}`);
+    };
+
+    // Clé 2.4G virtuelle (WebHID) : rapports de 32 octets, 1 octet de longueur puis les octets.
+    if (o.cle) {
+      const ecouteursRapport = [];
+      const appareil = {
+        vendorId: 0x0416,
+        productId: 0xffff,
+        productName: 'Makeblock 2.4G (virtuelle)',
+        opened: false,
+        collections: [{ outputReports: [{ reportId: 0, items: [{ reportSize: 8, reportCount: 32 }] }] }],
+        async open() {
+          if (!carte.branchee) throw new DOMException('Device lost', 'NetworkError');
+          appareil.opened = true;
+          emettreCle = (octets) => {
+            for (let i = 0; i < octets.length; i += 31) {
+              const rapport = new Uint8Array(32);
+              const partie = octets.slice(i, i + 31);
+              rapport[0] = partie.length;
+              rapport.set(partie, 1);
+              setTimeout(() => ecouteursRapport.forEach((f) => f({ data: new DataView(rapport.buffer) })), 4);
+            }
+          };
+        },
+        async close() {
+          appareil.opened = false;
+          emettreCle = null;
+        },
+        async sendReport(id, donnees) {
+          if (!appareil.opened) throw new DOMException('closed', 'InvalidStateError');
+          const d = donnees instanceof Uint8Array ? donnees : new Uint8Array(donnees.buffer || donnees);
+          recevoir(d.slice(1, 1 + d[0]));
+        },
+        addEventListener(type, f) {
+          if (type === 'inputreport') ecouteursRapport.push(f);
+        },
+        removeEventListener(type, f) {
+          const i = ecouteursRapport.indexOf(f);
+          if (i >= 0) ecouteursRapport.splice(i, 1);
+        },
+      };
+      let cleAutorisee = false;
+      Object.defineProperty(global.navigator, 'hid', {
+        configurable: true,
+        value: {
+          async requestDevice() {
+            cleAutorisee = true;
+            return [appareil];
+          },
+          async getDevices() {
+            return cleAutorisee ? [appareil] : [];
+          },
+          addEventListener() {},
+          removeEventListener() {},
+        },
+      });
+      carte.cle = appareil;
+    }
+
     carte.programmeHex = () => (carte.programme ? Array.from(carte.programme, (x) => x.toString(16).padStart(2, '0')).join('') : '');
     global.carteVirtuelle = carte;
     return carte;

@@ -64,7 +64,7 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
   fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
 - **Jalon 2 (éditeur de parcours) validé (16/10/2026)** : `site/editeur.html` crée et modifie les exercices sans
   toucher au code, teste les scénarios sur la solution et publie une nouvelle version — [RECETTE.md](RECETTE.md) §7.
-- **Jalon 3 (cartes) livré (16/10/2026), recette avec le matériel à faire** : profils Arduino Uno, mBot et micro:bit V2,
+- **Jalon 3 (cartes) validé (16/10/2026)** : profils Arduino Uno, mBot et micro:bit V2,
   blocs mBot (comme mBlock) et micro:bit, simulateur micro:bit et tableau du mBot, mode « Dans la carte » (installer le
   programme de la carte, envoyer le programme de l'élève, « Vider la carte ») ; l'atelier du distributeur envoie le
   programme de l'élève — [RECETTE.md](RECETTE.md) §8.

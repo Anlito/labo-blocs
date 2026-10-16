@@ -388,7 +388,13 @@
         b.setAttribute('aria-pressed', v ? 'true' : 'false');
       }
     }
-    return { afficher, capteurs };
+    // En direct, les capteurs sont ceux de la vraie carte : les curseurs montrent leurs valeurs sans se régler.
+    function verrouillerCapteurs(oui) {
+      for (const champ of panneau.querySelectorAll('[data-capteur]')) champ.disabled = !!oui;
+      const aide = panneau.querySelector('.capteurs-aide');
+      if (aide) aide.textContent = oui ? 'valeurs lues sur la vraie carte' : 'à régler à la main pendant la simulation';
+    }
+    return { afficher, capteurs, verrouillerCapteurs };
   }
 
   // ---------- Vue complète ----------
@@ -517,7 +523,7 @@
     }
 
     // capteurs : valeurs réglées à la main, à passer au simulateur (creerSimulation({ capteurs })).
-    return { afficher, carte, capteurs: vueDeCarte ? vueDeCarte.capteurs : null };
+    return { afficher, carte, capteurs: vueDeCarte ? vueDeCarte.capteurs : null, verrouillerCapteurs: (oui) => vueDeCarte && vueDeCarte.verrouillerCapteurs(oui) };
   }
 
   Object.assign(A, { creerVueSimulateur: creerVue, couleurFil });
