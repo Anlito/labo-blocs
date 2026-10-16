@@ -248,7 +248,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **Pas encore** : verrouillage d'une évaluation (jalon 5) ; l'écran de mise à jour devra le respecter.
    - Corrigé au passage dans le module : quand le message de résultat s'affiche, le dessin de la carte rétrécit et la
      colonne défile, au lieu de cacher « Lancer / Pause / Pas » (exercice 13 à 1366 × 768).
-13. **Jalon 2 livré le 16/10/2026** (recette à faire, `RECETTE.md` §7) : éditeur de parcours `site/editeur.html`
+13. **Jalon 2 livré le 16/10/2026, recette validée par Thomas le 16/10/2026** (`RECETTE.md` §7) : éditeur de parcours `site/editeur.html`
    (écrans B8 et B9). Liste des exercices réordonnable (glisser, monter, descendre), ajouter, dupliquer, supprimer ;
    identifiants jamais réutilisés (`idsRetires`) ; numéros renumérotés dans l'ordre (13A / 13B gardés) ; exercice :
    titre, consigne, niveau de blocs (au choix de l'élève, ou imposé pour une évaluation : `niveau`, `niveauVerrouille`,

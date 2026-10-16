@@ -60,6 +60,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 - **Jalon 1 bis (intégration) validé (16/10/2026)** : l'atelier du distributeur utilise le module de Labo Blocs
   (écran d'exercice, moteur, sauvegarde) ; son outil du professeur a « Mettre à jour les exercices » (en ligne ou par
   fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
-- **Jalon 2 (éditeur de parcours) livré, recette à faire** : `site/editeur.html` crée et modifie les exercices sans
+- **Jalon 2 (éditeur de parcours) validé (16/10/2026)** : `site/editeur.html` crée et modifie les exercices sans
   toucher au code, teste les scénarios sur la solution et publie une nouvelle version — [RECETTE.md](RECETTE.md) §7.
 
