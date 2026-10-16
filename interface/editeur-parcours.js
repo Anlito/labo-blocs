@@ -335,7 +335,8 @@
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="niveauVerrouille"${e.niveauVerrouille ? ' checked' : ''}${e.niveau ? '' : ' disabled'}> Niveau imposé (évaluation)</label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="defi"${e.defi ? ' checked' : ''}> Défi facultatif</label>` +
       '</div>' +
-      `<label>Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ" data-champ="libre"${e.libre ? ' checked' : ''}> Exercice libre : l’élève invente son programme avec les blocs proposés ; le simulateur montre les composants qu’il utilise ; pas de solution ni de test, il clique « J’ai terminé » ; pas de niveau calculé</label>` +
+      `<label class="ed-champ-competence">Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
       `<label>Modes pour tester<select class="champ" data-champ="modes">${MODES_EXERCICE.map(([v, t]) => `<option value="${v}"${(e.modes ? e.modes.join('+') : '') === v ? ' selected' : ''}>${v ? t : `${t} (${nomsModes(etat.paquet.modes || ['simulateur'])})`}</option>`).join('')}</select></label>` +
       `<label>Fiche « À savoir »<select class="champ-fiche">${optionsFiches}</select></label>` +
       (fiche
@@ -347,7 +348,9 @@
         : '') +
       '</div>' +
       // Composants
-      '<div class="carte ed-carte">' +
+      '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
+      '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
+      '<div class="carte ed-carte ed-carte-composants">' +
       '<div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<div class="ed-composants"></div>' +
       '<p class="ed-message ed-message-broche" hidden></p>' +
@@ -374,6 +377,9 @@
       '</div>';
     dessinerComposants();
     lierFormulaire();
+    // Exercice libre : pas de composants à déclarer ni de scénarios ; la solution devient un exemple facultatif.
+    $('.ed-edition').classList.toggle('ed-libre', !!e.libre);
+    $('.ed-titre-solution').textContent = e.libre ? 'Exemple (facultatif)' : 'Solution de référence';
   }
 
   function lierFormulaire() {
@@ -421,6 +427,13 @@
         if (t.value) e.modes = t.value.split('+');
         else delete e.modes;
         modifie();
+      } else if (t.matches('[data-champ="libre"]')) {
+        if (t.checked) e.libre = true;
+        else delete e.libre;
+        modifie();
+        dessinerFormulaire();
+        dessinerScenarios();
+        dessinerApercu();
       } else if (t.matches('[data-champ="niveauVerrouille"], [data-champ="defi"]')) {
         if (t.checked) e[t.dataset.champ] = true;
         else delete e[t.dataset.champ];
@@ -546,6 +559,7 @@
         const e = ex();
         const avant = JSON.stringify(e.solutionReference);
         const { programme } = etat.editeur.lire();
+        const composantsAvant = e.libre ? JSON.stringify(A.composantsDuProgramme(e.solutionReference).composants) : '';
         e.solutionReference = A.solutionDepuisProgramme(programme);
         if (avant.includes('"$')) {
           etat.messageSolution = 'Les paramètres ($…) de cette solution sont remplacés par leur valeur actuelle.';
@@ -553,7 +567,9 @@
         }
         etat.resultats = null;
         $('.ed-resultats') && ($('.ed-resultats').innerHTML = '');
-        lancerApercu();
+        // Exercice libre : l'exemple a changé de composants, le simulateur se redessine.
+        if (e.libre && JSON.stringify(A.composantsDuProgramme(e.solutionReference).composants) !== composantsAvant) dessinerApercu();
+        else lancerApercu();
         modifie();
       },
       zoom() {},
@@ -906,6 +922,8 @@
     $('.reglage-boutons', d).checked = p.boutonsVersMasse !== false;
     $('.reglage-mode-carte', d).checked = (p.modes || ['simulateur']).includes('carte');
     $('.reglage-mode-direct', d).checked = (p.modes || ['simulateur']).includes('direct');
+    $('.reglage-classes', d).value = (p.classes || []).join(', ');
+    $('.reglage-chemin', d).value = (p.cheminSauvegarde || []).join(' › ');
     const liste = $('.liste-parametres', d);
     const ligne = (nom, valeur) =>
       `<div class="ed-parametre"><label>Nom<input class="parametre-nom" value="${echapper(nom)}" pattern="[A-Za-z][A-Za-z0-9]*"></label>` +
@@ -923,6 +941,13 @@
       const carteChangee = carteAvant !== p.carte;
       p.boutonsVersMasse = $('.reglage-boutons', d).checked;
       p.modes = ['simulateur'].concat($('.reglage-mode-direct', d).checked ? ['direct'] : [], $('.reglage-mode-carte', d).checked ? ['carte'] : []);
+      // Classes et dossier de l'équipe : vides, ce sont ceux du site de Labo Blocs qui comptent.
+      const reglesEleves = A.lireReglagesEleves($('.reglage-classes', d).value, $('.reglage-chemin', d).value);
+      for (const cle of ['classes', 'cheminSauvegarde']) {
+        if (reglesEleves[cle]) p[cle] = reglesEleves[cle];
+        else delete p[cle];
+      }
+      if (reglesEleves.equipeAjoutee) message('« {equipe} » a été ajouté à la fin du dossier : chaque équipe a son propre dossier.', 5000);
       const params = {};
       for (const l of $$('.ed-parametre', liste)) {
         const nom = $('.parametre-nom', l).value.trim();
@@ -985,8 +1010,8 @@
         `<p>La version <strong>${suivante}</strong> du parcours « ${echapper(etat.paquet.titre)} » va être :</p><ul>` +
         (local
           ? `<li>écrite dans le dossier de Labo Blocs (<code>parcours/${echapper(etat.paquet.id)}/parcours.js</code>) : choisis le dossier qui contient « site » et « parcours » ;</li>`
-          : `<li>téléchargée sous le nom <code>parcours.js</code>, à copier dans <code>parcours/${echapper(etat.paquet.id)}/</code> de Labo Blocs ;</li>`) +
-        `<li>téléchargée pour les projets : <code>${echapper(etat.paquet.id)}-${suivante}.labo-parcours.json</code>, à donner à « Mettre à jour les exercices » (outil du professeur du projet).</li></ul>`;
+          : '') +
+        `<li>téléchargée : <code>${echapper(etat.paquet.id)}-${suivante}.labo-parcours.json</code>. Ce fichier sert pour le site de Labo Blocs et pour les projets (« Mettre à jour les exercices »).</li></ul>`;
       actions.innerHTML = '<button type="button" class="btn-secondaire btn-fermer-publier">Annuler</button><button type="button" class="btn-principal btn-confirmer-publier">Publier</button>';
       $('.btn-confirmer-publier', actions).onclick = () => publier(local);
     }
@@ -1020,7 +1045,7 @@
               `definirIndexParcours(${JSON.stringify(ids)});\n`,
           );
         }
-      } else telecharger('parcours.js', script, 'text/javascript');
+      }
       telecharger(nomExport(publie), JSON.stringify(publie, null, 2) + '\n');
     } catch (e) {
       if (e && e.name === 'AbortError') return;
@@ -1038,8 +1063,12 @@
     $('.ed-etat').textContent = `Version ${publie.versionParcours} publiée`;
     $('.publier-contenu', d).innerHTML =
       `<p class="ed-message ed-reussi">${A.icone('coche', { epaisseur: 2.6 })}<span>Version ${publie.versionParcours} publiée.</span></p>` +
-      `<p>Pour un projet (ex. le distributeur) : outil du professeur › « Exercices » › « Choisir un fichier… » avec <code>${echapper(nomExport(publie))}</code> (dans tes téléchargements).</p>` +
-      '<p>Pour la version en ligne : envoyer le fichier <code>parcours/' + echapper(publie.id) + '/parcours.js</code> sur le dépôt GitHub de Labo Blocs.</p>';
+      `<p>Le fichier <code>${echapper(nomExport(publie))}</code> est dans tes téléchargements.</p>` +
+      (local
+        ? ''
+        : '<p><strong>Sur le site de Labo Blocs</strong> (accueil, élèves) : sur GitHub, ouvre le dossier <a href="https://github.com/Anlito/labo-blocs/tree/main/parcours" target="_blank" rel="noopener">parcours</a> du dépôt, ' +
+          '« Add file » › « Upload files », dépose ce fichier puis « Commit changes ». Le site se met à jour tout seul en 2 ou 3 minutes.</p>') +
+      '<p><strong>Dans un projet</strong> (ex. le distributeur) : outil du professeur › « Mettre à jour les exercices » › « Choisir un fichier… » avec ce même fichier.</p>';
     $('.publier-actions', d).innerHTML = '<button type="button" class="btn-principal btn-fermer-publier">Fermer</button>';
     $('.btn-fermer-publier', d).onclick = () => d.close();
   }

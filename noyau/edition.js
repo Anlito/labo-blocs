@@ -369,7 +369,10 @@
 
   // L'exercice tel que l'élève le recevra (paramètres remplacés), dans son parcours.
   function exercicePrepare(paquet, exercice) {
-    return PA.preparer(Object.assign({}, paquet, { exercices: [exercice] })).exercices[0];
+    const x = PA.preparer(Object.assign({}, paquet, { exercices: [exercice] })).exercices[0];
+    // Exercice libre sur Arduino Uno : l'aperçu montre les composants de l'exemple (la « solution » facultative).
+    if (x.libre && (!x.carte || x.carte === 'uno')) x.composants = P.composantsDuProgramme(x.solutionReference).composants;
+    return x;
   }
 
   // « Tester mes scénarios sur ma solution » : chaque scénario, réussi ou non, avec la phrase que verrait l'élève.
@@ -395,6 +398,7 @@
       const nom = `Exercice ${ex.numero || ''} (${ex.titre})`;
       if (!String(ex.consigne || '').trim()) problemes.push(`${nom} : la consigne est vide.`);
       if (!(ex.blocsAutorises || []).length) problemes.push(`${nom} : aucun bloc n’est proposé aux élèves.`);
+      if (ex.libre) continue; // exercice libre : pas de solution ni de scénario à tester
       for (const r of testerScenarios(paquet, ex)) if (!r.reussi) problemes.push(`${nom}, scénario « ${r.nom} » : ${r.vide ? r.message : 'la solution ne passe pas. ' + r.message}`);
     }
     return problemes;
@@ -419,8 +423,33 @@
     return p;
   }
 
+  // Réglages « accueil des élèves » du parcours, tapés dans l'éditeur :
+  //   « 4A, 4B ; 4C » → ['4A', '4B', '4C'] ; « {classe} › COMMUN / ROBOT » → ['{classe}', 'COMMUN', 'ROBOT', '{equipe}'].
+  // Vide → rien (ce sont les réglages du site qui comptent).
+  function lireReglagesEleves(classesTexte, cheminTexte) {
+    const r = {};
+    const classes = String(classesTexte || '')
+      .split(/[,;]+/)
+      .map((c) => c.trim())
+      .filter(Boolean);
+    if (classes.length) r.classes = [...new Set(classes)];
+    const chemin = String(cheminTexte || '')
+      .split(/[›\/\\>]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (chemin.length) {
+      if (!chemin.includes('{equipe}')) {
+        chemin.push('{equipe}');
+        r.equipeAjoutee = true;
+      }
+      r.cheminSauvegarde = chemin;
+    }
+    return r;
+  }
+
   const api = {
     identifiantDepuisTitre,
+    lireReglagesEleves,
     creerParcours,
     prefixeIds,
     nouvelIdentifiant,

@@ -56,7 +56,12 @@ npm run essais:microbit  # refaire les fichiers micro:bit
 ```
 
 Le site marche aussi en ouvrant directement `site/accueil.html` depuis un dossier (file://), sans serveur ni internet :
-accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant). En ligne :
+accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant, lien à donner aux
+élèves). **Ajouter un parcours au site** : le fichier `.labo-parcours.json` donné par « Publier » se dépose dans le dossier
+`parcours/` du dépôt (GitHub › « Add file › Upload files ») ; la publication fait le reste. Ses classes et le dossier
+des équipes se règlent dans l'éditeur (« Réglages »). Un exercice peut être **libre** (case dans l'éditeur) : l'élève
+invente son programme avec les blocs proposés, le simulateur montre les composants qu'il utilise, « J'ai terminé »
+remplace « Vérifier », et aucun niveau n'est calculé. En ligne :
 https://anlito.github.io/labo-blocs/ ouvre cet accueil. L'accueil, l'éditeur, le suivi de classe et le mode enseignant
 demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le redemande). C'est une barrière pour les
 élèves curieux, pas une vraie sécurité : le site est public et sans serveur, et rien de personnel n'y est en ligne.

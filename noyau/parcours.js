@@ -4,8 +4,10 @@
 //
 //   { format: 'labo-blocs/parcours', version: 1, id, titre, versionParcours, date, moteurMinimum, carte, modes,
 //     boutonsVersMasse, parametres, exercices: [ { id (stable, jamais réutilisé), numero, titre, defi, consigne,
-//     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, … } ],
-//     fiches, lexique }
+//     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, libre
+//     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), … } ],
+//     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
+//     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
 // L'« empreinte » d'un exercice résume ce qui décide de sa réussite (consigne, composants, blocs, scénarios,
 // solution, paramètres) : si elle change, un exercice déjà réussi passe « à revérifier ».
@@ -68,8 +70,9 @@
       else if (vus.has(e.id)) pb.push(`${nom} : l’identifiant « ${e.id} » est déjà utilisé.`);
       vus.add(e.id);
       if (!e.titre) pb.push(`${nom} : pas de titre.`);
-      if (!e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
-      if (!(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
+      // Exercice libre : ni solution ni scénario (l'élève fait ce qu'il veut avec les blocs proposés).
+      if (!e.libre && !e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
+      if (!e.libre && !(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
     }
     if (!(paquet.exercices || []).length) pb.push('Le parcours n’a aucun exercice.');
     // Modes proposés (parcours, ou exercice qui en choisit d'autres) : le simulateur reste toujours (« Vérifier »).
@@ -77,6 +80,13 @@
     if (paquet.modes && !modesValides(paquet.modes)) pb.push('Modes du parcours inconnus (simulateur, direct, carte ; le simulateur est obligatoire).');
     for (const [i, e] of (paquet.exercices || []).entries()) {
       if (e.modes && !modesValides(e.modes)) pb.push(`Exercice ${e.numero || i + 1} : modes inconnus (simulateur, direct, carte ; le simulateur est obligatoire).`);
+    }
+    // Classes et dossier de l'équipe (réglages facultatifs du parcours, pour le site de Labo Blocs).
+    if (paquet.classes !== undefined && !(Array.isArray(paquet.classes) && paquet.classes.length && paquet.classes.every((c) => typeof c === 'string' && c.trim()))) {
+      pb.push('Classes du parcours : une liste de noms de classes (ex. 4A, 4B).');
+    }
+    if (paquet.cheminSauvegarde !== undefined && !(Array.isArray(paquet.cheminSauvegarde) && paquet.cheminSauvegarde.includes('{equipe}'))) {
+      pb.push('Dossier de l’équipe du parcours : il doit contenir {equipe}.');
     }
     return pb;
   }

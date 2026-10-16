@@ -17,6 +17,7 @@
 const { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } = require('node:fs');
 const { join, resolve, basename } = require('node:path');
 const { construire, lireParcours } = require('./construire-module.js');
+const { lireTousLesParcours } = require('./parcours-depot.js');
 const { scriptParcours, controler } = require('../noyau/parcours.js');
 
 const RACINE = join(__dirname, '..');
@@ -38,8 +39,8 @@ const identifiant = (t) =>
 // Lit un parcours : identifiant d'un parcours de Labo Blocs (parcours/<id>/parcours.js) ou fichier exporté
 // (.labo-parcours.json, ou script definirParcours).
 function chargerParcours(quoi) {
-  const dossierLabo = join(RACINE, 'parcours', quoi, 'parcours.js');
-  if (existsSync(dossierLabo)) return lireParcours(readFileSync(dossierLabo, 'utf8'));
+  const duDepot = lireTousLesParcours(RACINE).parcours.find((p) => p.id === quoi);
+  if (duDepot) return duDepot;
   if (existsSync(quoi)) {
     const texte = readFileSync(quoi, 'utf8').replace(/^﻿/, '');
     if (/^\s*\{/.test(texte)) return JSON.parse(texte);
@@ -91,8 +92,9 @@ function reglages(o) {
 //   parcours : identifiant du parcours chargé (fichier parcours/<id>.js) ;
 //   classes : proposées à l'accueil des élèves ;
 //   cheminSauvegarde : dossier de l'équipe sur le réseau, du plus haut au plus bas ({classe} et {equipe} sont remplacés).
+//   reglagesDuProjetPrioritaires : ces classes et ce dossier comptent, même si le parcours en propose d'autres.
 definirProjet(${JSON.stringify(
-    { id: o.id, titre: o.titre, accent: o.accent, logo: 'vendor/labo-blocs/logo.svg', parcours: o.parcours, classes: o.classes, cheminSauvegarde: o.chemin },
+    { id: o.id, titre: o.titre, accent: o.accent, logo: 'vendor/labo-blocs/logo.svg', parcours: o.parcours, classes: o.classes, cheminSauvegarde: o.chemin, reglagesDuProjetPrioritaires: true },
     null,
     2,
   )});
@@ -154,8 +156,14 @@ function creerProjet(args) {
     titre: o.titre,
     accent: o.accent || '#2547D0',
     parcours: paquet.id,
-    classes: o.classes && o.classes.length ? o.classes : ['5A', '5B', '5C', '5D'],
-    chemin: o.chemin && o.chemin.length ? o.chemin : ['{classe}', 'COMMUN', 'TECHNOLOGIE', sansAccents(o.titre).toUpperCase(), '{equipe}'],
+    // Valeurs de départ : celles données, sinon celles réglées dans le parcours, sinon des valeurs par défaut.
+    classes: o.classes && o.classes.length ? o.classes : paquet.classes && paquet.classes.length ? paquet.classes.slice() : ['5A', '5B', '5C', '5D'],
+    chemin:
+      o.chemin && o.chemin.length
+        ? o.chemin
+        : paquet.cheminSauvegarde && paquet.cheminSauvegarde.includes('{equipe}')
+          ? paquet.cheminSauvegarde.slice()
+          : ['{classe}', 'COMMUN', 'TECHNOLOGIE', sansAccents(o.titre).toUpperCase(), '{equipe}'],
   };
   if (!reg.chemin.includes('{equipe}')) throw new Error('Le chemin du dossier doit contenir {equipe}.');
 

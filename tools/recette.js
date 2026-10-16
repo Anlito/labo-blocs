@@ -710,9 +710,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   await critere('Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant', async () => {
     const p = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
     const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
-    const parcours = await p.$$eval('.ac-parcours a', (l) => l.map((a) => [a.getAttribute('href'), a.querySelector('strong').textContent]));
+    const parcours = await p.$$eval('.ac-carte', (l) => l.map((c) => [c.querySelector('.ac-essayer').getAttribute('href'), c.querySelector('strong').textContent]));
     verifier(outils.join() === 'editeur.html,prof.html' && parcours.length === 3, JSON.stringify({ outils, parcours }));
-    await p.click('.ac-parcours a:nth-child(2)');
+    await p.click('.ac-carte:nth-child(2) .ac-essayer');
     await pause(1200);
     const equipe = await texte(p, '.equipe-texte');
     const titre = await p.title();
@@ -722,6 +722,113 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(await visible(e, '.ed-vers-accueil'), 'pas de lien Accueil dans l’éditeur');
     await e.close();
     return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur`;
+  });
+
+  // ---------- Parcours ajouté par un fichier, classes et dossier réglés dans le parcours ----------
+
+  await critere('Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours', async () => {
+    const { publier } = require('./publier.js');
+    const { lireTexteParcours } = require('./parcours-depot.js');
+    const depose = path.join(RACINE, 'parcours', 'essai-recette-1.0.0.labo-parcours.json');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-site-'));
+    const base = lireTexteParcours(fs.readFileSync(path.join(RACINE, 'parcours', 'decouverte-mbot', 'parcours.js'), 'utf8'));
+    const essai = Object.assign(base, { id: 'essai-recette', titre: 'Robot du couloir', versionParcours: '1.0.0', classes: ['4A', '4C'], cheminSauvegarde: ['{classe}', 'COMMUN', 'ROBOT', '{equipe}'] });
+    essai.exercices = essai.exercices.map((e) => Object.assign({}, e, { id: 'essai-' + e.id }));
+    try {
+      fs.writeFileSync(depose, JSON.stringify(essai, null, 2));
+      const r = publier(path.join(tmp, 'site-publie'));
+      verifier(r.parcours.includes('essai-recette 1.0.0'), r.parcours.join(', '));
+      const site = path.join(r.dossier, 'site');
+      // Accueil : le nouveau parcours est proposé.
+      const a = await page(pathToFileURL(path.join(site, 'accueil.html')).href);
+      const titres = await a.$$eval('.ac-carte strong', (l) => l.map((x) => x.textContent));
+      verifier(titres.includes('Robot du couloir'), titres.join(', '));
+      await a.close();
+      // Page des élèves avec ce parcours : ses classes et son dossier.
+      const p = await page(pathToFileURL(path.join(site, 'index.html')).href + '?parcours=essai-recette', { sansDossiers: true });
+      const classes = await p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
+      verifier(classes.join() === '4A,4C', 'classes : ' + classes.join());
+      await p.type('.champ-prenom', 'inès');
+      await p.select('.champ-classe', '4C');
+      await p.click('.formulaire-equipe button[type=submit]');
+      await pause(200);
+      const chemin = (await texte(p, '.chemin')).replace(/\s+/g, ' ');
+      verifier(/4C ?› ?COMMUN ?› ?ROBOT ?› ?Inès/.test(chemin), 'dossier : ' + chemin);
+      await p.close();
+      // Le distributeur garde les classes du site (projet.js).
+      const q = await page(pathToFileURL(path.join(site, 'index.html')).href, { sansDossiers: true });
+      const classesDistributeur = await q.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
+      verifier(classesDistributeur.length === 6 && classesDistributeur[0] === '5A', classesDistributeur.join());
+      await q.close();
+      return `« Robot du couloir » publié et proposé à l’accueil ; élèves : classes ${classes.join(', ')}, dossier « ${chemin} » ; distributeur : ${classesDistributeur.join(', ')}`;
+    } finally {
+      fs.rmSync(depose, { force: true });
+      fs.rmSync(tmp, { recursive: true, force: true });
+      for (const f of fs.readdirSync(path.join(RACINE, 'dist', 'parcours'))) if (f.startsWith('essai-recette')) fs.rmSync(path.join(RACINE, 'dist', 'parcours', f));
+    }
+  });
+
+  // ---------- Exercice libre ----------
+
+  await critere('Exercice libre : composants qui suivent le programme, broche en double signalée, « J’ai terminé », pas de niveau', async () => {
+    const { creerProjet } = require('./nouveau-projet.js');
+    const { lireTexteParcours } = require('./parcours-depot.js');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-libre-'));
+    try {
+      const base = lireTexteParcours(fs.readFileSync(path.join(RACINE, 'parcours', 'distributeur', 'parcours.js'), 'utf8'));
+      const libre = { id: 'libre-1', numero: '1', titre: 'Invente ton animation', consigne: 'Invente une animation lumineuse avec des LED et un bouton.', libre: true, composants: [], blocsAutorises: ['led_etat', 'attendre', 'bouton_etat', 'si_alors', 'servo_angle'] };
+      const paquet = Object.assign(base, { id: 'atelier-libre', titre: 'Atelier libre', versionParcours: '1.0.0', exercices: [libre, base.exercices[0]] });
+      const fichier = path.join(tmp, 'atelier-libre-1.0.0.labo-parcours.json');
+      fs.writeFileSync(fichier, JSON.stringify(paquet));
+      const r = creerProjet({ dossier: path.join(tmp, 'projet'), titre: 'Atelier libre', parcours: fichier, classes: ['5A'] });
+      const p = await page(pathToFileURL(path.join(r.site, 'programmation.html')).href, { sansDossiers: true });
+      await p.type('.champ-prenom', 'Noé');
+      await p.select('.champ-classe', '5A');
+      await p.click('.formulaire-equipe button[type=submit]');
+      await p.click('.btn-commencer-sans-dossier');
+      await pause(300);
+      const etiquette = await p.$eval('.carte-exercice', (c) => c.textContent);
+      verifier(/Exercice libre/.test(etiquette), 'étiquette : ' + etiquette);
+      await p.click('.carte-exercice');
+      await pause(900);
+      const boutons = await p.evaluate(() => [!!document.querySelector('.btn-verifier:not(.btn-terminer)').hidden, !document.querySelector('.btn-terminer').hidden]);
+      verifier(boutons[0] && boutons[1], 'boutons : ' + boutons);
+      const vide = await texte(p, '.composants-note');
+      verifier(/Pose un bloc/.test(vide), 'aide : ' + vide);
+      // L'élève pose « allumer la LED D5 » et « si le bouton D2 est appuyé » (événements de Blockly comme un vrai geste).
+      const poser = (prog) =>
+        p.evaluate((prog) => {
+          const ws = LaboBlocs.app.ecranExercice.editeur.ws;
+          Blockly.serialization.workspaces.load(LaboBlocs.versBlockly(prog), ws);
+        }, prog);
+      const led = (b) => ({ bloc: 'led_etat', broche: b, etat: 1 });
+      await poser({ demarrage: [], boucle: [led('D5'), { bloc: 'si_alors', condition: { bloc: 'bouton_etat', broche: 'D2' }, alors: [led('D6')] }] });
+      await pause(600);
+      const liste = await p.$$eval('.liste-composants li', (l) => l.map((x) => x.textContent.replace(/\s+/g, ' ').trim()));
+      const cartes = await p.$$eval('.simu-composants > *', (l) => l.length);
+      verifier(liste.length === 3 && /LED.*D5/.test(liste[0]) && /Bouton.*D2/.test(liste[1]) && cartes === 3, `liste ${liste.join(' | ')} ; simulateur ${cartes}`);
+      // Le simulateur fait tourner le programme avec ces composants.
+      await p.click('.btn-lancer');
+      await pause(500);
+      const d5 = await p.evaluate(() => LaboBlocs.app.ecranExercice.etat.sim && LaboBlocs.app.ecranExercice.etat.sim.sorties.D5);
+      verifier(d5 === 1, 'LED D5 : ' + d5);
+      // Même broche pour une LED et un bouton : message en ambre.
+      await poser({ demarrage: [], boucle: [led('D2'), { bloc: 'si_alors', condition: { bloc: 'bouton_etat', broche: 'D2' }, alors: [] }] });
+      await pause(600);
+      const conflit = await p.$eval('.composants-note', (e) => [e.textContent, e.classList.contains('ecart'), getComputedStyle(e).backgroundColor]);
+      verifier(conflit[1] && /D2 sert à deux composants/.test(conflit[0]), 'conflit : ' + conflit.join(' · '));
+      // « J'ai terminé » : enregistré, exercice suivant ouvert.
+      await p.click('.btn-terminer');
+      await pause(300);
+      const fin = await p.evaluate(() => [document.querySelector('.resultat').className, document.querySelector('.resultat').textContent, LaboBlocs.app.session.donnees.programmation.exercices['libre-1'].statut, LaboBlocs.estDebloque(LaboBlocs.app.session.donnees, LaboBlocs.app.paquet, LaboBlocs.app.paquet.exercices[1].id)]);
+      verifier(/reussi/.test(fin[0]) && /exercice libre/.test(fin[1]) && fin[2] === 'reussi' && fin[3], JSON.stringify(fin));
+      const ev = await p.evaluate(() => LaboBlocs.evaluerEquipe(LaboBlocs.app.session.donnees, LaboBlocs.app.paquet).competences.flatMap((c) => c.exercices));
+      verifier(!ev.includes('libre-1'), 'compté dans une compétence');
+      await p.close();
+      return `composants : ${liste.join(', ')} ; LED D5 allumée en simulation ; « ${conflit[0].slice(0, 60)}… » en ambre ; terminé, exercice 2 ouvert, sans niveau`;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
   });
 
   // ---------- Kit nouveau projet ----------

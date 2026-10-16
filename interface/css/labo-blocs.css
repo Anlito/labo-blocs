@@ -291,6 +291,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 }
 .btn-verifier:hover { background: var(--action-fonce); }
 .btn-verifier .icone { width: 1.375rem; height: 1.375rem; }
+.btn-verifier[hidden] { display: none; }
+/* Exercice libre : les composants suivent le programme ; une broche employée deux fois est signalée en ambre. */
+.composants-note { margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--texte-2); line-height: 1.4; }
+.composants-note[hidden] { display: none; }
+.composants-note.ecart { padding: 0.5rem 0.625rem; border-radius: 0.5rem; background: var(--ecart-pale); color: var(--ecart-texte); font-weight: 700; }
 
 /* A5 · Résultat : écart en ambre (jamais en rouge), réussite en vert, toujours avec un pictogramme */
 .resultat { border-radius: 0.75rem; padding: 0.75rem 0.875rem; display: flex; flex-direction: column; gap: 0.625rem; }

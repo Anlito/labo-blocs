@@ -172,3 +172,8 @@ details[open] > .ed-etape-tete .ed-etape-phrase::after { content: ' ▾'; }
   .ed-edition { grid-template-columns: minmax(13rem, 15rem) minmax(0, 1fr); }
   .ed-droite { grid-column: 2; }
 }
+
+/* Exercice libre : pas de composants déclarés ni de scénarios ; la solution devient un exemple facultatif. */
+.ed-carte-libre { display: none; }
+.ed-libre .ed-carte-libre { display: block; }
+.ed-libre .ed-carte-composants, .ed-libre .ed-scenarios, .ed-libre .ed-champ-competence { display: none; }

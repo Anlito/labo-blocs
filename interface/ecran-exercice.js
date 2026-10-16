@@ -99,6 +99,7 @@
         fermerResultat();
         programmeModifie();
         majCode();
+        if (etat.exercice && etat.exercice.libre) majComposantsLibres();
       },
       zoom(pourcent) {
         $('.zoom-valeur', ecran).textContent = pourcent + ' %';
@@ -152,28 +153,24 @@
       arreter();
       fermerResultat();
       fermerBulle();
-      etat.exercice = ex;
+      // Exercice libre : une copie dont les composants suivent le programme de l'élève.
+      etat.exercice = ex.libre ? Object.assign({}, ex, { composants: [] }) : ex;
       $('.consigne-numero', ecran).textContent = (ex.defi ? 'Défi · ' : '') + 'Exercice ' + ex.numero;
       $('.titre-exercice', ecran).textContent = ex.titre;
       document.title = `Exercice ${ex.numero} · ${ex.titre} — ${A.projet.titre}`;
       $('.consigne-texte', ecran).innerHTML = consigneHtml(ex.consigne, lexique);
       $('.consigne', ecran).classList.toggle('longue', ex.consigne.length > 300);
-      // Beaucoup de composants (exercice 13) : le simulateur prend plus de place.
-      ecran.classList.toggle('beaucoup', (ex.composants || []).length > 4);
-      $('.liste-composants', ecran).innerHTML = (ex.composants || [])
-        .map(
-          (c) =>
-            `<li><span class="composant-pastille composant-${c.type}">${A.icone(ICONES_COMPOSANTS[c.type] || 'info', { epaisseur: 2.4 })}</span>` +
-            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span></span></li>`,
-        )
-        .join('');
-      // Ce qui est déjà sur la carte (rien à brancher).
-      const surLaCarte = { mbot: 'Sur le robot : moteurs, LED, buzzer, bouton, capteur à ultrasons (port 3) et suiveur de ligne (port 2).', microbit: 'Sur la carte : écran 5 × 5, boutons A et B, logo tactile, haut-parleur et capteurs.' }[ex.carte];
-      if (surLaCarte) $('.liste-composants', ecran).insertAdjacentHTML('beforeend', `<li class="composants-carte"><span class="composant-pastille composant-carte">${A.icone('puzzle', { epaisseur: 2.4 })}</span><span>${surLaCarte}</span></li>`);
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
-      vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
+      if (ex.libre) etat.exercice.composants = composantsLibres().composants;
+      dessinerComposants();
+      vue = A.creerVueSimulateur($('.simulateur', ecran), etat.exercice, { appuyerBouton });
+      // Exercice libre : « J'ai terminé » à la place de « Vérifier » ; ni indice ni solution s'il n'y en a pas.
+      $('.btn-verifier:not(.btn-terminer)', ecran).hidden = !!ex.libre;
+      $('.btn-terminer', ecran).hidden = !ex.libre || lecture;
+      $('.carte-aide', ecran).hidden = !!ex.libre && !(ex.indices || []).some(Boolean);
+      btnSolution.hidden = !contexte.solution || !!ex.libre;
       if (panneauCarte) panneauCarte.choisirProfil(A.profil(ex.carte));
       montrerModes(ex);
       if (vue.verrouillerCapteurs) vue.verrouillerCapteurs(etat.modeTest === 'direct');
@@ -188,6 +185,51 @@
       // Rouvrir un exercice déjà commencé n'est pas un travail à enregistrer.
       if (A.progressionExercice(D, ex.id).statut !== statutAvant) session.aEnregistrer(true);
       return true;
+    }
+
+    // ----- Composants : ceux de l'exercice, ou ceux que le programme utilise (exercice libre) -----
+
+    function composantsLibres() {
+      const ex = etat.exercice;
+      if (ex.carte && ex.carte !== 'uno') return { composants: [], conflits: [] }; // mBot, micro:bit : tout est sur la carte
+      return A.composantsDuProgramme(editeur.lire().programme);
+    }
+    function dessinerComposants(conflits) {
+      const ex = etat.exercice;
+      // Beaucoup de composants (exercice 13) : le simulateur prend plus de place.
+      ecran.classList.toggle('beaucoup', (ex.composants || []).length > 4);
+      $('.liste-composants', ecran).innerHTML = (ex.composants || [])
+        .map(
+          (c) =>
+            `<li><span class="composant-pastille composant-${c.type}">${A.icone(ICONES_COMPOSANTS[c.type] || 'info', { epaisseur: 2.4 })}</span>` +
+            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span></span></li>`,
+        )
+        .join('');
+      // Ce qui est déjà sur la carte (rien à brancher).
+      const surLaCarte = { mbot: 'Sur le robot : moteurs, LED, buzzer, bouton, capteur à ultrasons (port 3) et suiveur de ligne (port 2).', microbit: 'Sur la carte : écran 5 × 5, boutons A et B, logo tactile, haut-parleur et capteurs.' }[ex.carte];
+      if (surLaCarte) $('.liste-composants', ecran).insertAdjacentHTML('beforeend', `<li class="composants-carte"><span class="composant-pastille composant-carte">${A.icone('puzzle', { epaisseur: 2.4 })}</span><span>${surLaCarte}</span></li>`);
+      const note = $('.composants-note', ecran);
+      const conflit = (conflits || [])[0];
+      note.classList.toggle('ecart', !!conflit);
+      if (conflit) {
+        note.textContent = `La broche ${conflit.broche} sert à deux composants (${conflit.types.map((t) => { const n = NOMS_COMPOSANTS[t] || t; return n === n.toUpperCase() ? n : n.toLowerCase(); }).join(' et ')}) : une broche ne peut brancher qu’un seul composant. Choisis une autre broche pour l’un des deux.`;
+        note.hidden = false;
+      } else if (ex.libre && (!ex.carte || ex.carte === 'uno')) {
+        note.textContent = ex.composants.length ? 'Les composants suivent ton programme : à brancher sur ces broches.' : 'Pose un bloc (LED, bouton, servomoteur, buzzer) : son composant apparaît ici et dans le simulateur.';
+        note.hidden = false;
+      } else note.hidden = true;
+    }
+    // Le programme a changé : si ses composants aussi, la liste et le simulateur suivent.
+    function majComposantsLibres() {
+      const ex = etat.exercice;
+      const r = composantsLibres();
+      const avant = JSON.stringify(ex.composants);
+      ex.composants = r.composants;
+      dessinerComposants(r.conflits);
+      if (JSON.stringify(r.composants) === avant || !vue) return;
+      vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
+      if (vue.verrouillerCapteurs) vue.verrouillerCapteurs(etat.modeTest === 'direct');
+      afficher();
     }
 
     // ----- Consigne : bulle de définition -----
@@ -533,7 +575,7 @@
     // ----- Vérification et résultat (A5) -----
 
     const resultat = $('.resultat', ecran);
-    const suivantDe = (ex) => exercices.slice(exercices.indexOf(ex) + 1).find((x) => A.estDebloque(D, paquet, x.id, opts));
+    const suivantDe = (ex) => exercices.slice(exercices.findIndex((x) => x.id === ex.id) + 1).find((x) => A.estDebloque(D, paquet, x.id, opts));
 
     function verifier() {
       fermerBulle();
@@ -604,7 +646,33 @@
     function fermerResultat() {
       resultat.hidden = true;
     }
-    $('.btn-verifier', ecran).addEventListener('click', verifier);
+    // Exercice libre : l'équipe a terminé. Pas de correction : le programme est gardé, le professeur le regardera.
+    function terminer() {
+      fermerBulle();
+      aides.fermer();
+      const { programme } = editeur.lire();
+      const ex = etat.exercice;
+      A.noterProgramme(D, ex.id, editeur.sauvegarder());
+      A.noterTermine(D, ex, programme);
+      session.aEnregistrer(true, true);
+      if (contexte.majBandeau) contexte.majBandeau(ex);
+      const suivant = suivantDe(ex);
+      resultat.className = 'resultat reussi';
+      resultat.innerHTML =
+        `<div class="resultat-message">${A.icone('coche', { epaisseur: 2.8 })}<div><strong>Ton programme est enregistré.</strong>` +
+        '<span>C’est un exercice libre : ton professeur regardera ce que tu as inventé. Tu peux encore le modifier.</span>' +
+        (suivant ? `<span>L’exercice ${echapper(suivant.numero)} est ouvert.</span>` : '') +
+        (session.handle || lecture ? '' : '<span class="resultat-note">Pense à enregistrer ton travail dans le dossier de ton équipe.</span>') +
+        '</div></div><div class="resultat-actions">' +
+        (suivant ? `<button type="button" class="btn-principal btn-suivant">Exercice suivant${A.icone('suivant', { epaisseur: 2.8 })}</button>` : '') +
+        `<button type="button" class="btn-secondaire btn-rester">${suivant ? 'Rester sur cet exercice' : 'Fermer'}</button></div>`;
+      if (suivant) $('.btn-suivant', resultat).addEventListener('click', () => ouvrir(suivant));
+      $('.btn-rester', resultat).addEventListener('click', fermerResultat);
+      resultat.hidden = false;
+      resultat.scrollIntoView({ block: 'nearest' });
+    }
+    $('.btn-verifier:not(.btn-terminer)', ecran).addEventListener('click', verifier);
+    $('.btn-terminer', ecran).addEventListener('click', terminer);
 
     // Mode enseignant : remplacer le programme par la solution de référence (démonstration en classe).
     const btnSolution = $('.btn-solution', ecran);
