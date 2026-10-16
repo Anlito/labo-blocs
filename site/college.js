@@ -9,7 +9,11 @@ definirCollege({
     "5C",
     "5D",
     "5E",
-    "5F"
+    "5F",
+    "3C",
+    "CB",
+    "4E",
+    "4G"
   ],
   "cheminClasse": [
     "Bureau",
