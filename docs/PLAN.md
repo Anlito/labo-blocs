@@ -379,3 +379,9 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    après la publication (GitHub Pages laisse les navigateurs garder les fichiers 10 min). La publication ajoute
    `?v=<numéro>` aux scripts et aux styles des pages ; les parcours (`parcours/index.js`, `<id>/parcours.js`) sont
    toujours relus (`?t=<instant>`).
+23. **Mise en ligne directe des parcours (16/10/2026)**, demandée par Thomas : « Publier » envoie le parcours dans
+   `parcours/` du dépôt GitHub (`interface/github-depot.js`, API GitHub, branche main ; fichier remplacé s'il existe).
+   Clé d'accès « fine-grained » créée par Thomas (dépôt labo-blocs seul, « Contents : Read and write »), enregistrée
+   dans l'accueil (vérifiée, gardée dans ce navigateur, « Oublier la clé ») ; mode d'emploi dans l'accueil. Sans clé :
+   téléchargement comme avant. Erreurs de GitHub en français avec la prochaine action. Seul le parcours part (aucune
+   donnée d'élève), et seulement vers api.github.com.

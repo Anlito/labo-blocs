@@ -57,8 +57,9 @@ npm run essais:microbit  # refaire les fichiers micro:bit
 
 Le site marche aussi en ouvrant directement `site/accueil.html` depuis un dossier (file://), sans serveur ni internet :
 accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant, lien à donner aux
-élèves). **Ajouter un parcours au site** : le fichier `.labo-parcours.json` donné par « Publier » se dépose dans le dossier
-`parcours/` du dépôt (GitHub › « Add file › Upload files ») ; la publication fait le reste. Ses classes et le dossier
+élèves). **Ajouter un parcours au site** : avec une clé GitHub enregistrée dans l'accueil (« Mise en ligne des parcours »),
+« Publier » l'envoie directement dans `parcours/` ; sans clé, le fichier `.labo-parcours.json` téléchargé se dépose à
+la main dans ce dossier (GitHub › « Add file › Upload files »). La publication fait le reste. Ses classes et le dossier
 des équipes se règlent dans l'éditeur (« Réglages »). Un exercice peut être **libre** (case dans l'éditeur) : l'élève
 invente son programme avec les blocs proposés, le simulateur montre les composants qu'il utilise, « J'ai terminé »
 remplace « Vérifier », et aucun niveau n'est calculé. En ligne :
