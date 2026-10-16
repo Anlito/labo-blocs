@@ -40,7 +40,9 @@ test('publication : chaque parcours a son script et la liste les contient tous',
     const r = publier(out);
     let ids = null;
     vm.runInNewContext(fs.readFileSync(path.join(out, 'parcours', 'index.js'), 'utf8'), { definirIndexParcours: (l) => (ids = JSON.parse(JSON.stringify(l))) });
-    assert.deepStrictEqual(ids, ['distributeur', 'decouverte-mbot', 'decouverte-microbit']);
+    // Les parcours d'origine d'abord, puis ceux que le professeur a ajoutés (le test ne dépend pas de ceux-ci).
+    assert.deepStrictEqual(ids.slice(0, 3), ['distributeur', 'decouverte-mbot', 'decouverte-microbit']);
+    assert.deepStrictEqual(ids, lireTousLesParcours(RACINE).parcours.map((p) => p.id));
     for (const id of ids) assert.ok(fs.existsSync(path.join(out, 'parcours', id, 'parcours.js')), id);
     assert.match(fs.readFileSync(path.join(out, 'index.html'), 'utf8'), /site\/accueil\.html/);
     // Les pages ne listent plus les parcours à la main.
