@@ -1,6 +1,6 @@
-# Recette automatique — jalon 1
+# Recette automatique — jalons 1 et 2
 
-15/10/2026 17:31:11 · chromium · page ouverte en file:// · 13/13 critères
+16/10/2026 09:42:01 · chromium · page ouverte en file:// · 15/15 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -16,4 +16,6 @@
 | Indices : trois niveaux ouverts un par un, compteur visible, la solution jamais montrée | ✔ |  |
 | Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé | ✔ | 502 → 1198 px |
 | Reprendre le travail après fermeture de l’onglet (copie de secours) | ✔ |  |
+| Éditeur : le parcours du distributeur s’ouvre, chaque solution passe ses scénarios | ✔ | publication possible : version 1.1.0 |
+| Éditeur : un exercice complet créé sans code, publié, puis réussi par un élève | ✔ | exercice dist-14 : Vérifier que la LED D4 est allumée · Attendre 2,5 s · Vérifier que la LED D4 est éteinte ; version 1.1.0 publiée ; chez l’élève : réussite, et « Au bout de 0,3 s, la LED D4 devrait être allumée. Dans ton programme, … » pour un programme vide |
 | Aucune erreur dans la console du navigateur | ✔ |  |

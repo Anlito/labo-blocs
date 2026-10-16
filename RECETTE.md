@@ -82,3 +82,24 @@ test : ici, les vrais fichiers des élèves, l'écran du collège, la carte Ardu
 | 6.10 | « Chercher en ligne » | Sans le site de Labo Blocs publié (à activer : Settings › Pages du dépôt labo-blocs) : message « La version en ligne est introuvable… » ; ensuite : la dernière version publiée | |
 | 6.11 | Firefox : « Valider la mise à jour » | Le fichier `distributeur.js` est téléchargé, avec l'explication pour le copier dans `parcours/` | |
 
+## 7. Jalon 2 — l'éditeur de parcours (créer un exercice sans toucher au code)
+
+Ouvrir `site/editeur.html` (double-clic, Chrome ou Edge) dans le dossier de Labo Blocs. La recette automatique
+(`npm run recette`, 15 critères) crée déjà un exercice complet, le publie et le fait réussir par un élève : ici, la main
+du professeur, la souris et l'avis sur les mots.
+
+| # | Action | Attendu | ✔/✘ |
+|---|---|---|---|
+| 7.1 | Ouvrir `site/editeur.html` | « Distributeur de céréales · version 1.0.0 · 14 exercices », « Ouvrir un fichier… », « Nouveau parcours » | |
+| 7.2 | Ouvrir le distributeur, cliquer sur plusieurs exercices | Formulaire (titre, consigne, niveau, fiche), composants, blocs cochés, indices ; solution en blocs ; scénarios en phrases (« Vérifier que la LED D9 est allumée ») ; aperçu du simulateur | |
+| 7.3 | Exercice 7 : « Tester mes scénarios sur ma solution », puis « Lancer la solution » et cliquer sur les boutons de l'aperçu | Chaque scénario en vert ; les LED de l'aperçu suivent les boutons | |
+| 7.4 | Exercice 7 : changer la broche du bouton PetiteDose (D3 → D7) | « 1 bloc de la solution et 4 étapes des scénarios mis à jour » ; « Remplacer aussi dans la consigne » corrige la consigne ; le test reste vert | |
+| 7.5 | Cliquer sur 13B puis « Ajouter » : créer un exercice complet à la souris (titre, consigne, une LED, blocs cochés, solution construite avec les blocs, scénario « Vérifier / Attendre / Vérifier », deux indices) | « Tester mes scénarios » : vert. Sans vérification : message « Ce scénario ne vérifie rien » | |
+| 7.6 | Glisser un exercice plus haut, « Dupliquer », « Supprimer » | Les numéros suivent l'ordre (13A / 13B restent ensemble) ; l'identifiant (ex. `dist-14`) ne change pas | |
+| 7.7 | Sur un exercice : « Niveau de blocs : 3 · Code Arduino » + « Niveau imposé » | Côté élève (après publication) : le niveau 3 s'ouvre, les autres sont barrés, « Niveau imposé » | |
+| 7.8 | Fermer l'onglet, rouvrir `editeur.html` | « Reprendre le brouillon : Distributeur de céréales » : tout est là | |
+| 7.9 | « Publier la version 1.1.0 », choisir le dossier de Labo Blocs (celui qui contient `site` et `parcours`) | « Version 1.1.0 publiée » ; `parcours/distributeur/parcours.js` réécrit ; `distributeur-1.1.0.labo-parcours.json` téléchargé. Un exercice dont la solution ne passe pas ses scénarios bloque la publication, avec la phrase de l'écart | |
+| 7.10 | Ouvrir `site/index.html?enseignant=1` | Le nouvel exercice est dans le parcours, sa consigne et sa palette sont celles de l'éditeur ; « Solution » puis « Vérifier » : réussi | |
+| 7.11 | Atelier du distributeur (copie de test) : `prof.html` › « Exercices » › « Choisir un fichier… » avec le `.labo-parcours.json` | L'exercice ajouté apparaît dans les différences ; après validation et F5, les élèves l'ont | |
+| 7.12 | Avis | Les mots des étapes, des blocs et des messages vous conviennent ? Manque-t-il une sorte d'étape ou de composant ? | |
+

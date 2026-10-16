@@ -417,5 +417,32 @@
     return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
   }
 
-  Object.assign(A, { definirBlocs, palette, CATEGORIES, COULEURS_BLOCS: COULEURS });
+  // Noms des blocs pour l'éditeur du professeur (cases « blocs proposés aux élèves »), dans les mots de la palette.
+  const NOMS_BLOCS = {
+    quand_bouton: 'quand le bouton est appuyé',
+    led_etat: 'contrôler la LED',
+    son: 'jouer une note',
+    attendre: 'attendre … seconde(s)',
+    bouton_etat: 'état sur la broche (bouton)',
+    valeur_haut_bas: 'HAUT / BAS',
+    servo_angle: 'contrôler l’angle (servomoteur)',
+    si_alors: 'si … alors',
+    si_sinon: 'si … alors … sinon',
+    comparaison: 'comparaison (=, ≠, <, >)',
+    logique: 'et / ou',
+    non: 'non',
+    repeter_n: 'répéter … fois',
+    tant_que: 'tant que … répéter',
+    repeter_jusqua: 'répéter jusqu’à',
+    operation: 'calcul (+, −, ×, ÷)',
+    hasard: 'nombre au hasard',
+    affecter: 'affecter une valeur à une variable',
+    ajouter_a: 'ajouter à une variable',
+    variable: 'valeur d’une variable',
+    nombre: 'nombre',
+  };
+  // Broches que proposent les menus des blocs, par sorte de composant (l'éditeur du professeur propose les mêmes).
+  const BROCHES_COMPOSANTS = { led: BROCHES_LED, bouton: BROCHES_BOUTON, servo: BROCHES_SERVO, buzzer: BROCHES_NUMERIQUES };
+
+  Object.assign(A, { definirBlocs, palette, CATEGORIES, COULEURS_BLOCS: COULEURS, NOMS_BLOCS, BROCHES_COMPOSANTS });
 })(this);

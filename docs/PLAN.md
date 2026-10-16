@@ -248,3 +248,18 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - **Pas encore** : verrouillage d'une évaluation (jalon 5) ; l'écran de mise à jour devra le respecter.
    - Corrigé au passage dans le module : quand le message de résultat s'affiche, le dessin de la carte rétrécit et la
      colonne défile, au lieu de cacher « Lancer / Pause / Pas » (exercice 13 à 1366 × 768).
+13. **Jalon 2 livré le 16/10/2026** (recette à faire, `RECETTE.md` §7) : éditeur de parcours `site/editeur.html`
+   (écrans B8 et B9). Liste des exercices réordonnable (glisser, monter, descendre), ajouter, dupliquer, supprimer ;
+   identifiants jamais réutilisés (`idsRetires`) ; numéros renumérotés dans l'ordre (13A / 13B gardés) ; exercice :
+   titre, consigne, niveau de blocs (au choix de l'élève, ou imposé pour une évaluation : `niveau`, `niveauVerrouille`,
+   respectés par l'écran élève), défi, fiche « À savoir » (choisie, modifiée ou créée), composants et broches (une
+   broche changée suit dans la solution et les scénarios), blocs proposés par catégorie, deux indices ; solution
+   construite en blocs avec la palette cochée ; scénarios à étapes (attendre, appuyer, maintenir, relâcher, vérifier,
+   rester stable, impulsion, suite d'états, alternance ; phrase pour l'élève facultative) ; « Tester mes scénarios sur
+   ma solution » ; aperçu du simulateur. Réglages du parcours (titre, carte, boutons, paramètres `$nom`). Brouillon
+   gardé dans le navigateur ; « Exporter » (.labo-parcours.json) ; « Publier » refuse un parcours dont une solution ne
+   passe pas ses scénarios, puis écrit `parcours/<id>/parcours.js` (et `parcours/index.js` pour un nouveau parcours)
+   et télécharge le fichier d'échange pour les projets. Opérations testées sous Node dans `noyau/edition.js`.
+   Moteur 0.3.0 (niveau par exercice) : recopié dans l’atelier. Pas encore : cartes mBot et micro:bit dans l’éditeur (jalon 3), lexique (gardé tel quel), édition des schémas et
+   étapes en blocs des fiches (gardés tels quels).
+

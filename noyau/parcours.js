@@ -16,7 +16,7 @@
   const P = typeof module === 'object' && module.exports ? require('./programme.js') : global.LaboBlocs;
 
   const FORMAT = 'labo-blocs/parcours';
-  const VERSION_MOTEUR = '0.2.0';
+  const VERSION_MOTEUR = '0.3.0';
 
   // JSON aux clés triées : deux objets égaux donnent toujours le même texte.
   function canonique(x) {

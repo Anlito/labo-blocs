@@ -178,6 +178,8 @@
       annuler: () => ws.undo(false),
       retablir: () => ws.undo(true),
       horsProgramme: () => horsProgramme.slice(),
+      // Éditeur du professeur : les blocs proposés changent sans recharger le programme.
+      changerPalette: (blocsAutorises) => ws.updateToolbox(A.palette(blocsAutorises)),
     };
   }
 

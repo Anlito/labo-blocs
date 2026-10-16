@@ -171,6 +171,7 @@
       const statutAvant = avant.statut;
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
       vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { basculerBouton });
+      niveauDeLExercice(ex);
       afficher();
       A.noterOuverture(D, ex.id);
       aides.changerExercice(ex);
@@ -267,6 +268,16 @@
       majCode();
     }
     for (const b of ecran.querySelectorAll('.btn-niveau')) b.addEventListener('click', () => choisirNiveau(Number(b.dataset.niveau)));
+    // Niveau choisi par le professeur pour l'exercice (ex.niveau), éventuellement verrouillé (évaluation).
+    function niveauDeLExercice(ex) {
+      if (ex.niveau) choisirNiveau(Number(ex.niveau));
+      for (const b of ecran.querySelectorAll('.btn-niveau')) {
+        const autre = Number(b.dataset.niveau) !== Number(ex.niveau);
+        b.disabled = !!ex.niveauVerrouille && autre;
+        b.title = b.disabled ? 'Ton professeur a choisi le niveau de cet exercice.' : '';
+      }
+      $('.niveaux-libelle', ecran).textContent = ex.niveauVerrouille ? 'Niveau imposé' : 'Niveau';
+    }
     let code = null;
     let blocChoisi = null;
     function majCode() {

@@ -24,10 +24,10 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 
 | Dossier | Contenu |
 |---|---|
-| `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression |
+| `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression, édition d'un parcours (`edition.js`) |
 | `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur, aides, fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
-| `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique) |
-| `site/` | application Labo Blocs : `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
+| `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `index.js` : la liste ouverte par l'éditeur) |
+| `site/` | application Labo Blocs : `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
 | `tests/` | tests Node (`node:test`) |
 | `tools/` | serveur local, copie de Blockly et des polices, recette dans un vrai navigateur, conversion du distributeur, construction du module (`construire-module.js`), copie dans un projet (`vers-projet.js`), publication (`publier.js`) |
@@ -60,4 +60,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 - **Jalon 1 bis (intégration) validé (16/10/2026)** : l'atelier du distributeur utilise le module de Labo Blocs
   (écran d'exercice, moteur, sauvegarde) ; son outil du professeur a « Mettre à jour les exercices » (en ligne ou par
   fichier, différences, validation, retour en arrière) — [RECETTE.md](RECETTE.md) §6.
+- **Jalon 2 (éditeur de parcours) livré, recette à faire** : `site/editeur.html` crée et modifie les exercices sans
+  toucher au code, teste les scénarios sur la solution et publie une nouvelle version — [RECETTE.md](RECETTE.md) §7.
 

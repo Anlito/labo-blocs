@@ -220,12 +220,131 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(t.startsWith('1 exercice réussi'), t);
   });
 
+  // ---------- Jalon 2 : éditeur de parcours ----------
+
+  await critere('Éditeur : le parcours du distributeur s’ouvre, chaque solution passe ses scénarios', async () => {
+    const p = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href);
+    await p.evaluate(() => localStorage.clear());
+    await p.reload();
+    await pause(800);
+    await p.click('[data-choix="connu"]');
+    await pause(800);
+    const n = await p.$$eval('.ed-exercices li', (l) => l.length);
+    verifier(n === 14, `${n} exercices`);
+    await p.click('.btn-publier');
+    await pause(400);
+    const t = await texte(p, '.publier-contenu');
+    verifier(/Les 14 exercices sont prêts/.test(t), t.slice(0, 160));
+    return 'publication possible : version ' + (await texte(p, '.texte-publier')).replace('Publier la version ', '');
+  });
+
+  await critere('Éditeur : un exercice complet créé sans code, publié, puis réussi par un élève', async () => {
+    // Copie de Labo Blocs : le dépôt n'est pas modifié.
+    const copie = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-recette-'));
+    for (const d of ['site', 'noyau', 'interface', 'parcours']) fs.cpSync(path.join(RACINE, d), path.join(copie, d), { recursive: true });
+    try {
+      const p = await page(pathToFileURL(path.join(copie, 'site', 'editeur.html')).href);
+      await p.evaluate(() => localStorage.clear());
+      await p.reload();
+      await pause(800);
+      await p.click('[data-choix="connu"]');
+      await pause(800);
+      // Après le dernier exercice (13B) : « Ajouter ».
+      await p.click('.ed-exercices li[data-k="13"]');
+      await pause(300);
+      await p.click('.btn-ajouter');
+      await pause(500);
+      const id = await p.evaluate(() => LaboBlocs.editeurParcours.etat.paquet.exercices[14].id);
+      const remplir = async (sel, valeur) => {
+        await p.click(sel, { clickCount: 3 });
+        await p.keyboard.press('Backspace');
+        await p.type(sel, valeur);
+      };
+      await remplir('[data-champ="titre"]', 'Le feu rouge');
+      await remplir('[data-champ="consigne"]', 'Allumer la LED de la broche D4 pendant 2 secondes, puis l’éteindre.');
+      await p.click('.btn-ajouter-composant');
+      await pause(200);
+      await p.select('.champ-broche-composant', 'D4');
+      await pause(200);
+      await remplir('.champ-indice[data-n="0"]', 'La LED s’allume, on attend, puis elle s’éteint.');
+      await remplir('.champ-indice[data-n="1"]', 'Blocs : « contrôler la LED », « attendre », « contrôler la LED ».');
+      // Solution : les blocs posés dans « Au démarrage » (comme le ferait le professeur à la souris).
+      await p.evaluate(() => {
+        const ws = LaboBlocs.editeurParcours.etat.editeur.ws;
+        Blockly.serialization.workspaces.load(
+          LaboBlocs.versBlockly({ demarrage: [{ bloc: 'led_etat', broche: 'D4', etat: 1 }, { bloc: 'attendre', duree: 2 }, { bloc: 'led_etat', broche: 'D4', etat: 0 }], boucle: [] }),
+          ws,
+        );
+      });
+      await pause(300);
+      // Scénario : vérifier allumée, attendre 2,5 s, vérifier éteinte.
+      const ajouter = async (sorte) => {
+        await p.select('.ed-sorte-etape[data-s="0"]', sorte);
+        await p.click('[data-action="ajouter-etape"][data-s="0"]');
+        await pause(150);
+      };
+      await ajouter('verifier');
+      await ajouter('attendre');
+      await p.$eval('[data-s="0"][data-k="1"][data-champ="attendre"]', (e) => {
+        e.value = '2.5';
+        e.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      await pause(150);
+      await ajouter('verifier');
+      await p.select('[data-s="0"][data-k="2"][data-champ="verifier"][data-quoi="valeur"]', '0');
+      await pause(150);
+      const phrases = await p.$$eval('.ed-etape-phrase', (l) => l.map((x) => x.textContent));
+      await p.click('.btn-tester');
+      await pause(300);
+      const resultat = await texte(p, '.ed-resultats');
+      verifier(/la solution passe les 3 étapes/.test(resultat), resultat);
+      // Publier : le dossier de Labo Blocs est simulé dans le stockage du navigateur.
+      await p.evaluate(async () => {
+        const racine = await navigator.storage.getDirectory();
+        for await (const [n] of racine.entries()) await racine.removeEntry(n, { recursive: true });
+        const lb = await racine.getDirectoryHandle('labo-blocs', { create: true });
+        await lb.getDirectoryHandle('parcours', { create: true });
+        window.showDirectoryPicker = async () => lb;
+      });
+      await p.click('.btn-publier');
+      await pause(400);
+      await p.click('.btn-confirmer-publier');
+      await pause(800);
+      const ecrit = await p.evaluate(async () => {
+        const racine = await navigator.storage.getDirectory();
+        const dossier = await (await (await racine.getDirectoryHandle('labo-blocs')).getDirectoryHandle('parcours')).getDirectoryHandle('distributeur');
+        return (await (await dossier.getFileHandle('parcours.js')).getFile()).text();
+      });
+      verifier(ecrit.includes('Le feu rouge') && ecrit.includes('"versionParcours": "1.1.0"'), 'parcours.js non écrit');
+      fs.writeFileSync(path.join(copie, 'parcours', 'distributeur', 'parcours.js'), ecrit);
+      await p.close();
+      // L'élève (mode enseignant pour aller droit à l'exercice) : consigne, palette, vérification réussie.
+      const eleve = await page(pathToFileURL(path.join(copie, 'site', 'index.html')).href + `?enseignant=1&exercice=${id}`);
+      const consigne = await texte(eleve, '.consigne-texte');
+      verifier(/D4 pendant 2 secondes/.test(consigne), consigne);
+      await charger(eleve, id, 'solution');
+      await eleve.click('.btn-verifier');
+      await pause(300);
+      verifier(await eleve.$eval('.resultat', (e) => e.classList.contains('reussi')), 'la solution ne réussit pas chez l’élève');
+      // Un programme vide échoue avec la phrase des scénarios du professeur.
+      await charger(eleve, id, 'vide');
+      await eleve.click('.btn-verifier');
+      await pause(300);
+      const ecart = await texte(eleve, '.resultat');
+      verifier(/LED D4 devrait être allumée/.test(ecart), ecart);
+      await eleve.close();
+      return `exercice ${id} : ${phrases.join(' · ')} ; version 1.1.0 publiée ; chez l’élève : réussite, et « ${ecart.slice(0, 70)}… » pour un programme vide`;
+    } finally {
+      fs.rmSync(copie, { recursive: true, force: true });
+    }
+  });
+
   await b.close();
   await critere('Aucune erreur dans la console du navigateur', async () => verifier(!erreurs.length, erreurs.join(' | ')));
 
   const ok = resultats.filter((r) => r.ok).length;
   const md =
-    `# Recette automatique — jalon 1\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
+    `# Recette automatique — jalons 1 et 2\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
     '| Critère | Résultat | Détail |\n|---|---|---|\n' +
     resultats.map((r) => `| ${r.nom} | ${r.ok ? '✔' : '✘'} | ${String(r.detail).replace(/\|/g, '/').replace(/\n/g, ' ')} |`).join('\n') +
     '\n';
