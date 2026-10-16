@@ -4,7 +4,7 @@ definirCollege({
   "format": "labo-blocs/college",
   "version": 1,
   "classes": [
-    "5A",
+    "5X",
     "5B",
     "5C",
     "5D",
