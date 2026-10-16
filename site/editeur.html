@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Éditeur de parcours — Labo Blocs</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+<link rel="stylesheet" href="../interface/css/editeur-parcours.css">
+</head>
+<body class="page-editeur">
+
+<!-- Bandeau du professeur : parcours, version, état du brouillon, exporter, publier -->
+<header class="ed-bandeau">
+  <img class="logo" src="img/logo.svg" alt="" width="34" height="34">
+  <div class="ed-bandeau-titre">
+    <strong>Labo Blocs <span>· Mode professeur</span></strong>
+    <span class="ed-parcours-titre"></span>
+  </div>
+  <span class="espace"></span>
+  <span class="ed-etat" aria-live="polite"></span>
+  <button type="button" class="ed-btn btn-reglages" hidden title="Titre, carte, paramètres du parcours"><span data-icone="reglages" data-epaisseur="2.4"></span>Réglages</button>
+  <button type="button" class="ed-btn btn-exporter" hidden title="Télécharger le parcours tel qu’il est (.labo-parcours.json), sans changer de version"><span data-icone="telecharger" data-epaisseur="2.4"></span>Exporter</button>
+  <button type="button" class="ed-btn ed-btn-principal btn-publier" hidden><span data-icone="coche" data-epaisseur="2.4"></span><span class="texte-publier">Publier</span></button>
+  <button type="button" class="ed-btn btn-fermer-parcours" hidden><span data-icone="dossier" data-epaisseur="2.4"></span>Changer de parcours</button>
+</header>
+
+<!-- Choisir le parcours à modifier -->
+<main class="ed-accueil">
+  <h1>Éditeur de parcours</h1>
+  <p class="ed-intro">Crée ou modifie les exercices d’un parcours, sans toucher au code : consigne, composants, blocs proposés,
+    solution, scénarios de test et indices. Les projets (distributeur de céréales…) reçoivent ensuite la nouvelle version par
+    « Mettre à jour les exercices ».</p>
+  <div class="ed-cartes"></div>
+  <p class="ed-erreur" role="alert" hidden></p>
+</main>
+
+<!-- Modifier un parcours : liste des exercices | exercice | solution et scénarios -->
+<main class="ed-edition" hidden>
+  <aside class="ed-liste carte" aria-label="Exercices du parcours">
+    <div class="ed-liste-tete"><h2>Exercices</h2><span class="compteur ed-nombre"></span></div>
+    <ol class="ed-exercices"></ol>
+    <div class="ed-liste-actions">
+      <button type="button" class="btn-aide btn-ajouter"><span data-icone="suivant" data-epaisseur="2.6"></span>Ajouter</button>
+      <button type="button" class="btn-aide btn-dupliquer">Dupliquer</button>
+      <button type="button" class="btn-aide btn-monter" aria-label="Monter l’exercice" title="Monter l’exercice"><span data-icone="chevronHaut" data-epaisseur="2.8"></span></button>
+      <button type="button" class="btn-aide btn-descendre" aria-label="Descendre l’exercice" title="Descendre l’exercice"><span data-icone="chevronBas" data-epaisseur="2.8"></span></button>
+      <button type="button" class="btn-aide btn-supprimer"><span data-icone="corbeille" data-epaisseur="2.4"></span>Supprimer</button>
+    </div>
+    <p class="ed-note">L’identifiant d’un exercice ne change jamais, même si tu le déplaces : c’est lui que retiennent les
+      sauvegardes des élèves. Glisse un exercice pour le déplacer.</p>
+  </aside>
+  <section class="ed-formulaire" aria-label="Exercice"></section>
+  <section class="ed-droite" aria-label="Solution et scénarios">
+    <div class="carte ed-carte">
+      <div class="ed-carte-tete"><h3>Solution de référence</h3><span class="ed-aide">Construis-la comme un élève, avec les blocs cochés.</span></div>
+      <div class="editeur ed-solution">
+        <div class="editeur-blockly"></div>
+        <div class="editeur-etiquettes" aria-hidden="true"></div>
+      </div>
+      <p class="ed-message ed-message-solution" hidden></p>
+    </div>
+    <div class="carte ed-carte ed-scenarios"></div>
+    <div class="carte ed-carte ed-apercu">
+      <div class="ed-carte-tete"><h3>Aperçu du simulateur</h3><span class="ed-aide">Ta solution tourne en continu : maintiens un bouton appuyé pour voir ce qu’elle fait.</span></div>
+      <div class="simulateur ed-simulateur">
+        <div class="simu-carte"></div>
+        <div class="simu-milieu"><div class="simu-composants"></div><div class="simu-distributeur"></div></div>
+      </div>
+      <div class="ed-apercu-commandes">
+        <button type="button" class="btn-commande btn-apercu" title="La solution repart de zéro"><span data-icone="recommencer" data-epaisseur="2.8"></span>Recommencer</button>
+        <span class="chrono"><span data-icone="horloge" data-epaisseur="2.4"></span><span class="chrono-valeur">00:00</span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Réglages du parcours -->
+<dialog class="ed-dialogue dialogue-reglages" aria-labelledby="titre-reglages">
+  <form method="dialog" class="ed-dialogue-corps">
+    <h2 id="titre-reglages">Réglages du parcours</h2>
+    <label>Titre du parcours<input class="reglage-titre" required maxlength="80"></label>
+    <p class="ed-aide">Identifiant : <code class="reglage-id"></code> (ne change jamais) · moteur Labo Blocs <span class="reglage-moteur"></span> ou plus récent</p>
+    <label>Carte
+      <select class="reglage-carte">
+        <option value="uno">Arduino Uno</option>
+        <option value="mbot">mBot (carte mCore)</option>
+        <option value="microbit">micro:bit V2</option>
+      </select></label>
+    <label class="ed-case"><input type="checkbox" class="reglage-mode-direct"> Mode « En direct » : le programme tourne dans l’ordinateur et la carte obéit tout de suite (câble ou clé 2.4G branchés)</label>
+    <label class="ed-case"><input type="checkbox" class="reglage-mode-carte"> Mode « Dans la carte » : les élèves envoient leur programme dans la carte par le câble USB (Chrome ou Edge)</label>
+    <label class="ed-case"><input type="checkbox" class="reglage-boutons"> Boutons poussoirs à 2 fils (signal + GND), lus avec la résistance interne de la carte</label>
+    <fieldset class="reglage-parametres">
+      <legend>Paramètres (valeurs utilisées dans les exercices sous la forme <code>$nom</code>)</legend>
+      <div class="liste-parametres"></div>
+      <button type="button" class="btn-aide btn-ajouter-parametre">Ajouter un paramètre</button>
+    </fieldset>
+    <div class="ed-dialogue-actions">
+      <button type="submit" value="annuler" class="btn-secondaire">Annuler</button>
+      <button type="submit" value="ok" class="btn-principal">Valider</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Publier -->
+<dialog class="ed-dialogue dialogue-publier" aria-labelledby="titre-publier">
+  <div class="ed-dialogue-corps">
+    <h2 id="titre-publier">Publier une nouvelle version</h2>
+    <div class="publier-contenu"></div>
+    <div class="ed-dialogue-actions publier-actions"></div>
+  </div>
+</dialog>
+
+<div class="message-bref" role="status" hidden></div>
+
+<!-- Bibliothèques (copiées dans le dépôt : aucun appel réseau) -->
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/fr.js"></script>
+<!-- Noyau de Labo Blocs -->
+<script src="../noyau/cartes.js"></script>
+<script src="../noyau/programme.js"></script>
+<script src="../noyau/code-octet.js"></script>
+<script src="../noyau/vm.js"></script>
+<script src="../noyau/simulation.js"></script>
+<script src="../noyau/direct.js"></script>
+<script src="../noyau/validation.js"></script>
+<script src="../noyau/arduino.js"></script>
+<script src="../noyau/parcours.js"></script>
+<script src="../noyau/edition.js"></script>
+<script src="../noyau/competences.js"></script>
+<!-- Interface -->
+<script src="../interface/icones.js"></script>
+<script src="../interface/blocs.js"></script>
+<script src="../interface/editeur.js"></script>
+<script src="../interface/simulateur-vue.js"></script>
+<script src="../interface/aides.js"></script>
+<script src="../interface/app.js"></script>
+<script src="../interface/editeur-parcours.js"></script>
+<script>LaboBlocs.demarrerEditeurParcours();</script>
+</body>
+</html>

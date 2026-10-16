@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi de classe — Labo Blocs</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+<link rel="stylesheet" href="../interface/css/editeur-parcours.css">
+<link rel="stylesheet" href="../interface/css/professeur.css">
+</head>
+<body class="page-editeur page-professeur">
+
+<!-- Bandeau du professeur -->
+<header class="ed-bandeau">
+  <img class="logo" src="img/logo.svg" alt="" width="34" height="34">
+  <div class="ed-bandeau-titre">
+    <strong>Labo Blocs <span>· Mode professeur</span></strong>
+    <span class="ed-parcours-titre pr-projet"></span>
+  </div>
+  <span class="espace"></span>
+  <span class="ed-etat pr-etat" aria-live="polite"></span>
+  <button type="button" class="ed-btn pr-btn-changer" hidden><span data-icone="dossier" data-epaisseur="2.4"></span>Changer de classe</button>
+</header>
+
+<!-- Accueil : Suivre une classe -->
+<main class="ed-accueil pr-accueil">
+  <h1>Suivre une classe</h1>
+  <p class="ed-intro">Ouvre le dossier de la classe : Labo Blocs lit d’un coup les fichiers de toutes les équipes, sans les modifier.
+    Tes réglages (niveaux forcés, commentaires) sont gardés à part, dans <code>labo-blocs-professeur.json</code>.</p>
+  <div class="ed-cartes">
+    <button type="button" class="ed-carte-choix pr-reprendre" hidden><strong>Reprendre : <span class="pr-reprendre-nom"></span></strong><span>Le dernier dossier suivi sur cet ordinateur.</span></button>
+    <button type="button" class="ed-carte-choix pr-ouvrir"><strong>Ouvrir le dossier de la classe</strong><span>Ex. 5A › … › DISTRIBUTEUR DE CEREALES. Relu toutes les 30 secondes (Chrome, Edge).</span></button>
+    <label class="ed-carte-choix pr-zone"><strong>Importer des fichiers .json</strong><span>Ou glisse-les ici, depuis l’explorateur de fichiers.</span><input type="file" class="pr-fichiers" accept=".json,application/json" multiple hidden></label>
+  </div>
+  <p class="ed-erreur pr-erreur" role="alert" hidden></p>
+</main>
+
+<!-- B10 · Tableau de la classe -->
+<main class="pr-classe" hidden>
+  <div class="pr-tete">
+    <div>
+      <h1 class="pr-titre-classe"></h1>
+      <p class="pr-chemin"></p>
+    </div>
+    <div class="pr-actions">
+      <label class="pr-objectif">Exercices attendus <select class="pr-choix-objectif"></select></label>
+      <button type="button" class="btn-secondaire pr-actualiser">Actualiser</button>
+      <label class="btn-secondaire pr-importer">Importer des fichiers .json<input type="file" class="pr-fichiers" accept=".json,application/json" multiple hidden></label>
+      <button type="button" class="btn-secondaire pr-csv">Exporter (.csv)</button>
+      <button type="button" class="btn-principal pr-carnet">Exporter pour le Carnet de classe</button>
+    </div>
+  </div>
+  <div class="pr-chiffres"></div>
+  <p class="ed-erreur pr-refuses" hidden></p>
+  <div class="carte pr-tableau-boite"><table class="pr-tableau"></table></div>
+  <div class="pr-legende">
+    <span><span class="pr-cel pr-reussi">✓</span>Réussi</span>
+    <span><span class="pr-cel pr-en_cours">▶</span>En cours</span>
+    <span><span class="pr-cel pr-a_reverifier">!</span>À revérifier</span>
+    <span><span class="pr-cel pr-a_faire">·</span>Ouvert, pas commencé</span>
+    <span><span class="pr-cel pr-verrouille"></span>Pas encore ouvert</span>
+    <span>Clique sur une équipe pour ouvrir sa fiche : programme de chaque exercice, niveaux, commentaire.</span>
+  </div>
+</main>
+
+<!-- B11 · Fiche d'une équipe -->
+<main class="pr-fiche" hidden></main>
+
+<!-- Programme d'une équipe, rejouable dans le simulateur (lecture seule) -->
+<dialog class="pr-programme" aria-label="Programme de l’équipe"><div class="pr-programme-hote"></div></dialog>
+
+<div class="message-bref" role="status" hidden></div>
+
+<!-- Bibliothèques (copiées dans le dépôt : aucun appel réseau) -->
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/fr.js"></script>
+<!-- Noyau de Labo Blocs (le même que celui des tests Node) -->
+<script src="../noyau/cartes.js"></script>
+<script src="../noyau/programme.js"></script>
+<script src="../noyau/code-octet.js"></script>
+<script src="../noyau/vm.js"></script>
+<script src="../noyau/simulation.js"></script>
+<script src="../noyau/direct.js"></script>
+<script src="../noyau/validation.js"></script>
+<script src="../noyau/arduino.js"></script>
+<script src="../noyau/parcours.js"></script>
+<script src="../noyau/sauvegarde.js"></script>
+<script src="../noyau/competences.js"></script>
+<script src="../noyau/classe.js"></script>
+<!-- Interface -->
+<script src="../interface/gabarits.js"></script>
+<script src="../interface/icones.js"></script>
+<script src="../interface/blocs.js"></script>
+<script src="../interface/editeur.js"></script>
+<script src="../interface/simulateur-vue.js"></script>
+<script src="../interface/aides.js"></script>
+<script src="../interface/televersement.js"></script>
+<script src="../interface/carte.js"></script>
+<script src="../interface/fichiers.js"></script>
+<script src="../interface/session.js"></script>
+<script src="../interface/accueil.js"></script>
+<script src="../interface/ecran-parcours.js"></script>
+<script src="../interface/ecran-exercice.js"></script>
+<script src="../interface/app.js"></script>
+<script src="../interface/integration.js"></script>
+<script src="../interface/professeur.js"></script>
+<!-- Projet et parcours (données modifiables par le professeur) -->
+<script src="projet.js"></script>
+<script src="../parcours/distributeur/parcours.js"></script>
+<!-- Parcours de découverte des cartes : index.html?parcours=decouverte-mbot ou ?parcours=decouverte-microbit -->
+<script src="../parcours/decouverte-mbot/parcours.js"></script>
+<script src="../parcours/decouverte-microbit/parcours.js"></script>
+<script>LaboBlocs.demarrerProfesseur();</script>
+</body>
+</html>

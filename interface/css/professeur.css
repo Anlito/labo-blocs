@@ -1,0 +1,64 @@
+/* Outil du professeur (jalon 5) : suivi de classe (B10) et fiche d'une équipe (B11). Même charte que l'éditeur. */
+
+.pr-classe, .pr-fiche { padding: 1.375rem 1.75rem 2rem; display: flex; flex-direction: column; gap: 1rem; }
+.pr-classe[hidden], .pr-fiche[hidden] { display: none; }
+.pr-tete { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.pr-tete h1, .pr-fiche h1 { margin: 0; font-size: 1.75rem; }
+.pr-chemin { margin: 0.25rem 0 0; font-size: 1rem; color: var(--texte-2); }
+.pr-actions { display: flex; align-items: center; gap: 0.625rem; flex-wrap: wrap; }
+.pr-actions .btn-secondaire, .pr-actions .btn-principal { height: 2.875rem; font-size: 0.9375rem; display: inline-flex; align-items: center; cursor: pointer; }
+.pr-objectif { display: flex; flex-direction: column; font-size: 0.8125rem; font-weight: 700; color: var(--texte-2); gap: 0.125rem; }
+.pr-objectif select { font: inherit; font-weight: 400; font-size: 0.9375rem; color: var(--texte); height: 2.375rem; border: 2px solid var(--bord-fort); border-radius: 0.5rem; background: #FFFFFF; }
+
+.pr-chiffres { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+.pr-chiffre { display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.875rem; padding: 0.75rem 1.125rem; }
+.pr-chiffre b { font-family: var(--titres); font-size: 1.5rem; }
+.pr-chiffre span { font-size: 0.875rem; color: var(--texte-2); }
+.pr-chiffre.pr-attention { background: var(--ecart-pale); border-color: var(--ecart); }
+.pr-chiffre.pr-attention b, .pr-chiffre.pr-attention span { color: var(--ecart-texte); }
+
+.pr-tableau-boite { padding: 0; overflow-x: auto; }
+.pr-tableau, .pr-exercices, .pr-competences { width: 100%; border-collapse: collapse; font-size: 0.9375rem; }
+.pr-tableau { min-width: 68rem; }
+.pr-tableau th, .pr-tableau td, .pr-exercices th, .pr-exercices td, .pr-competences th, .pr-competences td { padding: 0.625rem 0.875rem; text-align: left; vertical-align: middle; border-bottom: 1px solid #ECEFF5; }
+.pr-tableau thead th, .pr-exercices thead th { background: var(--fond); font-size: 0.8125rem; color: var(--texte-2); }
+.pr-tableau tbody tr:hover { background: #F8FAFD; }
+.pr-lien-equipe { border: none; background: none; padding: 0; font-family: var(--titres); font-weight: 700; font-size: 1rem; color: var(--texte); cursor: pointer; text-align: left; }
+.pr-lien-equipe:hover { color: var(--action); text-decoration: underline; }
+.pr-sous { display: block; font-size: 0.8125rem; font-weight: 400; color: var(--texte-2); }
+.pr-nombre { font-variant-numeric: tabular-nums; font-weight: 700; }
+.pr-cellules { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.pr-cel { display: inline-flex; align-items: center; justify-content: center; width: 1.625rem; height: 1.625rem; border-radius: 0.4375rem; font-weight: 700; font-size: 0.8125rem; box-sizing: border-box; vertical-align: middle; }
+.pr-reussi { background: var(--reussi); color: #FFFFFF; }
+.pr-en_cours { background: var(--action); color: #FFFFFF; }
+.pr-a_reverifier { background: var(--ecart); color: var(--ecart-texte); }
+.pr-a_faire { background: #FFFFFF; border: 2px solid var(--bord-fort); color: var(--texte-2); }
+.pr-verrouille { background: var(--bord); }
+.pr-niveau { display: inline-flex; align-items: center; justify-content: center; min-width: 1.75rem; height: 1.75rem; padding: 0 0.25rem; border-radius: 0.4375rem; font-weight: 700; color: #1F2A30; }
+/* Couleurs des niveaux du Carnet de classe (toujours avec le chiffre, et le libellé en info-bulle ou à côté) */
+.pr-niveau-1 { background: #F5A79F; }
+.pr-niveau-2 { background: #F7DC7C; }
+.pr-niveau-3 { background: #C4E7A8; }
+.pr-niveau-4 { background: #5AA56A; color: #10251A; }
+.pr-etat-equipe { display: inline-block; font-size: 0.875rem; font-weight: 700; border-radius: 999px; padding: 0.3125rem 0.75rem; background: #E1F4EA; color: var(--reussi-texte); white-space: nowrap; }
+.pr-etat-bloquee { background: var(--ecart-pale); color: var(--ecart-texte); }
+.pr-etat-inactive { background: #ECEFF5; color: var(--texte-2); }
+.pr-etat-fini { background: var(--action-pale); color: var(--action-fonce); }
+.pr-legende { display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center; font-size: 0.875rem; color: var(--texte-2); }
+.pr-legende > span { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+/* Fiche d'une équipe */
+.pr-fiche-tete { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.pr-fiche-tete .btn-secondaire { height: 2.75rem; }
+.pr-fiche-grille { display: grid; grid-template-columns: minmax(32rem, 1fr) minmax(32rem, 1.25fr); gap: 1.125rem; align-items: start; }
+@media (max-width: 1300px) { .pr-fiche-grille { grid-template-columns: 1fr; } }
+.pr-competences th b { font-family: var(--titres); margin-right: 0.25rem; }
+.pr-forcer { font: inherit; font-size: 0.875rem; padding: 0.375rem; border: 2px solid var(--bord-fort); border-radius: 0.5rem; max-width: 14rem; }
+.pr-note { margin: 0; font-size: 1.0625rem; }
+.pr-note b { font-family: var(--titres); font-size: 1.375rem; }
+.pr-exercices .btn-secondaire { height: 2.25rem; font-size: 0.875rem; padding: 0 0.75rem; }
+
+/* Programme d'une équipe : l'écran d'exercice de Labo Blocs, en grand */
+.pr-programme { width: 100vw; height: 100vh; max-width: none; max-height: none; margin: 0; padding: 0; border: none; background: var(--fond); }
+.pr-programme::backdrop { background: rgba(20, 33, 61, 0.5); }
+.pr-programme-hote { width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }

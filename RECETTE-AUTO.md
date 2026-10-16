@@ -1,0 +1,30 @@
+# Recette automatique — jalons 1 à 5
+
+16/10/2026 17:15:53 · chromium · page ouverte en file:// · 24/24 critères
+
+| Critère | Résultat | Détail |
+|---|---|---|
+| L’outil s’ouvre depuis un dossier (file://), sans internet, sans erreur | ✔ | aucune ressource en ligne |
+| Polices de la charte chargées depuis le dépôt (Lexend, Atkinson Hyperlegible) | ✔ |  |
+| Firefox (sans accès aux dossiers) : message clair, nouvelle équipe, « Enregistrer » télécharge | ✔ | Équipe Léa · 5A |
+| Parcours : 14 exercices, le 1 ouvert, les autres verrouillés, 13B en défi facultatif | ✔ |  |
+| Programme faux : un seul écart, observable, en ambre, sans « faux » ni « erreur » | ✔ | Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. |
+| Solution : réussite en vert, exercice suivant ouvert, avancement mis à jour | ✔ |  |
+| Les 14 solutions de référence réussissent dans la page | ✔ |  |
+| Simulateur : le bouton poussoir allume la LED tant qu’on le tient, le bloc en cours est surligné | ✔ | appui maintenu : LED allumée ; bouton lâché : LED éteinte |
+| Niveau 3 : code Arduino en lecture seule, un clic sur un bloc surligne ses lignes | ✔ |  |
+| Indices : trois niveaux ouverts un par un, compteur visible, la solution jamais montrée | ✔ |  |
+| Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé | ✔ | 502 → 1198 px |
+| Reprendre le travail après fermeture de l’onglet (copie de secours) | ✔ |  |
+| Éditeur : le parcours du distributeur s’ouvre, chaque solution passe ses scénarios | ✔ | publication possible : version 1.4.0 |
+| Éditeur : un exercice complet créé sans code, publié, puis réussi par un élève | ✔ | exercice dist-14 : Vérifier que la LED D4 est allumée · Attendre 2,5 s · Vérifier que la LED D4 est éteinte ; version 1.4.0 publiée ; chez l’élève : réussite, et « Au bout de 0,3 s, la LED D4 devrait être allumée. Dans ton programme, … » pour un programme vide |
+| Dans la carte · Arduino Uno neuve : programme de la carte installé, programme de l’élève envoyé, carte vidée | ✔ | programme de la carte 0.2 (uno) installé par le câble ; 47 octets envoyés et gardés ; carte vidée |
+| Dans la carte · mBot : envoi du programme et « Vider la carte » | ✔ | 54 octets envoyés, puis carte vidée : « Le programme est effacé : la carte ne commande plus rien. Vé… » |
+| Dans la carte · micro:bit V2 : fichier du programme de la carte à copier, envoi, vidage | ✔ | fichier à copier sur MICROBIT, puis 63 octets envoyés et carte vidée |
+| Dans la carte · erreurs USB en français, avec la prochaine action | ✔ | carte déjà utilisée : « La carte est déjà utilisée par un autre programme … » [Réessayer] · carte pas à jour : « La carte a sans doute servi à un autre projet. Cli… » [Installer le programme de la carte] · mauvaise carte : « Cet exercice se fait avec : micro:bit V2. Branche … » [Réessayer] |
+| Simulateur · micro:bit (écran, bouton A, capteurs) et mBot (moteurs, distance) | ✔ | micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « 50 % en avant », obstacle à 10 cm → « arrêté », vérification réussie |
+| Un même exercice : simulateur, puis En direct, puis Dans la carte (Uno, exercice 7) | ✔ | simulateur : réussi ; en direct : boutons D3 D4 surveillés, appui sur le vrai D3 → LED D9 allumée (carte et écran), signe de vie tenu 3,5 s, « Arrêter » → W, OFF ; dans la carte : 61 octets envoyés |
+| En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
+| En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice | ✔ | bouton A de la vraie carte → P0 allumée et « X 2 2 3 » ; exercice réglé « simulateur seulement » : sélecteur de modes caché |
+| Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-16.csv + labo-blocs-distributeur-5A-2026-10-16.labo-resultats.json (compétences C6, C9) |
+| Aucune erreur dans la console du navigateur | ✔ |  |

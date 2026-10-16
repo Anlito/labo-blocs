@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labo Blocs</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+</head>
+<body>
+
+<!-- Bandeau commun : accent du projet, logo, projet et équipe, enregistrement -->
+<header class="bandeau" data-gabarit="bandeau"></header>
+
+<!-- A1 · Accueil -->
+<div class="ecran ecran-accueil" hidden>
+  <div class="accueil-contenu">
+    <div class="accueil-entete">
+      <span class="etiquette-projet titre-projet"></span>
+      <h1>Atelier de programmation</h1>
+      <p>Choisis comment commencer.</p>
+    </div>
+
+    <section class="accueil-panneau" data-panneau="choix">
+      <div class="accueil-cartes">
+        <div class="carte-accueil carte-reprendre accueil-reprendre" hidden>
+          <span class="carte-surtitre">Travail récent</span>
+          <h2>Reprendre le travail de <span class="reprendre-equipe"></span></h2>
+          <p class="reprendre-date"></p>
+          <span class="espace"></span>
+          <button type="button" class="btn-principal btn-reprendre">Reprendre<span data-icone="suivant" data-epaisseur="2.8"></span></button>
+          <button type="button" class="btn-lien btn-pas-nous">Ce n’est pas notre équipe</button>
+        </div>
+
+        <div class="carte-accueil">
+          <h2>Nouvelle équipe</h2>
+          <form class="formulaire-equipe" novalidate>
+            <label>Prénom 1<input class="champ-prenom" autocomplete="off" maxlength="20" required></label>
+            <label>Prénom 2 (facultatif)<input class="champ-prenom" autocomplete="off" maxlength="20"></label>
+            <label>Prénom 3 (facultatif)<input class="champ-prenom" autocomplete="off" maxlength="20"></label>
+            <label>Classe<select class="champ-classe"></select></label>
+            <p class="accueil-erreur erreur-equipe" role="alert" hidden></p>
+            <button type="submit" class="btn-secondaire">Choisir mon dossier</button>
+          </form>
+        </div>
+
+        <div class="carte-accueil">
+          <h2>Ouvrir notre sauvegarde</h2>
+          <p class="carte-texte">Ton équipe a déjà commencé ? Ouvre le fichier de ton équipe.</p>
+          <div class="chemin-modele">
+            <span class="chemin-legende">Ton dossier est ici</span>
+            <span class="chemin-texte"></span>
+          </div>
+          <span class="espace"></span>
+          <button type="button" class="btn-secondaire btn-ouvrir">Ouvrir mon fichier</button>
+        </div>
+      </div>
+      <p class="accueil-erreur erreur-choix" role="alert" hidden></p>
+      <p class="info-firefox" hidden><span data-icone="info"></span>Tu utilises Firefox : « Enregistrer » télécharge ton fichier, et tu dois le ranger toi-même dans le dossier de ton équipe. Avec Chrome ou Edge, ton travail s’enregistre tout seul.</p>
+    </section>
+
+    <!-- A2 · Dossier de l'équipe -->
+    <section class="accueil-panneau carte-accueil carte-large" data-panneau="dossier" hidden>
+      <h2>Le dossier de ton équipe</h2>
+      <p class="avec-acces">Ton travail sera enregistré dans ce dossier, sur le réseau :</p>
+      <p class="sans-acces-texte">Sur ce navigateur, « Enregistrer » télécharge le fichier <strong class="nom-fichier"></strong>. Range-le ensuite dans ce dossier :</p>
+      <div class="chemin"></div>
+      <p class="avec-acces dossier-aide">Clique sur « Choisir le dossier », va jusqu’au dossier <strong class="nom-dossier-equipe"></strong> et valide.
+        S’il n’existe pas encore, choisis le dossier du projet <strong class="nom-dossier-projet"></strong> : il sera créé pour toi.</p>
+      <div class="dossier-resultat" aria-live="polite"></div>
+      <p class="accueil-erreur erreur-dossier" role="alert" hidden></p>
+      <div class="accueil-actions">
+        <button type="button" class="btn-secondaire btn-retour-equipe">Retour</button>
+        <button type="button" class="btn-principal btn-choisir-dossier"><span data-icone="dossier" data-epaisseur="2.4"></span>Choisir le dossier</button>
+        <button type="button" class="btn-principal btn-commencer-sans-dossier" hidden>Commencer<span data-icone="suivant" data-epaisseur="2.8"></span></button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- A3 · Parcours -->
+<div class="ecran ecran-parcours" hidden>
+  <div class="parcours-contenu">
+    <div class="parcours-tete">
+      <div>
+        <h1>Ton parcours de programmation</h1>
+        <p>Réussis un exercice pour ouvrir le suivant. Le défi est facultatif.</p>
+      </div>
+      <button type="button" class="btn-principal btn-continuer"></button>
+    </div>
+    <div class="parcours-avancement">
+      <strong class="parcours-compte"></strong>
+      <div class="barre" role="img"><span></span></div>
+      <span class="pilule-revoir" hidden><span data-icone="alerte" data-epaisseur="2.6"></span><span class="revoir-texte"></span></span>
+    </div>
+    <div class="parcours-grille"></div>
+    <div class="parcours-legende">
+      <span><i class="leg leg-reussi"></i>Réussi</span>
+      <span><i class="leg leg-courant"></i>En cours</span>
+      <span><i class="leg leg-revoir"></i>À revérifier</span>
+      <span><i class="leg leg-verrou"></i>Verrouillé</span>
+      <span><i class="leg leg-defi"></i>Défi facultatif</span>
+    </div>
+  </div>
+</div>
+
+<!-- A4 · Exercice -->
+<div class="ecran ecran-exercice" data-gabarit="exercice" hidden></div>
+
+<div class="message-bref" role="status" hidden></div>
+
+<!-- Bibliothèques (copiées dans le dépôt : aucun appel réseau) -->
+<script src="vendor/blockly/blockly_compressed.js"></script>
+<script src="vendor/blockly/fr.js"></script>
+<!-- Noyau de Labo Blocs (le même que celui des tests Node) -->
+<script src="../noyau/cartes.js"></script>
+<script src="../noyau/programme.js"></script>
+<script src="../noyau/code-octet.js"></script>
+<script src="../noyau/vm.js"></script>
+<script src="../noyau/simulation.js"></script>
+<script src="../noyau/direct.js"></script>
+<script src="../noyau/validation.js"></script>
+<script src="../noyau/arduino.js"></script>
+<script src="../noyau/parcours.js"></script>
+<script src="../noyau/sauvegarde.js"></script>
+<script src="../noyau/competences.js"></script>
+<!-- Interface -->
+<script src="../interface/gabarits.js"></script>
+<script src="../interface/icones.js"></script>
+<script src="../interface/blocs.js"></script>
+<script src="../interface/editeur.js"></script>
+<script src="../interface/simulateur-vue.js"></script>
+<script src="../interface/aides.js"></script>
+<script src="../interface/televersement.js"></script>
+<script src="../interface/carte.js"></script>
+<script src="../interface/fichiers.js"></script>
+<script src="../interface/session.js"></script>
+<script src="../interface/accueil.js"></script>
+<script src="../interface/ecran-parcours.js"></script>
+<script src="../interface/ecran-exercice.js"></script>
+<script src="../interface/app.js"></script>
+<!-- Projet et parcours (données modifiables par le professeur) -->
+<script src="projet.js"></script>
+<script src="../parcours/distributeur/parcours.js"></script>
+<!-- Parcours de découverte des cartes : index.html?parcours=decouverte-mbot ou ?parcours=decouverte-microbit -->
+<script src="../parcours/decouverte-mbot/parcours.js"></script>
+<script src="../parcours/decouverte-microbit/parcours.js"></script>
+<script>LaboBlocs.demarrerApplication();</script>
+</body>
+</html>
