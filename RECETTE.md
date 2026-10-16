@@ -187,3 +187,26 @@ jalon : **une classe test de 8 équipes est suivie et exportée**.
 | 10.10 | Atelier (ZIP) : `prof.html` › classe › bouton « Carnet de classe » ; une équipe › Bilan | Même fichier de résultats ; « Compétences (Labo Blocs) » dans le bilan | |
 | 10.11 | Éditeur de parcours : un exercice › « Compétence évaluée » | C5, C6, C8, C9 (libellés du programme) ; le choix change les colonnes du suivi de classe | |
 | 10.12 | Avis | Seuils (moins de 25 % : Non atteint ; moins de 60 % : Partiellement ; sinon Atteint ; Dépassé avec un défi réussi), compétences de chaque exercice du distributeur, colonnes du tableau | |
+
+## 11. Kit nouveau projet — un futur projet relié à Labo Blocs
+
+Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../essai-projet --titre "Barrière de parking"
+--parcours decouverte-mbot --classes 4A,4B` (ou dossier `projet-exemple` du ZIP).
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 11.1 | Ouvrir `site/programmation.html` en double-cliquant (Chrome) | Titre « Barrière de parking », couleur du projet, classes 4A et 4B, dossier « 4A › COMMUN › TECHNOLOGIE › BARRIERE DE PARKING › … » | |
+| 11.2 | Créer une équipe, choisir son dossier, faire l'exercice 1 | Le fichier de l'équipe est enregistré dans son dossier, l'exercice est réussi | |
+| 11.3 | Ouvrir `site/programmation-prof.html`, puis le dossier de la classe | L'équipe apparaît avec sa progression ; l'exemple de dossier est celui du projet | |
+| 11.4 | Lire `LISEZ-MOI-LABO-BLOCS.md` et `docs/BRIEF-LABO-BLOCS.md` | Clairs : ce qui est fourni, comment mettre à jour, quoi donner à Claude Code | |
+
+## 12. Accueil du professeur et code professeur
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 12.1 | Ouvrir https://anlito.github.io/labo-blocs/ | Page « Espace professeur » qui demande le code | |
+| 12.2 | Taper un mauvais code | Message en ambre « Ce n’est pas le code professeur… », la page reste cachée | |
+| 12.3 | Taper le bon code | Accueil : « Créer ou modifier un parcours », « Suivre une classe », les parcours à essayer | |
+| 12.4 | Ouvrir l'éditeur, revenir par « Accueil », essayer un parcours | Pas de nouveau code demandé ; le parcours s'ouvre en mode enseignant | |
+| 12.5 | « Verrouiller » | Le code est redemandé | |
+| 12.6 | Dans les projets (atelier céréales), la page des élèves | Aucun code demandé | |

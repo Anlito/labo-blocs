@@ -107,7 +107,7 @@
   async function accueil() {
     $('.ed-accueil').hidden = false;
     $('.ed-edition').hidden = true;
-    for (const b of $$('.ed-bandeau .ed-btn')) b.hidden = true;
+    for (const b of $$('.ed-bandeau .ed-btn:not(.ed-vers-accueil)')) b.hidden = true;
     $('.ed-parcours-titre').textContent = '';
     $('.ed-etat').textContent = '';
     const { trouves } = await parcoursConnus();
@@ -172,7 +172,7 @@
     etat.i = Math.max(0, etat.paquet.exercices.findIndex((e) => e.id === selection));
     $('.ed-accueil').hidden = true;
     $('.ed-edition').hidden = false;
-    for (const b of $$('.ed-bandeau .ed-btn')) b.hidden = false;
+    for (const b of $$('.ed-bandeau .ed-btn:not(.ed-vers-accueil)')) b.hidden = false;
     garderBrouillon();
     majBandeau();
     if (!etat.editeur) creerEditeurSolution();

@@ -24,6 +24,14 @@ if (!navigateur) {
   process.exit(1);
 }
 
+// Empreinte du code professeur (site/code-professeur.js) : la recette ne connaît pas le code.
+const { CLE: CLE_PORTE } = require('../interface/porte-professeur.js');
+const EMPREINTE_PORTE = (() => {
+  let r = {};
+  require('node:vm').runInNewContext(fs.readFileSync(path.join(RACINE, 'site', 'code-professeur.js'), 'utf8'), { definirCodeProfesseur: (x) => (r = x) });
+  return r.empreinte;
+})();
+
 const resultats = [];
 async function critere(nom, f) {
   try {
@@ -50,6 +58,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     p.on('console', (m) => m.type() === 'error' && erreurs.push(m.text()));
     // « Quitter la page ? » (travail pas encore enregistré dans un fichier) : on accepte.
     p.on('dialog', (d) => d.accept());
+    // Code professeur déjà donné sur cet ordinateur (sauf pour essayer la porte elle-même).
+    if (!(options && options.porte)) await p.evaluateOnNewDocument((cle, empreinte) => localStorage.setItem(cle, empreinte), CLE_PORTE, EMPREINTE_PORTE);
+    else await p.evaluateOnNewDocument((cle) => [localStorage, sessionStorage].forEach((s) => s.removeItem(cle)), CLE_PORTE);
     // « Firefox » : pas d'accès aux dossiers ni aux fichiers.
     if (options && options.sansDossiers) await p.evaluateOnNewDocument(() => ['showDirectoryPicker', 'showOpenFilePicker', 'showSaveFilePicker'].forEach((f) => delete window[f]));
     // Carte virtuelle à la place du câble USB (jalon 3) : { modele, firmware, occupee }.
@@ -366,6 +377,8 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return e;
   }
   const ATTENTE = ['connexion', 'installation', 'envoi', 'choisir'];
+  // « Vider la carte » : la carte peut repasser un instant par « connectée » avant « vidée ».
+  const ATTENTE_VIDAGE = [...ATTENTE, 'connectee', 'envoye'];
   async function ouvrirDansLaCarte(parcours, exercice, carte) {
     const p = await page(PAGE + `?${parcours ? 'parcours=' + parcours + '&' : ''}enseignant=1&exercice=${exercice}`, { carte });
     await charger(p, exercice, 'solution');
@@ -395,7 +408,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
     verifier(garde && garde === (await octetsSolution(p, 'dist-03')), 'le programme gardé par la carte n’est pas celui de l’élève');
     await p.click('.panneau-carte [data-action="vider"]');
-    e = await attendreCarte(p, ATTENTE);
+    e = await attendreCarte(p, ATTENTE_VIDAGE);
     verifier(e.cle === 'vide' && !(await p.evaluate(() => carteVirtuelle.programmeHex())), `après « Vider la carte » : ${e.cle}`);
     await p.close();
     return `programme de la carte ${installe.version} (${installe.nom}) installé par le câble ; ${garde.length / 2} octets envoyés et gardés ; carte vidée`;
@@ -411,7 +424,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
     verifier(e.cle === 'envoye' && garde === (await octetsSolution(p, 'mbot-03')), `envoi : ${e.cle}`);
     await p.click('.panneau-carte [data-action="vider"]');
-    e = await attendreCarte(p, ATTENTE);
+    e = await attendreCarte(p, ATTENTE_VIDAGE);
     verifier(e.cle === 'vide' && /robot/.test(e.message), `vidage : ${e.cle}`);
     await p.close();
     return `${garde.length / 2} octets envoyés, puis carte vidée : « ${e.message.slice(0, 60)}… »`;
@@ -434,7 +447,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const garde = await p.evaluate(() => carteVirtuelle.programmeHex());
     verifier(e.cle === 'envoye' && garde === (await octetsSolution(p, 'mb-03')), `envoi : ${e.cle}`);
     await p.click('.panneau-carte [data-action="vider"]');
-    e = await attendreCarte(p, ATTENTE);
+    e = await attendreCarte(p, ATTENTE_VIDAGE);
     verifier(e.cle === 'vide', `vidage : ${e.cle}`);
     await p.close();
     return `fichier à copier sur MICROBIT, puis ${garde.length / 2} octets envoyés et carte vidée`;
@@ -649,6 +662,118 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       verifier(lucas.niveaux.C9 === 3 && /aide/.test(lucas.commentaire), JSON.stringify(lucas));
       await p.close();
       return `8 équipes, 2 bloquées ; fiche : C9 forcé à 3, ${note.replace(/\s+/g, ' ')} ; programme rejoué (« ${programme[1]} ») ; exports : ${noms.join(' + ')} (compétences ${r.competences.map((c) => c.code).join(', ')})`;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  // ---------- Accueil du professeur ----------
+
+  await critere('Code professeur : accueil, éditeur, suivi et mode enseignant cachés sans le code ; page des élèves libre', async () => {
+    const url = (f, q) => pathToFileURL(path.join(RACINE, 'site', f)).href + (q || '');
+    const r = [];
+    for (const [f, q] of [['accueil.html'], ['editeur.html'], ['prof.html'], ['index.html', '?parcours=decouverte-mbot&enseignant=1'], ['index.html']]) {
+      const p = await page(url(f, q), { porte: true });
+      const etat = await p.evaluate(() => {
+        const porte = document.querySelector('.porte-professeur');
+        const autre = [...document.body.children].find((e) => !e.classList.contains('porte-professeur') && e.tagName !== 'SCRIPT');
+        return { porte: !!porte, cache: !!autre && getComputedStyle(autre).visibility === 'hidden' };
+      });
+      r.push(`${f}${q ? ' (enseignant)' : ''} : ${etat.porte ? 'code demandé' : 'libre'}`);
+      if (f === 'index.html' && !q) verifier(!etat.porte, 'la page des élèves demande un code');
+      else verifier(etat.porte && etat.cache, `${f} : ${JSON.stringify(etat)}`);
+      if (f === 'accueil.html') {
+        await p.type('.porte-code', 'pas-le-code');
+        await p.click('.porte-boite button');
+        await p.waitForFunction(() => !document.querySelector('.porte-ecart').hidden, { timeout: 20000 });
+        const ecart = await p.$eval('.porte-ecart', (e) => [e.textContent, getComputedStyle(e).backgroundColor, getComputedStyle(e).color]);
+        verifier(!/faux|erreur/i.test(ecart[0]) && ecart[1] === 'rgb(255, 244, 220)' && (await p.$('.porte-professeur')), 'mauvais code : ' + ecart.join(' · '));
+        r.push(`mauvais code : « ${ecart[0]} » (ambre)`);
+      }
+      await p.close();
+    }
+    // Code déjà donné : l'accueil s'ouvre ; « Verrouiller » redemande le code (page sans code remis à chaque chargement).
+    const p = await b.newPage();
+    await p.goto(url('accueil.html'));
+    await p.evaluate((cle, empreinte) => localStorage.setItem(cle, empreinte), CLE_PORTE, EMPREINTE_PORTE);
+    await p.reload();
+    await pause(500);
+    verifier(!(await p.$('.porte-professeur')), 'code mémorisé non reconnu');
+    await p.evaluate(() => [...document.querySelectorAll('.ed-btn')].find((x) => /Verrouiller/.test(x.textContent)).click());
+    await pause(800);
+    verifier(!!(await p.$('.porte-professeur')), '« Verrouiller » sans effet');
+    await p.close();
+    return r.join(' ; ') + ' ; « Verrouiller » redemande le code';
+  });
+
+
+  await critere('Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant', async () => {
+    const p = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+    const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
+    const parcours = await p.$$eval('.ac-parcours a', (l) => l.map((a) => [a.getAttribute('href'), a.querySelector('strong').textContent]));
+    verifier(outils.join() === 'editeur.html,prof.html' && parcours.length === 3, JSON.stringify({ outils, parcours }));
+    await p.click('.ac-parcours a:nth-child(2)');
+    await pause(1200);
+    const equipe = await texte(p, '.equipe-texte');
+    const titre = await p.title();
+    verifier(/Mode enseignant/.test(equipe) && /mBot/.test(titre), `${equipe} · ${titre}`);
+    await p.close();
+    const e = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href);
+    verifier(await visible(e, '.ed-vers-accueil'), 'pas de lien Accueil dans l’éditeur');
+    await e.close();
+    return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur`;
+  });
+
+  // ---------- Kit nouveau projet ----------
+
+  await critere('Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file://', async () => {
+    const { creerProjet } = require('./nouveau-projet.js');
+    const { creerClasse } = require('./classe-test.js');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-projet-'));
+    try {
+      const r = creerProjet({ dossier: path.join(tmp, 'pont'), titre: 'Pont-levis', parcours: 'distributeur', accent: '#0B7A75', classes: ['4A', '4B'] });
+      // Élèves : nouvelle équipe (« Firefox »), parcours, un exercice ouvert avec ses blocs, styles du module appliqués.
+      const p = await page(pathToFileURL(path.join(r.site, 'programmation.html')).href, { sansDossiers: true });
+      verifier((await p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean))).join() === '4A,4B', 'classes du projet');
+      await p.type('.champ-prenom', 'zoé');
+      await p.select('.champ-classe', '4B');
+      await p.click('.formulaire-equipe button[type=submit]');
+      await pause(200);
+      const chemin = await texte(p, '.chemin');
+      verifier(/PONT-LEVIS/.test(chemin) && chemin.includes('Zoé'), 'chemin : ' + chemin);
+      await p.click('.btn-commencer-sans-dossier');
+      await pause(300);
+      verifier(await visible(p, '.ecran-parcours'), 'parcours non affiché');
+      const style = await p.evaluate(() => {
+        const t = getComputedStyle(document.querySelector('.titre-projet'));
+        return { titre: document.querySelector('.titre-projet').textContent, police: getComputedStyle(document.body).fontFamily, accent: getComputedStyle(document.querySelector('.bandeau')).getPropertyValue('--accent').trim(), taille: parseFloat(t.fontSize) };
+      });
+      verifier(style.titre === 'Pont-levis' && /Atkinson|Lexend/.test(style.police) && style.accent === '#0B7A75' && style.taille >= 13, JSON.stringify(style));
+      await p.click('.carte-exercice');
+      await pause(900);
+      const blocs = await p.$$eval('.ecran-exercice .blocklyToolbox, .ecran-exercice .blocklyFlyout, .ecran-exercice .blocklyToolboxDiv', (l) => l.length);
+      verifier((await visible(p, '.ecran-exercice')) && blocs > 0, 'exercice non affiché');
+      const titreEx = await texte(p, '.titre-exercice');
+      await p.close();
+      // Professeur : les 8 équipes test, dont une sauvegarde « d'un autre projet » (application pont-levis).
+      const fichiers = creerClasse(path.join(tmp, '4A')).map((f, i) => {
+        const copie = path.join(tmp, `equipe${i + 1}.json`);
+        const d = JSON.parse(fs.readFileSync(f, 'utf8'));
+        if (i === 0) Object.assign(d, { application: 'pont-levis', formatVersion: 3, carnet: { etape: 2 } });
+        fs.writeFileSync(copie, JSON.stringify(d));
+        return copie;
+      });
+      const q = await page(pathToFileURL(path.join(r.site, 'programmation-prof.html')).href);
+      const exemple = await texte(q, '.pr-ouvrir span');
+      verifier(/4A › … › PONT-LEVIS/.test(exemple), 'exemple de dossier : ' + exemple);
+      await (await q.$('.pr-accueil .pr-fichiers')).uploadFile(...fichiers);
+      await pause(800);
+      const lignes = await q.$$eval('.pr-tableau tbody tr', (l) => l.length);
+      const projet = await texte(q, '.pr-projet');
+      const largeur = await q.evaluate(() => document.querySelector('.pr-tableau').getBoundingClientRect().width);
+      verifier(lignes === 8 && /Pont-levis/.test(projet) && largeur > 900, `${lignes} lignes, « ${projet} », tableau ${Math.round(largeur)} px`);
+      await q.close();
+      return `élèves : équipe Zoé (4B), dossier « ${chemin.replace(/\s+/g, ' ')} », exercice « ${titreEx} » ; professeur : ${lignes} équipes (dont une sauvegarde d'un autre projet)`;
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }

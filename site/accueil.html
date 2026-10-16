@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labo Blocs</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+<link rel="stylesheet" href="../interface/css/editeur-parcours.css">
+<style>
+  /* Accueil du professeur : ce que fait Labo Blocs, puis les trois outils. */
+  .ac-section { display: flex; flex-direction: column; gap: 0.625rem; margin-top: 0.75rem; }
+  .ac-section h2 { margin: 0; font-size: 1.25rem; }
+  a.ed-carte-choix { color: inherit; text-decoration: none; }
+  .ed-carte-choix .ac-detail { font-size: 0.875rem; }
+</style>
+<!-- Code professeur (porte : interface/porte-professeur.js) -->
+<script src="../interface/porte-professeur.js"></script>
+<script src="code-professeur.js"></script>
+</head>
+<body class="page-editeur">
+
+<header class="ed-bandeau">
+  <img class="logo" src="img/logo.svg" alt="" width="34" height="34">
+  <div class="ed-bandeau-titre">
+    <strong>Labo Blocs <span>· Mode professeur</span></strong>
+    <span class="ed-parcours-titre">Accueil</span>
+  </div>
+  <span class="espace"></span>
+  <button type="button" class="ed-btn" onclick="window.LaboBlocsPorte && LaboBlocsPorte.verrouiller()" title="Redemander le code professeur sur cet ordinateur">Verrouiller</button>
+</header>
+
+<main class="ed-accueil">
+  <h1>Labo Blocs</h1>
+  <p class="ed-intro">L’atelier où tu fabriques les exercices de programmation de tes projets. Chaque projet (distributeur de
+    céréales…) garde sa copie de son parcours : les élèves travaillent dans le site du projet, et tu lui envoies une nouvelle
+    version avec « Mettre à jour les exercices ».</p>
+
+  <section class="ac-section" aria-labelledby="ac-outils">
+    <h2 id="ac-outils">Que veux-tu faire ?</h2>
+    <div class="ed-cartes">
+      <a class="ed-carte-choix" href="editeur.html"><strong>Créer ou modifier un parcours</strong>
+        <span>Exercices, blocs proposés, solution, scénarios de test, indices, carte, compétence évaluée. « Publier » donne le fichier à envoyer au projet.</span></a>
+      <a class="ed-carte-choix" href="prof.html"><strong>Suivre une classe</strong>
+        <span>Ouvre le dossier d’une classe : progression des équipes, niveaux par compétence, note, export CSV et fichier pour le Carnet de classe.</span></a>
+    </div>
+  </section>
+
+  <section class="ac-section" aria-labelledby="ac-essayer">
+    <h2 id="ac-essayer">Essayer un parcours comme un élève</h2>
+    <p class="ed-intro">Tous les exercices sont ouverts et rien n’est enregistré.</p>
+    <div class="ed-cartes ac-parcours"></div>
+    <p class="ed-erreur" role="alert" hidden></p>
+  </section>
+</main>
+
+<!-- Liste des parcours (parcours/index.js), puis chaque parcours pour son titre et son nombre d'exercices -->
+<script>
+  (function () {
+    'use strict';
+    const NOMS_CARTES = { uno: 'Arduino Uno', mbot: 'mBot', microbit: 'micro:bit' };
+    const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const charger = (src) => new Promise((ok) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = ok;
+      s.onerror = ok;
+      document.body.append(s);
+    });
+    const parcours = [];
+    window.definirParcours = (p) => parcours.push(p);
+    let ids = [];
+    window.definirIndexParcours = (liste) => (ids = liste);
+    charger('../parcours/index.js')
+      .then(() => Promise.all(ids.map((id) => charger(`../parcours/${encodeURIComponent(id)}/parcours.js`))))
+      .then(() => {
+        const zone = document.querySelector('.ac-parcours');
+        if (!parcours.length) {
+          const e = document.querySelector('.ed-erreur');
+          e.textContent = 'Aucun parcours trouvé dans le dossier parcours/.';
+          e.hidden = false;
+          return;
+        }
+        parcours.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+        zone.innerHTML = parcours
+          .map((p) => {
+            const carte = NOMS_CARTES[p.carte] || NOMS_CARTES.uno;
+            const n = (p.exercices || []).length;
+            return `<a class="ed-carte-choix" href="index.html?parcours=${encodeURIComponent(p.id)}&amp;enseignant=1"><strong>${echapper(p.titre)}</strong>` +
+              `<span>${n} exercice${n > 1 ? 's' : ''} · ${carte}</span><span class="ac-detail">Version ${echapper(p.versionParcours || '')}</span></a>`;
+          })
+          .join('');
+      });
+  })();
+</script>
+</body>
+</html>

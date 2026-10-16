@@ -14,6 +14,7 @@ Fonctionne hors ligne depuis un dossier réseau, sans compte ; Chrome et Edge (F
 | [docs/PLAN.md](docs/PLAN.md) | plan de travail validé (arborescence, formats, module partagé, jalon 0) |
 | [docs/BRIEF-CLAUDE-CODE-labo-blocs.md](docs/BRIEF-CLAUDE-CODE-labo-blocs.md) | brief de développement : contraintes, décisions, jalons |
 | [docs/BRIEF-CLAUDE-DESIGN-labo-blocs.md](docs/BRIEF-CLAUDE-DESIGN-labo-blocs.md) | principes d'interface, écrans, style des blocs |
+| [docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md](docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md) | relier un nouveau projet à Labo Blocs (à donner à Claude Code dans le projet) |
 | [docs/CAHIER-DES-CHARGES-outil-blocs.md](docs/CAHIER-DES-CHARGES-outil-blocs.md) | cahier des charges v5 |
 | [Maquette](https://claude.ai/artifact/NUiEuKMzsMxzubE188MAoH) | charte et écrans A1, A3–A6, B9, B10, C13 |
 
@@ -44,6 +45,8 @@ npm start                # http://localhost:8080
 npm run recette          # critères du jalon dans Chrome/Edge (file://) → RECETTE-AUTO.md
 npm run module           # construit le module dans dist/labo-blocs-<version>/ et exporte les parcours
 npm run vers-projet -- ../atelier-cereales [--parcours distributeur]   # copie le module (et le parcours) dans un projet
+npm run nouveau-projet -- ../pont-levis --titre "Pont-levis" --parcours <id> [--classes 4A,4B]   # crée un projet relié à Labo Blocs
+npm run code-professeur  # change le code professeur (seule son empreinte est écrite, dans site/code-professeur.js)
 npm run publier          # dossier _site/ publié sur GitHub Pages (application + parcours en ligne)
 npm run firmwares        # reconstruire les programmes des cartes (cartes/ ; avr-gcc + ARDUINO_CORE et SERVO, microbit-fs)
 npm run classe-test      # classe test de 8 équipes fictives (dist/classe-test/5A)
@@ -52,7 +55,11 @@ npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARD
 npm run essais:microbit  # refaire les fichiers micro:bit
 ```
 
-Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier (file://), sans serveur ni internet.
+Le site marche aussi en ouvrant directement `site/accueil.html` depuis un dossier (file://), sans serveur ni internet :
+accueil du professeur (éditeur de parcours, suivi de classe, parcours à essayer en mode enseignant). En ligne :
+https://anlito.github.io/labo-blocs/ ouvre cet accueil. L'accueil, l'éditeur, le suivi de classe et le mode enseignant
+demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le redemande). C'est une barrière pour les
+élèves curieux, pas une vraie sécurité : le site est public et sans serveur, et rien de personnel n'y est en ligne.
 
 ## État
 
@@ -75,3 +82,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 - **Jalon 5 (professeur) validé (16/10/2026)** : suivi de classe et fiche d'équipe (`site/prof.html`),
   niveaux par compétence du programme de cycle 4 et note, exports CSV et « résultats » importés par le Carnet de
   classe — [RECETTE.md](RECETTE.md) §10.
+- **Kit nouveau projet (16/10/2026)** : `npm run nouveau-projet` crée le dossier d'un futur projet déjà relié à Labo
+  Blocs (page des élèves, outil du professeur, réglages, parcours, module) et y range
+  [la consigne pour Claude Code](docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md) — [RECETTE.md](RECETTE.md) §11.

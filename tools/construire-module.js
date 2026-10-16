@@ -6,6 +6,8 @@
 //   labo-blocs-interface.js  blocs, éditeur, simulateur, aides, écran d'exercice, LaboBlocs.monterExercice
 //   labo-blocs.css           styles de l'écran d'exercice, limités à l'élément .labo-blocs (n'abîment pas les pages du projet) ;
 //                            l'élément qui reçoit tout l'écran a aussi la classe .labo-blocs-page
+//   labo-blocs-professeur.css   styles de l'outil du professeur (LaboBlocs.demarrerProfesseur), limités de la même façon
+//   logo.svg                 logo de Labo Blocs (pages créées par « npm run nouveau-projet »)
 //   cartes/firmwares.js      programmes des cartes (Uno, mBot, micro:bit), chargés seulement pour les installer
 //   polices/ blockly/ LICENCES/   copies (aucun CDN)
 //   VERSION.json             version du moteur et date de construction
@@ -20,7 +22,7 @@ const vm = require('node:vm');
 
 const RACINE = join(__dirname, '..');
 const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde', 'competences', 'classe'];
-const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration'];
+const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration', 'professeur'];
 const { VERSION_MOTEUR } = require('../noyau/parcours.js');
 
 // ---------- CSS limitée à .labo-blocs ----------
@@ -117,6 +119,10 @@ function construire() {
 
   const css = ['interface/css/composants.css', 'interface/css/labo-blocs.css'].map(lire).join('\n').replace(/url\('\.\.\/\.\.\/site\/vendor\/polices\//g, "url('polices/");
   writeFileSync(join(OUT, 'labo-blocs.css'), `/* Labo Blocs ${VERSION_MOTEUR} — styles limités à l'élément .labo-blocs. Construit par « npm run module ». */\n` + prefixer(css, '.labo-blocs'));
+
+  const cssProf = ['interface/css/editeur-parcours.css', 'interface/css/professeur.css'].map(lire).join('\n');
+  writeFileSync(join(OUT, 'labo-blocs-professeur.css'), `/* Labo Blocs ${VERSION_MOTEUR} — outil du professeur, styles limités à .labo-blocs. Construit par « npm run module ». */\n` + prefixer(cssProf, '.labo-blocs'));
+  cpSync(join(RACINE, 'site', 'img', 'logo.svg'), join(OUT, 'logo.svg'));
 
   for (const d of ['polices', 'blockly', 'LICENCES']) cpSync(join(RACINE, 'site', 'vendor', d), join(OUT, d), { recursive: true });
   const date = new Date().toISOString().slice(0, 10);

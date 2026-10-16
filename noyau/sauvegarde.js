@@ -72,8 +72,11 @@
     } catch {
       return { ok: false, raison: 'Ce fichier n’est pas une sauvegarde : il est illisible.' };
     }
-    if (!d || !(d.application in APPLICATIONS)) return { ok: false, raison: 'Ce fichier vient d’une autre application : ce n’est pas une sauvegarde d’équipe.' };
-    if (typeof d.formatVersion !== 'number' || d.formatVersion > APPLICATIONS[d.application]) {
+    // Fichier d'un autre projet (son application, ses rubriques) : lisible s'il porte une rubrique « programmation » de
+    // Labo Blocs ; son propre format reste l'affaire du projet.
+    const autreProjet = d && !(d.application in APPLICATIONS) && typeof d.application === 'string' && d.programmation && d.programmation.format === FORMAT;
+    if (!d || (!(d.application in APPLICATIONS) && !autreProjet)) return { ok: false, raison: 'Ce fichier vient d’une autre application : ce n’est pas une sauvegarde d’équipe.' };
+    if (!autreProjet && (typeof d.formatVersion !== 'number' || d.formatVersion > APPLICATIONS[d.application])) {
       return { ok: false, raison: 'Cette sauvegarde vient d’une version plus récente : demande à ton professeur.' };
     }
     if (d.programmation && d.programmation.version > VERSION) return { ok: false, raison: 'Cette sauvegarde vient d’une version plus récente de Labo Blocs : demande à ton professeur.' };

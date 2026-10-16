@@ -103,6 +103,19 @@ test('fichiers refusés : illisible, autre application, version plus récente', 
   assert.strictEqual(S.lireSauvegarde('{"application":"autre"}').ok, false);
   assert.strictEqual(S.lireSauvegarde('{"application":"labo-blocs","formatVersion":9,"equipe":{"eleves":[]}}').ok, false);
   assert.strictEqual(S.lireSauvegarde('{"application":"labo-blocs","formatVersion":1,"equipe":{"eleves":[]},"programmation":{"version":2}}').ok, false);
+  // Un autre projet sans rubrique de Labo Blocs reste refusé.
+  assert.strictEqual(S.lireSauvegarde('{"application":"pont-levis","formatVersion":1,"equipe":{"eleves":["Léa"]}}').ok, false);
+  assert.strictEqual(S.lireSauvegarde('{"application":"pont-levis","formatVersion":1,"equipe":{"eleves":["Léa"]},"programmation":{"format":"labo-blocs/sauvegarde","version":2}}').ok, false);
+});
+
+test('fichier d’un autre projet avec une rubrique « programmation » : lu, ses propres rubriques gardées', () => {
+  const d = S.creerSauvegarde({ eleves: ['Léa', 'Hugo'], classe: '4B' }, { parcours: paquet, application: 'pont-levis' });
+  d.formatVersion = 7; // format du projet : pas l'affaire de Labo Blocs
+  d.carnet = { etapes: [1, 2] };
+  const r = S.lireSauvegarde(JSON.stringify(d));
+  assert.strictEqual(r.ok, true);
+  assert.deepStrictEqual(r.donnees.carnet, { etapes: [1, 2] });
+  assert.deepStrictEqual(r.donnees.equipe.eleves, ['Léa', 'Hugo']);
 });
 
 test('« Dans la carte » : chaque envoi et chaque « Vider la carte » sont gardés dans l’historique de l’exercice', () => {
