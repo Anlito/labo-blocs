@@ -14,9 +14,13 @@
 
   const N = typeof module === 'object' && module.exports ? { ...require('./code-octet.js'), ...require('./vm.js') } : { ...global.LaboBlocs.codeOctet, ...global.LaboBlocs };
 
+  // Cartes (micro:bit, mBot) : lues au moment de simuler (l'ordre de chargement des scripts n'importe pas).
+  const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
+
   const VITESSE_SERVO = 180 / 300; // degrés par ms : 0° → 180° en 0,3 s
 
-  // options : { composants, boutonsVersMasse, graine (hasard reproductible), surSon(broche, frequence, ms) }
+  // options : { composants, boutonsVersMasse, graine (hasard reproductible), surSon(broche, frequence, ms),
+  //             carte ('uno' | 'microbit' | 'mbot'), capteurs (valeurs des capteurs de la carte, modifiables en marche) }
   function creerSimulation(programme, options) {
     const opts = options || {};
     const compile = N.compiler(programme || { demarrage: [], boucle: [] }, { composants: opts.composants, boutonsVersMasse: opts.boutonsVersMasse });
@@ -49,12 +53,31 @@
       sim.initiales[c.broche] = 0;
     }
 
+    // Carte micro:bit ou mBot : écran, boutons, capteurs, moteurs et LED de la carte (noyau/cartes.js).
+    let carteSimulee = null;
+    if ((opts.carte === 'microbit' || opts.carte === 'mbot') && !opts.extension) {
+      const K = CARTES();
+      sim.capteurs = opts.capteurs || K.capteursDepart(opts.carte);
+      sim.ecrire = (nom, valeur, type) => ecrireNom(nom, valeur, type);
+      sim.son = (nom, frequence, ms) => {
+        sim.journal.push({ t: sim.t, broche: nom, valeur: frequence, duree: ms, type: 'son' });
+        if (opts.surSon) opts.surSon(nom, frequence, ms);
+      };
+      carteSimulee = K.creerCarteSimulee(opts.carte, sim);
+      sim.carte = carteSimulee.etat;
+      const entrees = opts.carte === 'microbit' ? ['A', 'B', 'logo'] : ['bouton'];
+      const sorties = opts.carte === 'mbot' ? ['moteur gauche', 'moteur droit', 'LED gauche', 'LED droite'] : [];
+      for (const n of entrees) sim.entrees[n] = sim.initiales[n] = 0;
+      for (const n of sorties) sim.sorties[n] = sim.initiales[n] = 0;
+    }
+
     function ecrire(n, valeur, type) {
-      const b = nom(n);
-      if (sim.sorties[b] !== valeur) {
-        sim.sorties[b] = valeur;
-        sim.journal.push({ t: sim.t, broche: b, valeur, type });
-      }
+      ecrireNom(nom(n), valeur, type);
+    }
+    function ecrireNom(b, valeur, type) {
+      if (sim.sorties[b] === valeur) return;
+      sim.sorties[b] = valeur;
+      sim.journal.push({ t: sim.t, broche: b, valeur, type });
     }
     let alea = opts.graine === undefined ? null : opts.graine >>> 0;
     const vm = N.creerVM({
@@ -77,7 +100,10 @@
         alea = (Math.imul(alea, 1103515245) + 12345) >>> 0;
         return min + ((alea >>> 8) % (max - min + 1));
       },
-      ext: (e, c, args) => (opts.extension ? Number(opts.extension(e, c, args)) || 0 : 0),
+      ext(e, c, args) {
+        if (opts.extension) return Number(opts.extension(e, c, args)) || 0;
+        return carteSimulee ? Number(carteSimulee.ext(e, c, args)) || 0 : 0;
+      },
     });
     vm.charger(compile.octets);
     vm.demarrer(0);

@@ -40,6 +40,9 @@
   }
   const champ = (bloc, nom) => (bloc.fields ? bloc.fields[nom] : undefined);
 
+  // Description des blocs des cartes (mBot, micro:bit), lue au moment de l'utiliser.
+  const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
+
   // Programme simplifié de l'atelier → v1 (un v1 est rendu tel quel).
   function versV1(p) {
     if (p && Array.isArray(p.fils)) return p;
@@ -119,8 +122,18 @@
         case 'hasard':
           return Object.assign(e, { bloc: 'hasard', min: expression(entree(bloc, 'MIN'), bloc), max: expression(entree(bloc, 'MAX'), bloc) });
         default:
-          return null;
+          return blocCarte(bloc, e, ['valeur', 'condition']);
       }
+    }
+
+    // Bloc d'une carte (noyau/cartes.js) : ses champs et ses entrées, nommés en minuscules (DIRECTION → direction).
+    function blocCarte(bloc, e, sortes) {
+      const d = CARTES().BLOCS_CARTES[bloc.type];
+      if (!d || !sortes.includes(d.sorte)) return null;
+      e.bloc = bloc.type;
+      for (const nom of Object.keys(d.champs || {})) e[nom.toLowerCase()] = champ(bloc, nom);
+      for (const nom of Object.keys(d.entrees || {})) e[nom.toLowerCase()] = expression(entree(bloc, nom), bloc);
+      return e;
     }
 
     function instruction(b) {
@@ -151,7 +164,7 @@
         case 'son':
           return Object.assign(i, { broche: champ(b, 'BROCHE'), frequence: expression(entree(b, 'FREQUENCE'), b), duree: expression(entree(b, 'DUREE'), b) });
         default:
-          return null;
+          return blocCarte(b, i, ['instruction']);
       }
     }
 
@@ -220,8 +233,23 @@
           return bloc;
         }
         default:
-          return null;
+          return versBlocCarte({ type: e.bloc, id, inputs: {} }, e);
       }
+    }
+
+    function versBlocCarte(b, p) {
+      const d = CARTES().BLOCS_CARTES[b.type];
+      if (!d) return null;
+      const champs = Object.keys(d.champs || {});
+      if (champs.length) b.fields = {};
+      for (const nom of champs) {
+        const v = p[nom.toLowerCase()];
+        const options = d.champs[nom];
+        b.fields[nom] = v !== undefined && v !== null ? String(v) : Array.isArray(options) ? options[0][1] : (d.defauts || {})[nom] || '';
+      }
+      for (const nom of Object.keys(d.entrees || {})) entreeNombre(b, nom, p[nom.toLowerCase()] === undefined ? d.entrees[nom] : p[nom.toLowerCase()]);
+      if (!Object.keys(b.inputs).length) delete b.inputs;
+      return b;
     }
 
     function entreeValeur(bloc, nom, e) {
@@ -231,7 +259,7 @@
 
     // Entrée « nombre » : un nombre devient le bloc fantôme, une autre expression se pose dessus.
     function entreeNombre(bloc, nom, e) {
-      const defaut = (ENTREES_NOMBRE[bloc.type] || {})[nom] || 0;
+      const defaut = (ENTREES_NOMBRE[bloc.type] || (CARTES().BLOCS_CARTES[bloc.type] || {}).entrees || {})[nom] || 0;
       if (typeof e === 'number' || (e && e.bloc === 'nombre')) {
         bloc.inputs[nom] = { shadow: expression(e) };
       } else {
@@ -285,7 +313,7 @@
           entreeNombre(b, 'DUREE', i.duree);
           break;
         default:
-          return null;
+          return versBlocCarte(b, i);
       }
       if (!Object.keys(b.inputs).length) delete b.inputs;
       return b;

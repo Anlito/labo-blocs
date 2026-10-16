@@ -15,7 +15,7 @@
       const style = document.createElement('style');
       style.id = 'style-categories';
       style.textContent = A.CATEGORIES.map(
-        (c) => `.cat-${c.cle}{background-color:${c.couleur};background-image:url("${A.imageIcone(c.cle, '#1F2A30', 2.4)}")}`,
+        (c) => `.cat-${c.cle}{background-color:${c.couleur};background-image:url("${A.imageIcone(c.icone || c.cle, '#1F2A30', 2.4)}")}`,
       ).join('\n');
       document.head.appendChild(style);
     }
@@ -41,6 +41,8 @@
 
     function charger(exercice, sauvegarde) {
       enChargement = true;
+      // Carte de l'exercice : les menus de broches des blocs la suivent (Uno : D2…D13, micro:bit : P0…P2).
+      A.carteCourante = exercice.carte || 'uno';
       // Les événements de Blockly partent un instant plus tard : on les coupe pendant le chargement,
       // sinon ils passeraient pour une modification de l'élève (et arrêteraient la simulation).
       Blockly.Events.disable();

@@ -13,6 +13,9 @@
 (function (global) {
   'use strict';
 
+  // Description des blocs des cartes, lue au moment de compiler (l'ordre de chargement des scripts n'importe pas).
+  const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
+
   const FORMAT = 1;
   const BROCHE = { sortie: 1, boutonMasse: 2, boutonHaut: 3, servo: 4, son: 5, analogique: 6, pwm: 7 };
   const FIL = { demarrage: 0, boucle: 1, appui: 2, relache: 3 };
@@ -186,9 +189,13 @@
           return appel(e);
         case 'ext':
           return ext(e);
-        default:
+        default: {
+          // Bloc d'une carte (mBot, micro:bit) : déroulé en blocs de base (noyau/cartes.js).
+          const d = CARTES().deroulerBlocCarte(e);
+          if (d) return expression(d);
           erreurs.push('Bloc inconnu : ' + e.bloc);
           return nombre(0);
+        }
       }
     }
 
@@ -210,6 +217,8 @@
     }
 
     function ext(e) {
+      // La carte reçoit 4 valeurs au plus par commande (vm.c, main.py).
+      if ((e.arguments || []).length > 4) erreurs.push('Une commande de carte reçoit 4 valeurs au plus.');
       for (const a of e.arguments || []) expression(a);
       o8(OP.EXT);
       o8(e.extension);
@@ -329,8 +338,11 @@
         case 'ext':
           ext(i);
           return o8(OP.DEPILER);
-        default:
+        default: {
+          const d = CARTES().deroulerBlocCarte(i);
+          if (d) return (Array.isArray(d) ? d : [d]).forEach(instruction);
           erreurs.push('Bloc inconnu : ' + i.bloc);
+        }
       }
     }
 

@@ -83,6 +83,8 @@
       x.numero = x.numero || String(rang + 1);
       x.empreinte = empreinte(x);
       if (x.boutonsVersMasse === undefined) x.boutonsVersMasse = paquet.boutonsVersMasse !== false;
+      // Carte du parcours (après l'empreinte : les exercices existants gardent la leur).
+      if (!x.carte) x.carte = paquet.carte || 'uno';
       return x;
     });
     return Object.assign({}, paquet, { exercices, parametres });

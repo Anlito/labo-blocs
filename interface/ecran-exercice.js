@@ -269,12 +269,16 @@
     }
     for (const b of ecran.querySelectorAll('.btn-niveau')) b.addEventListener('click', () => choisirNiveau(Number(b.dataset.niveau)));
     // Niveau choisi par le professeur pour l'exercice (ex.niveau), éventuellement verrouillé (évaluation).
+    // Le niveau 3 (code Arduino) n'existe que pour l'Arduino Uno.
     function niveauDeLExercice(ex) {
+      const avecCode = !ex.carte || ex.carte === 'uno';
       if (ex.niveau) choisirNiveau(Number(ex.niveau));
+      if (!avecCode && etat.niveau === 3) choisirNiveau(2);
       for (const b of ecran.querySelectorAll('.btn-niveau')) {
         const autre = Number(b.dataset.niveau) !== Number(ex.niveau);
-        b.disabled = !!ex.niveauVerrouille && autre;
-        b.title = b.disabled ? 'Ton professeur a choisi le niveau de cet exercice.' : '';
+        const sansCode = !avecCode && b.dataset.niveau === '3';
+        b.disabled = (!!ex.niveauVerrouille && autre) || sansCode;
+        b.title = sansCode ? 'Le code Arduino n’est montré que pour l’Arduino Uno.' : b.disabled ? 'Ton professeur a choisi le niveau de cet exercice.' : '';
       }
       $('.niveaux-libelle', ecran).textContent = ex.niveauVerrouille ? 'Niveau imposé' : 'Niveau';
     }
@@ -320,7 +324,7 @@
 
     function nouvelleSimulation() {
       const { programme } = editeur.lire();
-      etat.sim = A.creerSimulation(programme, { composants: etat.exercice.composants, boutonsVersMasse: etat.exercice.boutonsVersMasse });
+      etat.sim = A.creerSimulation(programme, { composants: etat.exercice.composants, boutonsVersMasse: etat.exercice.boutonsVersMasse, carte: etat.exercice.carte, capteurs: vue && vue.capteurs });
       etat.servos = {};
       etat.rejeu = null;
       $('.simu-note', ecran).textContent = '';
@@ -418,7 +422,7 @@
           if (!sim) etats[c.broche] = etat.servos[c.broche] = 0;
         }
       }
-      vue.afficher(etats, !!sim);
+      vue.afficher(etats, !!sim, sim);
       editeur.surligner(sim ? sim.blocsEnCours : null);
       $('.chrono-valeur', ecran).textContent = chrono(sim ? sim.t : 0);
     }

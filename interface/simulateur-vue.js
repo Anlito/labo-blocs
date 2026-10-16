@@ -219,6 +219,170 @@
     );
   }
 
+
+  // ---------- micro:bit et mBot (jalon 3) ----------
+
+  // Réglage d'un capteur : curseur + valeur écrite (jamais la couleur seule).
+  function curseur(nom, libelle, min, max, pas, valeur, unite) {
+    return (
+      `<label class="capteur"><span class="capteur-nom">${libelle}</span>` +
+      `<input type="range" data-capteur="${nom}" min="${min}" max="${max}" step="${pas}" value="${valeur}">` +
+      `<output class="capteur-valeur" data-valeur="${nom}">${valeur}${unite ? ' ' + unite : ''}</output></label>`
+    );
+  }
+  function choix(nom, libelle, options, valeur) {
+    return (
+      `<label class="capteur"><span class="capteur-nom">${libelle}</span>` +
+      `<select data-capteur="${nom}">${options.map(([t, v]) => `<option value="${v}"${String(v) === String(valeur) ? ' selected' : ''}>${echapper(t)}</option>`).join('')}</select></label>`
+    );
+  }
+
+  function htmlMicrobit() {
+    let points = '';
+    for (let i = 0; i < 25; i++) points += '<span class="mb-point"></span>';
+    const bouton = (n) => `<button type="button" class="mb-bouton poussoir-carte" data-entree="${n}" aria-pressed="false" aria-label="Bouton ${n} de la micro:bit : maintenir pour appuyer">${n}</button>`;
+    return (
+      '<div class="mb-carte" role="group" aria-label="Carte micro:bit">' +
+      bouton('A') +
+      '<div class="mb-centre">' +
+      '<button type="button" class="mb-logo poussoir-carte" data-entree="logo" aria-pressed="false" aria-label="Logo tactile de la micro:bit : maintenir pour le toucher">' +
+      '<svg viewBox="0 0 40 20" aria-hidden="true"><rect x="2" y="2" width="36" height="16" rx="8" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="12" cy="10" r="3" fill="currentColor"/><circle cx="28" cy="10" r="3" fill="currentColor"/></svg>' +
+      '<span>logo</span></button>' +
+      `<div class="mb-ecran" role="img" aria-label="Écran de la micro:bit : éteint">${points}</div>` +
+      '<div class="mb-son" aria-live="polite"></div>' +
+      '</div>' +
+      bouton('B') +
+      '</div>'
+    );
+  }
+
+  function htmlMbot() {
+    const roue = (x, cote) =>
+      `<g class="mbot-roue" data-roue="${cote}"><rect x="${x}" y="30" width="22" height="60" rx="6" fill="#2B3338"/>` +
+      `<text x="${x + 11}" y="66" text-anchor="middle" class="mbot-fleche"></text></g>`;
+    const led = (x, cote) => `<circle class="mbot-led" data-led="${cote}" cx="${x}" cy="44" r="7" fill="#EEF3F6" stroke="#7C8B94" stroke-width="2"/>`;
+    return (
+      '<div class="mbot" role="group" aria-label="Robot mBot">' +
+      '<svg class="mbot-dessin" viewBox="0 0 160 112" aria-hidden="true">' +
+      // capteur à ultrasons (avant), châssis, roues, LED de la carte, suiveur de ligne
+      '<rect x="56" y="2" width="48" height="16" rx="4" fill="#1A6E8E"/><circle cx="70" cy="10" r="6" fill="#DCE6EA"/><circle cx="90" cy="10" r="6" fill="#DCE6EA"/>' +
+      '<rect x="30" y="20" width="100" height="84" rx="12" fill="#2F80ED" stroke="#1B4F9B" stroke-width="2"/>' +
+      '<rect x="46" y="34" width="68" height="48" rx="4" fill="#1C7286"/>' +
+      roue(6, 'gauche') +
+      roue(132, 'droite') +
+      led(62, 'gauche') +
+      led(98, 'droite') +
+      '<text x="80" y="66" text-anchor="middle" class="mbot-texte">mCore</text>' +
+      '<rect x="66" y="92" width="28" height="8" rx="2" fill="#1F2A30"/>' +
+      '</svg>' +
+      '<ul class="mbot-etats">' +
+      '<li>Moteur gauche : <strong data-etat="moteur gauche">arrêté</strong></li>' +
+      '<li>Moteur droit : <strong data-etat="moteur droit">arrêté</strong></li>' +
+      '<li>LED gauche : <strong data-etat="LED gauche">éteinte</strong></li>' +
+      '<li>LED droite : <strong data-etat="LED droite">éteinte</strong></li>' +
+      '<li class="mbot-son" aria-live="polite"></li>' +
+      '</ul>' +
+      '<button type="button" class="mbot-bouton poussoir-carte" data-entree="bouton" aria-pressed="false" aria-label="Bouton de la carte mCore : maintenir pour appuyer">Bouton de la carte</button>' +
+      '</div>'
+    );
+  }
+
+  function htmlCapteurs(carte, c) {
+    if (carte === 'microbit') {
+      return (
+        curseur('temperature', 'Température', -10, 50, 1, c.temperature, '°C') +
+        curseur('lumiere', 'Lumière', 0, 255, 1, c.lumiere, '') +
+        curseur('x', 'Accélération x', -1024, 1024, 16, c.x, 'mg') +
+        curseur('y', 'Accélération y', -1024, 1024, 16, c.y, 'mg') +
+        curseur('z', 'Accélération z', -1024, 1024, 16, c.z, 'mg') +
+        choix('geste', 'Geste', [['aucun', 0]].concat(A.GESTES || []), c.geste)
+      );
+    }
+    return (
+      curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') +
+      choix(
+        'ligne',
+        'Suiveur de ligne',
+        [
+          ['noir sous les deux capteurs (0)', 0],
+          ['noir à gauche seulement (1)', 1],
+          ['noir à droite seulement (2)', 2],
+          ['blanc sous les deux capteurs (3)', 3],
+        ],
+        c.ligne,
+      ) +
+      curseur('lumiere', 'Lumière', 0, 1023, 1, c.lumiere, '')
+    );
+  }
+
+  const sensMoteur = (v) => (!v ? 'arrêté' : `${Math.abs(v)} % ${v > 0 ? 'en avant' : 'en arrière'}`);
+
+  // Partie « carte » de la vue : micro:bit (écran, boutons, logo) ou mBot (moteurs, LED, bouton), et ses capteurs.
+  function vueCarte(racine, carte, rappels) {
+    const zone = racine.querySelector('.simu-carte');
+    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : htmlMbot()}</div>`;
+    for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
+    const capteurs = A.capteursDepart ? A.capteursDepart(carte) : {};
+    const panneau = document.createElement('details');
+    panneau.className = 'simu-capteurs';
+    panneau.open = true;
+    panneau.innerHTML = `<summary>Capteurs de la carte <span class="capteurs-aide">à régler à la main pendant la simulation</span></summary><div class="capteurs-liste">${htmlCapteurs(carte, capteurs)}</div>`;
+    zone.insertAdjacentElement('afterend', panneau);
+    panneau.addEventListener('input', (e) => {
+      const nom = e.target.dataset.capteur;
+      if (!nom) return;
+      capteurs[nom] = Number(e.target.value);
+      const sortie = panneau.querySelector(`[data-valeur="${nom}"]`);
+      if (sortie) sortie.textContent = sortie.textContent.replace(/^-?[\d.]+/, e.target.value);
+    });
+    const appuyes = {};
+    for (const b of zone.querySelectorAll('.poussoir-carte')) {
+      poussoir(b, (valeur) => {
+        appuyes[b.dataset.entree] = valeur;
+        b.setAttribute('aria-pressed', valeur ? 'true' : 'false');
+        rappels.appuyerBouton(b.dataset.entree, valeur);
+      });
+    }
+
+    const points = [...zone.querySelectorAll('.mb-point')];
+    let ecranAvant = '';
+    function son(sim, nom) {
+      const note = sim && sim.journal.filter((e) => e.type === 'son' && e.broche === nom).pop();
+      return note && note.valeur && sim.t < note.t + note.duree ? `♪ ${Math.round(note.valeur)} Hz` : '';
+    }
+    function afficher(sim) {
+      if (carte === 'microbit') {
+        const ecran = sim && sim.carte ? A.ecranA(sim.carte, sim.t) : new Array(25).fill(0);
+        const cle = ecran.join('');
+        if (cle !== ecranAvant) {
+          ecranAvant = cle;
+          ecran.forEach((v, i) => points[i].style.setProperty('--allume', String(v / 9)));
+          const n = ecran.filter(Boolean).length;
+          zone.querySelector('.mb-ecran').setAttribute('aria-label', n ? `Écran de la micro:bit : ${n} point${n > 1 ? 's' : ''} allumé${n > 1 ? 's' : ''}` : 'Écran de la micro:bit : éteint');
+        }
+        zone.querySelector('.mb-son').textContent = son(sim, 'haut-parleur');
+      } else {
+        const sorties = (sim && sim.sorties) || {};
+        for (const cote of ['gauche', 'droite']) {
+          const moteur = cote === 'gauche' ? 'moteur gauche' : 'moteur droit';
+          const v = sorties[moteur] || 0;
+          zone.querySelector(`[data-etat="${moteur}"]`).textContent = sensMoteur(v);
+          zone.querySelector(`[data-roue="${cote}"] .mbot-fleche`).textContent = v > 0 ? '▲' : v < 0 ? '▼' : '';
+          const rgb = sorties['LED ' + cote] || 0;
+          zone.querySelector(`[data-etat="LED ${cote}"]`).textContent = A.nomCouleur ? A.nomCouleur(rgb) : String(rgb);
+          zone.querySelector(`[data-led="${cote}"]`).setAttribute('fill', rgb ? '#' + rgb.toString(16).padStart(6, '0') : '#EEF3F6');
+        }
+        zone.querySelector('.mbot-son').textContent = son(sim, 'D8');
+      }
+      // Boutons de la carte : appuyés tant qu'on les tient (ou dans un test rejoué).
+      for (const b of zone.querySelectorAll('.poussoir-carte')) {
+        const v = sim ? sim.entrees[b.dataset.entree] : appuyes[b.dataset.entree];
+        b.setAttribute('aria-pressed', v ? 'true' : 'false');
+      }
+    }
+    return { afficher, capteurs };
+  }
+
   // ---------- Vue complète ----------
 
   // Bouton poussoir : appuyé tant qu'on garde le clic (ou la touche Espace / Entrée), relâché dès qu'on lâche.
@@ -258,7 +422,11 @@
     const composants = exercice.composants || [];
     const compact = composants.length > 4;
     const recadrer = composants.length > 4;
-    racine.querySelector('.simu-carte').innerHTML = `<div class="simu-carte-dessin">${dessinCarte(composants, recadrer)}</div>`;
+    const carte = exercice.carte === 'microbit' || exercice.carte === 'mbot' ? exercice.carte : 'uno';
+    racine.classList.toggle('avec-carte', carte !== 'uno');
+    for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
+    const vueDeCarte = carte === 'uno' ? null : vueCarte(racine, carte, rappels);
+    if (!vueDeCarte) racine.querySelector('.simu-carte').innerHTML = `<div class="simu-carte-dessin">${dessinCarte(composants, recadrer)}</div>`;
     // Illustration du projet (distributeur : exercices 8 et 13) : à droite des cartes des composants.
     const distributeur = exercice.illustration === 'distributeur';
     racine.querySelector('.simu-distributeur').innerHTML = distributeur ? dessinDistributeur() : '';
@@ -333,12 +501,15 @@
     }
 
     // etats : { broche: valeur } (LED 0/1, servo en degrés, boutons 0/1)
-    function afficher(etats, enMarche) {
+    // sim : le simulateur en cours (écran de la micro:bit, moteurs du mBot…), ou rien s'il est arrêté.
+    function afficher(etats, enMarche, sim) {
       for (const c of composants) maj(c.broche, etats[c.broche] || 0);
       majDistributeur(etats, enMarche);
+      if (vueDeCarte) vueDeCarte.afficher(sim || null);
     }
 
-    return { afficher };
+    // capteurs : valeurs réglées à la main, à passer au simulateur (creerSimulation({ capteurs })).
+    return { afficher, carte, capteurs: vueDeCarte ? vueDeCarte.capteurs : null };
   }
 
   Object.assign(A, { creerVueSimulateur: creerVue, couleurFil });

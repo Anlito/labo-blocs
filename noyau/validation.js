@@ -18,6 +18,9 @@
   'use strict';
 
   const M = typeof module === 'object' && module.exports ? require('./simulation.js') : global.LaboBlocs;
+  const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
+  // Composants branchés + ce qui est déjà sur la carte (boutons A et B de la micro:bit, moteurs du mBot…).
+  const tous = (exercice) => (exercice.composants || []).concat(exercice.carte && exercice.carte !== 'uno' ? CARTES().composantsCarte(exercice.carte) : []);
 
   const SEUIL = 5; // ms : deux changements plus proches sont simultanés
   const TOLERANCE = 300; // ms sur les durées
@@ -38,7 +41,7 @@
   // ---------- Noms des composants dans les phrases ----------
 
   function composant(exercice, broche) {
-    return (exercice.composants || []).find((c) => c.broche === broche) || { type: deviner(broche), broche };
+    return tous(exercice).find((c) => c.broche === broche) || { type: deviner(broche), broche };
   }
 
   function deviner(broche) {
@@ -46,6 +49,7 @@
   }
 
   function nomComposant(c) {
+    if (c.libelle) return c.libelle;
     const mot = { led: 'la LED', bouton: 'le bouton', servo: 'le moteur' }[c.type] || 'la broche';
     return c.nom ? `${mot} ${c.nom} (${c.broche})` : `${mot} ${c.broche}`;
   }
@@ -58,11 +62,13 @@
 
   // « être allumée », « être à 90° »
   function etreA(c, v) {
+    if (c.type === 'moteur') return v ? `tourner à ${nombreFr(v)} %` : 'être arrêté';
     return c.type === 'servo' ? `être à ${nombreFr(v)}°` : `être ${etatLed(v)}`;
   }
   // « reste éteinte », « reste à 0° », « est allumée »
   function constat(c, v, reste) {
     const verbe = reste ? 'reste' : 'est';
+    if (c.type === 'moteur') return v ? `il tourne à ${nombreFr(v)} %` : `il ${verbe} arrêté`;
     return c.type === 'servo' ? `${pronom(c)} ${verbe} à ${nombreFr(v)}°` : `${pronom(c)} ${verbe} ${etatLed(v)}`;
   }
 
@@ -74,8 +80,8 @@
   // ---------- Scénario ----------
 
   function jouerScenario(exercice, programme, scenario) {
-    const sim = M.creerSimulation(programme, { composants: exercice.composants });
-    const boutons = (exercice.composants || []).filter((c) => c.type === 'bouton');
+    const sim = M.creerSimulation(programme, { composants: exercice.composants, carte: exercice.carte });
+    const boutons = tous(exercice).filter((c) => c.type === 'bouton');
     const maintenus = [];
     let appuis = [];
     let relache = null;
@@ -115,12 +121,12 @@
     }
 
     // Une sortie attendue jamais écrite, mais une autre broche du même genre l'a été : on le dit.
-    const declarees = new Set((exercice.composants || []).map((x) => x.broche));
+    const declarees = new Set(tous(exercice).map((x) => x.broche));
     function indiceSortie(broche) {
       if (sim.journal.some((e) => e.broche === broche && e.type !== 'entree')) return '';
       const c = composant(exercice, broche);
       // Une sortie du même genre sur une broche où l'exercice n'a pas de composant de ce genre.
-      const memeGenre = new Set((exercice.composants || []).filter((x) => x.type === c.type).map((x) => x.broche));
+      const memeGenre = new Set(tous(exercice).filter((x) => x.type === c.type).map((x) => x.broche));
       const autre = sim.journal.find((e) => e.type === c.type && !memeGenre.has(e.broche));
       return autre ? `Ton programme agit sur la broche ${autre.broche} : vérifie la broche choisie dans le bloc.` : '';
     }

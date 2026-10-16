@@ -16,6 +16,7 @@
   const P = enNode ? require('./programme.js') : global.LaboBlocs;
   const V = enNode ? require('./validation.js') : global.LaboBlocs;
   const PA = enNode ? require('./parcours.js') : global.LaboBlocs;
+  const K = () => (enNode ? require('./cartes.js') : global.LaboBlocs);
 
   const copie = (x) => (x === undefined ? undefined : JSON.parse(JSON.stringify(x)));
   const nombreFr = (x) => String(Math.round(Number(x) * 100) / 100).replace('.', ',');
@@ -281,12 +282,13 @@
     return t ? t.cle : null;
   }
 
-  function nouvelleEtape(cle, exercice) {
-    const composants = (exercice && exercice.composants) || [];
+  // carte : celle du parcours (ses boutons et moteurs servent aussi dans les étapes).
+  function nouvelleEtape(cle, exercice, carte) {
+    const composants = ((exercice && exercice.composants) || []).concat(carte && carte !== 'uno' ? K().composantsCarte(carte) : []);
     const bouton = (composants.find((c) => c.type === 'bouton') || {}).broche || 'D2';
     const sortie = composants.find((c) => c.type !== 'bouton') || { type: 'led', broche: 'D2' };
     const autre = composants.filter((c) => c.type !== 'bouton')[1] || { broche: 'D3' };
-    const valeurSortie = sortie.type === 'servo' ? 90 : 1;
+    const valeurSortie = sortie.type === 'servo' ? 90 : sortie.type === 'moteur' ? 50 : 1;
     switch (cle) {
       case 'attendre':
         return { attendre: 1 };
@@ -310,11 +312,14 @@
   }
 
   // Phrase d'une étape, pour le professeur : « Vérifier que la LED D9 est allumée ».
-  function decrireEtape(etape, exercice) {
-    const c = (b) => V.nomComposant((exercice.composants || []).find((x) => x.broche === b) || { type: /^D[56]$/.test(b) ? 'servo' : 'led', broche: b });
+  function decrireEtape(etape, exercice, carte) {
+    const liste = (exercice.composants || []).concat(K().composantsCarte(carte || exercice.carte));
+    const trouver = (b) => liste.find((x) => x.broche === b);
+    const c = (b) => V.nomComposant(trouver(b) || { type: /^D[56]$/.test(b) ? 'servo' : 'led', broche: b });
     const etat = (b, v) => {
-      const comp = (exercice.composants || []).find((x) => x.broche === b);
+      const comp = trouver(b);
       if (comp && comp.type === 'servo') return `${c(b)} est à ${nombreFr(v)}°`;
+      if (comp && comp.type === 'moteur') return v ? `${c(b)} tourne à ${nombreFr(v)} %` : `${c(b)} est arrêté`;
       return `${c(b)} est ${v ? (comp && comp.type === 'bouton' ? 'appuyé' : 'allumée') : comp && comp.type === 'bouton' ? 'relâché' : 'éteinte'}`;
     };
     const etats = (o) => Object.entries(o || {}).map(([b, v]) => etat(b, v)).join(' et ');

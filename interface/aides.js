@@ -19,6 +19,25 @@
     const hautBas = (v) => (v ? 'HAUT (1)' : 'BAS (0)');
     const hautBasLed = (v) => (A.aideLed ? (v ? 'HAUT (1) : allumée' : 'BAS (0) : éteinte') : hautBas(v));
 
+    // Bloc d'une carte (mBot, micro:bit) : dessiné d'après sa description (noyau/cartes.js), en lilas avec le puzzle.
+    function blocCarte(b) {
+      const d = A.BLOCS_CARTES && A.BLOCS_CARTES[b.bloc];
+      if (!d) return null;
+      const texte = echapper(d.texte).replace(/%([A-Z]+)/g, (_, nom) => {
+        const cle = nom.toLowerCase();
+        const champ = (d.champs || {})[nom];
+        if (champ === 'texte') return pastille(b[cle] !== undefined ? b[cle] : (d.defauts || {})[nom] || '');
+        if (champ) {
+          const option = champ.find((o) => String(o[1]) === String(b[cle])) || champ[0];
+          return pastille(option[0]);
+        }
+        return expression(b[cle] !== undefined ? b[cle] : (d.entrees || {})[nom]);
+      });
+      const fond = `background:${C().extension}`;
+      if (d.sorte === 'instruction') return `<div class="pb-bloc" style="${fond}">${image('puzzle')} ${texte}</div>`;
+      return `<span class="${d.sorte === 'condition' ? 'pb-hexa' : 'pb-rond'} pb-grand" style="${fond}">${texte}</span>`;
+    }
+
     function expression(e) {
       if (e === null || e === undefined) return '<span class="pb-vide" aria-label="case vide"></span>';
       if (typeof e === 'number') return pastille(String(e));
@@ -42,7 +61,7 @@
         case 'comparaison':
           return `<span class="pb-hexa pb-grand" style="background:${C().bleu}">${expression(e.a)} ${trous ? trou : e.op} ${expression(e.b)}</span>`;
         default:
-          return '';
+          return blocCarte(e) || '';
       }
     }
 
@@ -76,7 +95,7 @@
           return h + '<div class="pb-pied"></div></div>';
         }
         default:
-          return '';
+          return blocCarte(i) || '';
       }
     }
 

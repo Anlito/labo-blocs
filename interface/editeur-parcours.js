@@ -346,9 +346,9 @@
       '<div class="carte ed-carte">' +
       '<div class="ed-carte-tete"><h3>Blocs proposés aux élèves</h3><span class="ed-aide">Coche ce qui apparaît dans la palette.</span></div>' +
       '<div class="ed-blocs">' +
-      A.CATEGORIES.map(
+      A.CATEGORIES.filter((cat) => !cat.carte || cat.carte === carteDuParcours()).map(
         (cat) =>
-          `<fieldset><legend>${echapper(cat.nom)}</legend>` +
+          `<fieldset><legend>${echapper(cat.nom)}${cat.carte ? ` <span class="ed-aide">· ${echapper(A.profil(cat.carte).nom)}</span>` : ''}</legend>` +
           cat.blocs.map((t) => `<label class="ed-case"><input type="checkbox" class="champ-bloc" value="${t}"${blocsCoches.has(t) ? ' checked' : ''}> ${echapper(A.NOMS_BLOCS[t] || t)}</label>`).join('') +
           '</fieldset>',
       ).join('') +
@@ -430,7 +430,7 @@
       } else if (t.matches('.champ-type-composant')) {
         const c = e.composants[Number(t.dataset.k)];
         c.type = t.value;
-        const broches = A.BROCHES_COMPOSANTS[c.type] || [];
+        const broches = brochesDe(c.type);
         if (!broches.includes(c.broche)) changerBroche(Number(t.dataset.k), broches[0]);
         modifie();
         dessinerComposants();
@@ -446,8 +446,8 @@
       const e = ex();
       if (t.matches('.btn-ajouter-composant')) {
         const prises = new Set(e.composants.map((c) => c.broche));
-        const broche = A.BROCHES_COMPOSANTS.led.find((b) => !prises.has(b)) || 'D2';
-        e.composants.push({ type: 'led', broche });
+        const broche = (brochesDe(typesComposants()[0].type).find((b) => !prises.has(b)) || brochesDe(typesComposants()[0].type)[0]);
+        e.composants.push({ type: typesComposants()[0].type, broche });
         modifie();
         dessinerComposants();
         dessinerApercu();
@@ -468,6 +468,11 @@
     };
   }
 
+  // Carte du parcours : elle décide des composants, des broches et des blocs proposés.
+  const carteDuParcours = () => (etat.paquet && etat.paquet.carte) || 'uno';
+  const brochesDe = (type) => A.brochesDe(carteDuParcours(), type) || [];
+  const typesComposants = () => A.TYPES_COMPOSANTS.filter((t) => A.profil(carteDuParcours()).composants.includes(t.type));
+
   function dessinerComposants() {
     const e = ex();
     e.composants = e.composants || [];
@@ -475,10 +480,10 @@
     zone.innerHTML = e.composants.length
       ? e.composants
           .map((c, k) => {
-            const broches = A.BROCHES_COMPOSANTS[c.type] || [c.broche];
+            const broches = brochesDe(c.type).length ? brochesDe(c.type) : [c.broche];
             return (
               `<div class="ed-composant">` +
-              `<label>Sorte<select class="champ-type-composant" data-k="${k}">${A.TYPES_COMPOSANTS.map((t) => `<option value="${t.type}"${t.type === c.type ? ' selected' : ''}>${t.nom}</option>`).join('')}</select></label>` +
+              `<label>Sorte<select class="champ-type-composant" data-k="${k}">${typesComposants().map((t) => `<option value="${t.type}"${t.type === c.type ? ' selected' : ''}>${t.nom}</option>`).join('')}</select></label>` +
               `<label>Nom (facultatif)<input class="champ-nom-composant" data-k="${k}" value="${echapper(c.nom || '')}" placeholder="ex. Trappe" maxlength="20"></label>` +
               `<label>Broche<select class="champ-broche-composant" data-k="${k}">${broches.map((b) => `<option${b === c.broche ? ' selected' : ''}>${b}</option>`).join('')}</select></label>` +
               `<button type="button" class="btn-aide btn-retirer-composant" data-k="${k}" aria-label="Retirer ce composant" title="Retirer ce composant">${A.icone('corbeille', { epaisseur: 2.4 })}</button>` +
@@ -486,7 +491,11 @@
             );
           })
           .join('')
-      : '<p class="ed-aide">Aucun composant : ajoute ceux que l’élève branche (LED, bouton, servomoteur…).</p>';
+      : typesComposants().length
+        ? '<p class="ed-aide">Aucun composant : ajoute ceux que l’élève branche (LED, bouton, servomoteur…).</p>'
+        : `<p class="ed-aide">Rien à brancher sur ${echapper(A.profil(carteDuParcours()).nom)} : ses moteurs, capteurs et LED sont dans les blocs (ultrasons sur le port ${A.profil(carteDuParcours()).ports.ultrasons}, suiveur de ligne sur le port ${A.profil(carteDuParcours()).ports.ligne}).</p>`;
+    const ajouter = $('.btn-ajouter-composant');
+    if (ajouter) ajouter.hidden = !typesComposants().length;
   }
 
   function changerBroche(k, nouvelle) {
@@ -536,7 +545,8 @@
     const e = ex();
     // Les paramètres « $nom » prennent leur valeur, comme chez l'élève.
     const solution = A.appliquerParametres(e.solutionReference || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
-    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants }, A.versBlockly(solution));
+    A.carteCourante = carteDuParcours();
+    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours() }, A.versBlockly(solution));
     majMessageSolution();
   }
 
@@ -548,13 +558,16 @@
 
   // ----- Scénarios de test -----
 
+  // Composants branchés + ce qui est sur la carte (boutons A et B, logo, moteurs du mBot).
+  const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()));
   function sorties(e) {
-    return (e.composants || []).filter((c) => c.type !== 'bouton');
+    return tousComposants(e).filter((c) => c.type !== 'bouton');
   }
   function boutons(e) {
-    return (e.composants || []).filter((c) => c.type === 'bouton');
+    return tousComposants(e).filter((c) => c.type === 'bouton');
   }
   function nomCourt(c) {
+    if (c.integre) return c.libelle.replace(/^(le|la|les) /, '') + ' (sur la carte)';
     const t = { led: 'LED', bouton: 'bouton', servo: 'servomoteur', buzzer: 'buzzer' }[c.type] || c.type;
     return `${t}${c.nom ? ' ' + c.nom : ''} ${c.broche}`;
   }
@@ -565,6 +578,7 @@
   }
   function valeurEtat(c, v, attrs) {
     if (c && c.type === 'servo') return `<input type="number" class="ed-petit" min="0" max="180" step="1" value="${v}" ${attrs} aria-label="angle en degrés"> °`;
+    if (c && c.type === 'moteur') return `<input type="number" class="ed-petit" min="-100" max="100" step="1" value="${v}" ${attrs} aria-label="vitesse en % (négative : en arrière)"> %`;
     return `<select ${attrs}><option value="1"${v ? ' selected' : ''}>${c && c.type === 'bouton' ? 'appuyé' : 'allumée'}</option><option value="0"${v ? '' : ' selected'}>${c && c.type === 'bouton' ? 'relâché' : 'éteinte'}</option></select>`;
   }
 
@@ -593,7 +607,7 @@
       case 'etats': {
         const lignes = Object.entries(v || {})
           .map(([b, val]) => {
-            const c = (e.composants || []).find((x) => x.broche === b);
+            const c = tousComposants(e).find((x) => x.broche === b);
             return (
               `<span class="ed-etat-ligne"><select ${att(`data-etat="${b}" data-quoi="broche"`)}>${optionsBroches(sorties(e).concat(boutons(e)), b)}</select>` +
               ` ${valeurEtat(c, val, att(`data-etat="${b}" data-quoi="valeur"`))}` +
@@ -626,7 +640,7 @@
         const cle = A.typeEtape(etape);
         const type = A.TYPES_ETAPES.find((t) => t.cle === cle);
         const cleOuverte = `${s}:${k}`;
-        h += `<li class="ed-etape"><details${etat.etapesOuvertes.has(cleOuverte) ? ' open' : ''} data-ouverte="${cleOuverte}"><summary class="ed-etape-tete"><span class="ed-etape-phrase">${echapper(A.decrireEtape(etape, e))}</span>`;
+        h += `<li class="ed-etape"><details${etat.etapesOuvertes.has(cleOuverte) ? ' open' : ''} data-ouverte="${cleOuverte}"><summary class="ed-etape-tete"><span class="ed-etape-phrase">${echapper(A.decrireEtape(etape, e, carteDuParcours()))}</span>`;
         h +=
           `<span class="ed-etape-outils"><button type="button" class="btn-icone" data-s="${s}" data-k="${k}" data-action="monter" aria-label="Monter l’étape"${k ? '' : ' disabled'}>${A.icone('chevronHaut', { epaisseur: 2.8 })}</button>` +
           `<button type="button" class="btn-icone" data-s="${s}" data-k="${k}" data-action="descendre" aria-label="Descendre l’étape"${k < sc.etapes.length - 1 ? '' : ' disabled'}>${A.icone('chevronBas', { epaisseur: 2.8 })}</button>` +
@@ -719,7 +733,7 @@
           e.scenarios.splice(Number(t.dataset.s), 1);
           break;
         case 'ajouter-etape':
-          sc.etapes.push(A.nouvelleEtape($(`.ed-sorte-etape[data-s="${t.dataset.s}"]`, zone).value, e));
+          sc.etapes.push(A.nouvelleEtape($(`.ed-sorte-etape[data-s="${t.dataset.s}"]`, zone).value, e, carteDuParcours()));
           etat.etapesOuvertes.add(`${t.dataset.s}:${sc.etapes.length - 1}`);
           break;
         case 'monter':
@@ -740,7 +754,7 @@
           const objet = etape[t.dataset.champ];
           const libre = sorties(e).find((c) => !(c.broche in objet));
           if (!libre) return message('Tous les composants de sortie sont déjà dans cette vérification.');
-          objet[libre.broche] = libre.type === 'servo' ? 90 : 1;
+          objet[libre.broche] = libre.type === 'servo' ? 90 : libre.type === 'moteur' ? 50 : 1;
           break;
         }
         case 'retirer-etat':
@@ -808,7 +822,7 @@
         etats[c.broche] = apercu.servos[c.broche] = Math.abs(cible - pos) <= pas ? cible : pos + Math.sign(cible - pos) * pas;
       } else etats[c.broche] = sim ? sim.sorties[c.broche] || 0 : 0;
     }
-    etat.apercu.afficher(etats, !!sim);
+    etat.apercu.afficher(etats, !!sim, sim);
     const t = sim ? Math.floor(sim.t / 1000) : 0;
     $('.ed-apercu .chrono-valeur').textContent = String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
   }
@@ -817,7 +831,7 @@
     cancelAnimationFrame(apercu.raf);
     // Toujours la solution du moment (elle a pu changer depuis le dessin de l'aperçu).
     const e = (apercu.exercice = A.exercicePrepare(etat.paquet, ex()));
-    apercu.sim = A.creerSimulation(e.solutionReference, { composants: e.composants, boutonsVersMasse: e.boutonsVersMasse });
+    apercu.sim = A.creerSimulation(e.solutionReference, { composants: e.composants, boutonsVersMasse: e.boutonsVersMasse, carte: e.carte, capteurs: etat.apercu && etat.apercu.capteurs });
     for (const [b, v] of Object.entries(apercu.boutons)) if (v) apercu.sim.changerEntree(b, 1);
     apercu.servos = {};
     apercu.dernier = performance.now();
@@ -863,7 +877,9 @@
     d.onclose = () => {
       if (d.returnValue !== 'ok') return;
       p.titre = $('.reglage-titre', d).value.trim() || p.titre;
+      const carteAvant = p.carte || 'uno';
       p.carte = $('.reglage-carte', d).value;
+      const carteChangee = carteAvant !== p.carte;
       p.boutonsVersMasse = $('.reglage-boutons', d).checked;
       const params = {};
       for (const l of $$('.ed-parametre', liste)) {
@@ -873,6 +889,7 @@
       p.parametres = params;
       modifie();
       majBandeau();
+      if (carteChangee) dessinerFormulaire(); // composants, broches et blocs de la nouvelle carte
       chargerSolution();
       dessinerApercu();
     };

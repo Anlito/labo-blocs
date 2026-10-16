@@ -15,6 +15,7 @@
     valeur: '#BCDAEB',
     servo: '#E78AB3',
     variable: '#EC8780',
+    extension: '#C3B1E1', // blocs d'une carte ou d'une extension (mBot, micro:bit…) : lilas, pictogramme puzzle
   };
 
   // Broches proposées dans les menus.
@@ -25,6 +26,13 @@
   const BROCHES_BOUTON = BROCHES_NUMERIQUES;
   const BROCHES_SERVO = ['D5', 'D6'];
   const menu = (liste) => liste.map((b) => [b, b]);
+  // Broches de la carte de l'exercice (A.carteCourante, réglée à l'ouverture de l'exercice) : D2…D13 pour l'Uno,
+  // P0…P2 pour la micro:bit. Sans carte connue : celles de l'Uno.
+  function brochesCarte(type) {
+    const p = A.profil ? A.profil(A.carteCourante) : null;
+    const liste = p && p.broches[type] && p.broches[type].length ? p.broches[type] : { led: BROCHES_LED, bouton: BROCHES_BOUTON, servo: BROCHES_SERVO, buzzer: BROCHES_NUMERIQUES }[type];
+    return menu(liste);
+  }
   // Pour une LED, on dit aussi ce que fait l'état : HAUT = allumée, BAS = éteinte.
   const HAUT_BAS_LED = [
     ['HAUT (1) : allumée', '1'],
@@ -295,6 +303,24 @@
     },
   ];
 
+  // Blocs des cartes (mBot, micro:bit), décrits dans noyau/cartes.js.
+  for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
+    const args = [image('puzzle', 'Bloc de la carte')];
+    let n = 1;
+    const message = d.texte.replace(/%([A-Z]+)/g, (m, nom) => {
+      n++;
+      if (d.champs && nom in d.champs) {
+        const c = d.champs[nom];
+        args.push(Array.isArray(c) ? { type: 'field_dropdown', name: nom, options: c } : { type: 'field_input', name: nom, text: (d.defauts || {})[nom] || '' });
+      } else args.push({ type: 'input_value', name: nom, check: 'Number' });
+      return '%' + n;
+    });
+    const def = { type, message0: '%1 ' + message, args0: args, inputsInline: true, style: 'extension', tooltip: d.texte.replace(/%[A-Z]+/g, '…') };
+    if (d.sorte === 'instruction') Object.assign(def, { previousStatement: null, nextStatement: null });
+    else def.output = d.sorte === 'condition' ? 'Boolean' : 'Number';
+    DEFINITIONS.push(def);
+  }
+
   // Catégories de la palette, dans l'ordre. Chaque bloc a sa forme de départ dans la palette.
   const CATEGORIES = [
     { nom: 'Événements', cle: 'evenements', couleur: COULEURS.debut, blocs: ['quand_bouton'] },
@@ -307,6 +333,8 @@
     { nom: 'Boucles', cle: 'boucles', couleur: COULEURS.decision, blocs: ['repeter_n', 'tant_que', 'repeter_jusqua'] },
     { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard'] },
     { nom: 'Variables', cle: 'variables', couleur: COULEURS.variable, blocs: ['affecter', 'ajouter_a', 'variable', 'nombre'] },
+    // Une carte à la fois : la palette d'un exercice ne montre que les blocs autorisés.
+    ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: 'puzzle', carte: c.carte, blocs: c.blocs })),
   ];
 
   const FORMES_PALETTE = {
@@ -321,6 +349,13 @@
     operation: { inputs: { A: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, B: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
     hasard: { inputs: { MIN: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, MAX: { shadow: { type: 'nombre', fields: { NUM: 6 } } } } },
   };
+  for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
+    if (!d.entrees) continue;
+    FORMES_PALETTE[type] = { inputs: {} };
+    for (const [nom, v] of Object.entries(d.entrees)) FORMES_PALETTE[type].inputs[nom] = { shadow: { type: 'nombre', fields: { NUM: v } } };
+  }
+
+  const SORTE_BROCHE = { led_etat: 'led', quand_bouton: 'bouton', bouton_etat: 'bouton', son: 'buzzer', servo_angle: 'servo' };
 
   // Palette d'un exercice : seulement ses blocs autorisés ; une catégorie vide n'apparaît pas.
   function palette(blocsAutorises, composants) {
@@ -344,6 +379,12 @@
         },
         contents: blocs.map((type) => {
           const forme = JSON.parse(JSON.stringify(FORMES_PALETTE[type] || {}));
+          // Broche de départ : la première de la carte (D2 sur l'Uno, P0 sur la micro:bit), jamais celle de l'exercice.
+          const sorte = SORTE_BROCHE[type];
+          if (sorte && forme.fields && forme.fields.BROCHE) {
+            const liste = brochesDe(A.carteCourante, sorte);
+            if (!liste.includes(forme.fields.BROCHE)) forme.fields.BROCHE = liste[0];
+          }
           return Object.assign({ kind: 'block', type }, forme);
         }),
       });
@@ -366,6 +407,19 @@
       entree.removeField('ETAT');
       entree.insertFieldAt(rang, new Blockly.FieldDropdown(() => (A.aideLed ? HAUT_BAS_LED : HAUT_BAS)), 'ETAT');
     };
+    // Menus de broches selon la carte de l'exercice.
+    for (const [type, sorte] of [['led_etat', 'led'], ['bouton_etat', 'bouton'], ['quand_bouton', 'bouton'], ['servo_angle', 'servo'], ['son', 'buzzer']]) {
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        const champ = this.getField('BROCHE');
+        if (!champ) return;
+        const entree = champ.getParentInput();
+        const rang = entree.fieldRow.indexOf(champ);
+        entree.removeField('BROCHE');
+        entree.insertFieldAt(rang, new Blockly.FieldDropdown(() => brochesCarte(sorte)), 'BROCHE');
+      };
+    }
     // Pastille « ? » sur « Au démarrage » et « Répéter indéfiniment » : un clic ouvre l'explication
     // des deux blocs (A.surAideChapeau est branché par l'écran d'exercice).
     const ICONE_AIDE =
@@ -418,7 +472,7 @@
   }
 
   // Noms des blocs pour l'éditeur du professeur (cases « blocs proposés aux élèves »), dans les mots de la palette.
-  const NOMS_BLOCS = {
+  const NOMS_BLOCS_BASE = {
     quand_bouton: 'quand le bouton est appuyé',
     led_etat: 'contrôler la LED',
     son: 'jouer une note',
@@ -441,8 +495,15 @@
     variable: 'valeur d’une variable',
     nombre: 'nombre',
   };
-  // Broches que proposent les menus des blocs, par sorte de composant (l'éditeur du professeur propose les mêmes).
+  const NOMS_BLOCS = Object.assign({}, NOMS_BLOCS_BASE);
+  for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) NOMS_BLOCS[type] = d.texte.replace(/%[A-Z]+/g, '…').replace(/\s+/g, ' ');
+  // Broches que proposent les menus des blocs, par sorte de composant et par carte (l'éditeur du professeur
+  // propose les mêmes).
+  const brochesDe = (carte, type) => {
+    const p = A.profil ? A.profil(carte) : null;
+    return p && p.broches[type] && p.broches[type].length ? p.broches[type] : { led: BROCHES_LED, bouton: BROCHES_BOUTON, servo: BROCHES_SERVO, buzzer: BROCHES_NUMERIQUES }[type];
+  };
   const BROCHES_COMPOSANTS = { led: BROCHES_LED, bouton: BROCHES_BOUTON, servo: BROCHES_SERVO, buzzer: BROCHES_NUMERIQUES };
 
-  Object.assign(A, { definirBlocs, palette, CATEGORIES, COULEURS_BLOCS: COULEURS, NOMS_BLOCS, BROCHES_COMPOSANTS });
+  Object.assign(A, { definirBlocs, palette, CATEGORIES, COULEURS_BLOCS: COULEURS, NOMS_BLOCS, BROCHES_COMPOSANTS, brochesDe });
 })(this);

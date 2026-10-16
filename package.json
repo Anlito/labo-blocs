@@ -13,7 +13,8 @@
     "recette": "node tools/recette.js",
     "module": "node tools/construire-module.js",
     "vers-projet": "node tools/vers-projet.js",
-    "publier": "node tools/publier.js"
+    "publier": "node tools/publier.js",
+    "firmwares": "node tools/construire-firmwares.js"
   },
   "devDependencies": {
     "@fontsource/atkinson-hyperlegible": "^5.3.0",
