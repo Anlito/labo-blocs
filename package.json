@@ -4,7 +4,7 @@
   "private": true,
   "description": "Labo Blocs : programmation par blocs pour les projets de technologie du collège (parcours, simulateur, cartes)",
   "scripts": {
-    "test": "node --test tests/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
     "essais:firmware": "node essais/outils/construire-firmware.js",
     "essais:mesures": "node essais/outils/mesurer.js",
     "essais:microbit": "node essais/outils/construire-microbit.js",

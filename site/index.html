@@ -145,10 +145,7 @@
 <script src="../interface/app.js"></script>
 <!-- Projet et parcours (données modifiables par le professeur) -->
 <script src="projet.js"></script>
-<script src="../parcours/distributeur/parcours.js"></script>
-<!-- Parcours de découverte des cartes : index.html?parcours=decouverte-mbot ou ?parcours=decouverte-microbit -->
-<script src="../parcours/decouverte-mbot/parcours.js"></script>
-<script src="../parcours/decouverte-microbit/parcours.js"></script>
-<script>LaboBlocs.demarrerApplication();</script>
+<!-- Parcours : tous ceux de ../parcours/index.js (un parcours ajouté au dossier apparaît sans toucher à cette page) -->
+<script>LaboBlocs.chargerParcoursDuSite('../parcours/').then(() => LaboBlocs.demarrerApplication());</script>
 </body>
 </html>

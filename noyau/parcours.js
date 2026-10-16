@@ -5,7 +5,8 @@
 //   { format: 'labo-blocs/parcours', version: 1, id, titre, versionParcours, date, moteurMinimum, carte, modes,
 //     boutonsVersMasse, parametres, exercices: [ { id (stable, jamais réutilisé), numero, titre, defi, consigne,
 //     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, … } ],
-//     fiches, lexique }
+//     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
+//     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
 // L'« empreinte » d'un exercice résume ce qui décide de sa réussite (consigne, composants, blocs, scénarios,
 // solution, paramètres) : si elle change, un exercice déjà réussi passe « à revérifier ».
@@ -77,6 +78,13 @@
     if (paquet.modes && !modesValides(paquet.modes)) pb.push('Modes du parcours inconnus (simulateur, direct, carte ; le simulateur est obligatoire).');
     for (const [i, e] of (paquet.exercices || []).entries()) {
       if (e.modes && !modesValides(e.modes)) pb.push(`Exercice ${e.numero || i + 1} : modes inconnus (simulateur, direct, carte ; le simulateur est obligatoire).`);
+    }
+    // Classes et dossier de l'équipe (réglages facultatifs du parcours, pour le site de Labo Blocs).
+    if (paquet.classes !== undefined && !(Array.isArray(paquet.classes) && paquet.classes.length && paquet.classes.every((c) => typeof c === 'string' && c.trim()))) {
+      pb.push('Classes du parcours : une liste de noms de classes (ex. 4A, 4B).');
+    }
+    if (paquet.cheminSauvegarde !== undefined && !(Array.isArray(paquet.cheminSauvegarde) && paquet.cheminSauvegarde.includes('{equipe}'))) {
+      pb.push('Dossier de l’équipe du parcours : il doit contenir {equipe}.');
     }
     return pb;
   }

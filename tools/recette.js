@@ -710,9 +710,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   await critere('Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant', async () => {
     const p = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
     const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
-    const parcours = await p.$$eval('.ac-parcours a', (l) => l.map((a) => [a.getAttribute('href'), a.querySelector('strong').textContent]));
+    const parcours = await p.$$eval('.ac-carte', (l) => l.map((c) => [c.querySelector('.ac-essayer').getAttribute('href'), c.querySelector('strong').textContent]));
     verifier(outils.join() === 'editeur.html,prof.html' && parcours.length === 3, JSON.stringify({ outils, parcours }));
-    await p.click('.ac-parcours a:nth-child(2)');
+    await p.click('.ac-carte:nth-child(2) .ac-essayer');
     await pause(1200);
     const equipe = await texte(p, '.equipe-texte');
     const titre = await p.title();
@@ -722,6 +722,50 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(await visible(e, '.ed-vers-accueil'), 'pas de lien Accueil dans l’éditeur');
     await e.close();
     return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur`;
+  });
+
+  // ---------- Parcours ajouté par un fichier, classes et dossier réglés dans le parcours ----------
+
+  await critere('Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours', async () => {
+    const { publier } = require('./publier.js');
+    const { lireTexteParcours } = require('./parcours-depot.js');
+    const depose = path.join(RACINE, 'parcours', 'essai-recette-1.0.0.labo-parcours.json');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-site-'));
+    const base = lireTexteParcours(fs.readFileSync(path.join(RACINE, 'parcours', 'decouverte-mbot', 'parcours.js'), 'utf8'));
+    const essai = Object.assign(base, { id: 'essai-recette', titre: 'Robot du couloir', versionParcours: '1.0.0', classes: ['4A', '4C'], cheminSauvegarde: ['{classe}', 'COMMUN', 'ROBOT', '{equipe}'] });
+    essai.exercices = essai.exercices.map((e) => Object.assign({}, e, { id: 'essai-' + e.id }));
+    try {
+      fs.writeFileSync(depose, JSON.stringify(essai, null, 2));
+      const r = publier(path.join(tmp, 'site-publie'));
+      verifier(r.parcours.includes('essai-recette 1.0.0'), r.parcours.join(', '));
+      const site = path.join(r.dossier, 'site');
+      // Accueil : le nouveau parcours est proposé.
+      const a = await page(pathToFileURL(path.join(site, 'accueil.html')).href);
+      const titres = await a.$$eval('.ac-carte strong', (l) => l.map((x) => x.textContent));
+      verifier(titres.includes('Robot du couloir'), titres.join(', '));
+      await a.close();
+      // Page des élèves avec ce parcours : ses classes et son dossier.
+      const p = await page(pathToFileURL(path.join(site, 'index.html')).href + '?parcours=essai-recette', { sansDossiers: true });
+      const classes = await p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
+      verifier(classes.join() === '4A,4C', 'classes : ' + classes.join());
+      await p.type('.champ-prenom', 'inès');
+      await p.select('.champ-classe', '4C');
+      await p.click('.formulaire-equipe button[type=submit]');
+      await pause(200);
+      const chemin = (await texte(p, '.chemin')).replace(/\s+/g, ' ');
+      verifier(/4C ?› ?COMMUN ?› ?ROBOT ?› ?Inès/.test(chemin), 'dossier : ' + chemin);
+      await p.close();
+      // Le distributeur garde les classes du site (projet.js).
+      const q = await page(pathToFileURL(path.join(site, 'index.html')).href, { sansDossiers: true });
+      const classesDistributeur = await q.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
+      verifier(classesDistributeur.length === 6 && classesDistributeur[0] === '5A', classesDistributeur.join());
+      await q.close();
+      return `« Robot du couloir » publié et proposé à l’accueil ; élèves : classes ${classes.join(', ')}, dossier « ${chemin} » ; distributeur : ${classesDistributeur.join(', ')}`;
+    } finally {
+      fs.rmSync(depose, { force: true });
+      fs.rmSync(tmp, { recursive: true, force: true });
+      for (const f of fs.readdirSync(path.join(RACINE, 'dist', 'parcours'))) if (f.startsWith('essai-recette')) fs.rmSync(path.join(RACINE, 'dist', 'parcours', f));
+    }
   });
 
   // ---------- Kit nouveau projet ----------

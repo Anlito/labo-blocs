@@ -419,8 +419,33 @@
     return p;
   }
 
+  // Réglages « accueil des élèves » du parcours, tapés dans l'éditeur :
+  //   « 4A, 4B ; 4C » → ['4A', '4B', '4C'] ; « {classe} › COMMUN / ROBOT » → ['{classe}', 'COMMUN', 'ROBOT', '{equipe}'].
+  // Vide → rien (ce sont les réglages du site qui comptent).
+  function lireReglagesEleves(classesTexte, cheminTexte) {
+    const r = {};
+    const classes = String(classesTexte || '')
+      .split(/[,;]+/)
+      .map((c) => c.trim())
+      .filter(Boolean);
+    if (classes.length) r.classes = [...new Set(classes)];
+    const chemin = String(cheminTexte || '')
+      .split(/[›\/\\>]+/)
+      .map((x) => x.trim())
+      .filter(Boolean);
+    if (chemin.length) {
+      if (!chemin.includes('{equipe}')) {
+        chemin.push('{equipe}');
+        r.equipeAjoutee = true;
+      }
+      r.cheminSauvegarde = chemin;
+    }
+    return r;
+  }
+
   const api = {
     identifiantDepuisTitre,
+    lireReglagesEleves,
     creerParcours,
     prefixeIds,
     nouvelIdentifiant,

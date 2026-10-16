@@ -351,3 +351,15 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    « Verrouiller » le redemande. Pages concernées : accueil, éditeur, suivi de classe, mode enseignant (`?enseignant`) ;
    la page des élèves reste libre. Limite dite à Thomas : dépôt public sans serveur, barrière pour les élèves et non
    vraie sécurité (aucune donnée d'élève en ligne).
+20. **Nouveau parcours par un simple fichier ; classes et dossier dans le parcours (16/10/2026)**, demandés par Thomas.
+   - Le site lit la liste `parcours/index.js` (`LaboBlocs.chargerParcoursDuSite`) : `index.html` et `prof.html` ne listent
+     plus les parcours à la main. `tools/parcours-depot.js` : chaque dossier `parcours/<id>/` et chaque fichier
+     `.labo-parcours.json` déposé dans `parcours/` (GitHub › « Add file › Upload files ») ; la version la plus récente
+     l'emporte. `npm run publier` écrit le script et la liste de chacun dans `_site/` ; le module et les outils
+     (`vers-projet`, `nouveau-projet`) les voient aussi.
+   - Éditeur › Réglages : « Classes proposées » et « Dossier de l'équipe » (champs `classes`, `cheminSauvegarde` du
+     parcours, contrôlés). Sur le site de Labo Blocs ils remplacent ceux de `projet.js` ; un projet créé par le kit garde
+     les siens (`reglagesDuProjetPrioritaires`) et les prend comme valeurs de départ.
+   - « Publier » en ligne : un seul fichier téléchargé, avec la marche à suivre sur GitHub.
+   - Accueil : « Essayer » et « Copier le lien élèves » pour chaque parcours.
+   - Tests lancés l'un après l'autre (`--test-concurrency=1`) : plusieurs reconstruisent `dist/`.

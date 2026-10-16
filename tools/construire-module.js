@@ -140,14 +140,11 @@ function construire() {
   const charge = require(join(OUT, 'labo-blocs-noyau.js'));
   if (!charge || typeof charge.valider !== 'function') throw new Error('Le noyau construit ne se charge pas sous Node.');
 
-  // Parcours exportés (fichiers d'échange .labo-parcours.json).
+  // Parcours exportés (fichiers d'échange .labo-parcours.json) : dossiers parcours/<id>/ et fichiers déposés dans parcours/.
   const P = join(RACINE, 'dist', 'parcours');
   mkdirSync(P, { recursive: true });
   const exportes = [];
-  for (const id of readdirSync(join(RACINE, 'parcours'))) {
-    const f = join(RACINE, 'parcours', id, 'parcours.js');
-    if (!existsSync(f)) continue;
-    const paquet = lireParcours(readFileSync(f, 'utf8'));
+  for (const paquet of require('./parcours-depot.js').lireTousLesParcours(RACINE).parcours) {
     const fichier = `${paquet.id}-${paquet.versionParcours}.labo-parcours.json`;
     writeFileSync(join(P, fichier), JSON.stringify(paquet, null, 2) + '\n');
     exportes.push(fichier);

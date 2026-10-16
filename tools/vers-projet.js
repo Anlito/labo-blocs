@@ -3,9 +3,9 @@
 // dépôt du projet ; en classe, le professeur passe par « Mettre à jour les exercices »).
 //
 // Usage : npm run vers-projet -- ../atelier-cereales [--parcours distributeur]
-const { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } = require('node:fs');
+const { cpSync, mkdirSync, rmSync, writeFileSync, existsSync } = require('node:fs');
 const { join, resolve } = require('node:path');
-const { construire, lireParcours } = require('./construire-module.js');
+const { construire } = require('./construire-module.js');
 const { scriptParcours } = require('../noyau/parcours.js');
 
 const args = process.argv.slice(2);
@@ -25,8 +25,12 @@ cpSync(r.dossier, cible, { recursive: true });
 console.log(`Module ${r.nom} copié dans ${cible}`);
 
 if (idParcours) {
-  const source = join(__dirname, '..', 'parcours', idParcours, 'parcours.js');
-  const paquet = lireParcours(readFileSync(source, 'utf8'));
+  // Dossier parcours/<id>/ ou fichier .labo-parcours.json déposé dans parcours/ : la version la plus récente.
+  const paquet = require('./parcours-depot.js').lireTousLesParcours().parcours.find((p) => p.id === idParcours);
+  if (!paquet) {
+    console.error(`Parcours « ${idParcours} » introuvable dans parcours/.`);
+    process.exit(1);
+  }
   const dossier = join(resolve(projet), 'site', 'parcours');
   mkdirSync(dossier, { recursive: true });
   writeFileSync(join(dossier, `${paquet.id}.js`), scriptParcours(paquet));

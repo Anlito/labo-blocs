@@ -210,3 +210,13 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 12.4 | Ouvrir l'éditeur, revenir par « Accueil », essayer un parcours | Pas de nouveau code demandé ; le parcours s'ouvre en mode enseignant | |
 | 12.5 | « Verrouiller » | Le code est redemandé | |
 | 12.6 | Dans les projets (atelier céréales), la page des élèves | Aucun code demandé | |
+
+## 13. Un nouveau parcours pour les élèves, avec ses classes
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 13.1 | Éditeur › un parcours › « Réglages » : classes « 4A, 4B », dossier « {classe} › COMMUN › TECHNOLOGIE › ROBOT » | Valider : « {equipe} a été ajouté à la fin du dossier » | |
+| 13.2 | « Publier » | Un fichier `<id>-<version>.labo-parcours.json` téléchargé, et la marche à suivre pour GitHub | |
+| 13.3 | GitHub › dépôt labo-blocs › dossier `parcours` › « Add file › Upload files » › déposer le fichier › « Commit changes » | 2 ou 3 minutes plus tard, le parcours est dans l'accueil | |
+| 13.4 | Accueil › « Copier le lien élèves », ouvrir ce lien | Classes 4A et 4B proposées ; dossier « 4A › COMMUN › TECHNOLOGIE › ROBOT › Prénom_Prénom » | |
+| 13.5 | Ouvrir la page des élèves sans parcours (distributeur) | Les classes de `site/projet.js` (5A à 5F) | |

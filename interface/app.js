@@ -80,9 +80,17 @@
     // ?parcours=<id> : un autre parcours chargé par la page (essais des cartes mBot et micro:bit), comme un projet à part.
     const autre = q.get('parcours') && q.get('parcours') !== A.projet.parcours ? A.parcoursDefinis.find((p) => p.id === q.get('parcours')) : null;
     if (autre) A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', cheminSauvegarde: ['{classe}', '{equipe}'] });
+    const brut = A.parcoursDefinis.find((p) => p.id === A.projet.parcours);
+    if (!brut) return erreurFatale(`Le parcours « ${A.projet.parcours} » est introuvable.`);
+    // Classes et dossier de l'équipe réglés dans le parcours (éditeur › Réglages) : sur le site de Labo Blocs, ils
+    // remplacent ceux de projet.js ; un projet qui garde ses propres réglages (reglagesDuProjetPrioritaires) les garde.
+    if (!A.projet.reglagesDuProjetPrioritaires) {
+      const r = {};
+      if (brut.classes && brut.classes.length) r.classes = brut.classes.slice();
+      if (brut.cheminSauvegarde && brut.cheminSauvegarde.includes('{equipe}')) r.cheminSauvegarde = brut.cheminSauvegarde.slice();
+      A.projet = Object.assign({}, A.projet, r);
+    }
     const projet = A.projet;
-    const brut = A.parcoursDefinis.find((p) => p.id === projet.parcours);
-    if (!brut) return erreurFatale(`Le parcours « ${projet.parcours} » est introuvable.`);
     const problemes = A.controler(brut);
     if (problemes.length) return erreurFatale(problemes.join(' '));
     const paquet = A.preparer(brut);
@@ -150,5 +158,27 @@
     A.app = { session, paquet, ecranExercice, ecranParcours, versParcours };
   }
 
-  Object.assign(A, { demarrerApplication, ajusterEchelle, poserIcones, preparerPleinEcran, majAvancement });
+  // Site de Labo Blocs : charge tous les parcours de la liste (dossier/index.js, puis dossier/<id>/parcours.js), sans
+  // avoir à écrire chaque parcours dans la page. En file:// comme en ligne (scripts classiques).
+  function chargerParcoursDuSite(dossier) {
+    const charger = (src) =>
+      new Promise((ok) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = ok;
+        s.onerror = ok;
+        document.body.append(s);
+      });
+    let ids = [];
+    global.definirIndexParcours = (liste) => (ids = liste);
+    return charger(dossier + 'index.js')
+      .then(() => Promise.all(ids.map((id) => charger(`${dossier}${encodeURIComponent(id)}/parcours.js`))))
+      .then(() => {
+        // Ordre de la liste, quel que soit l'ordre de chargement.
+        A.parcoursDefinis.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+        return ids;
+      });
+  }
+
+  Object.assign(A, { chargerParcoursDuSite, demarrerApplication, ajusterEchelle, poserIcones, preparerPleinEcran, majAvancement });
 })(this);
