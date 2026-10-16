@@ -262,4 +262,14 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    et télécharge le fichier d'échange pour les projets. Opérations testées sous Node dans `noyau/edition.js`.
    Moteur 0.3.0 (niveau par exercice) : recopié dans l’atelier. Pas encore : cartes mBot et micro:bit dans l’éditeur (jalon 3), lexique (gardé tel quel), édition des schémas et
    étapes en blocs des fiches (gardés tels quels).
+14. **Jalon 3 — décisions de Thomas (16/10/2026)** :
+   - **Distributeur : l'élève envoie son propre programme** dans la Uno (mode « Dans la carte », tout exercice), avec
+     le programme de la carte Labo Blocs installé une fois par Uno ; l'envoi de la solution précompilée disparaît.
+   - **Blocs mBot comme mBlock** : avancer, reculer, tourner à gauche ou à droite à une vitesse (%), pendant un
+     temps ou non, arrêter, moteur gauche ou droit seul, distance aux ultrasons (cm, port 3), suiveur de ligne
+     (port 2), bouton de la carte, LED RGB, jouer une note.
+   - **Simulateur : micro:bit oui, mBot non** (cahier des charges) : pour le mBot, un tableau montre les moteurs et
+     les LED, et les capteurs se règlent à la main ; le vrai test se fait sur le robot.
+   - **Blocs micro:bit V2** : écran (nombre, image, pixel, effacer, texte qui défile), boutons A et B, logo tactile,
+     broches P0 à P2, capteurs (secouer et pencher, température, lumière), note sur le haut-parleur.
 
