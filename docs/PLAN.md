@@ -385,3 +385,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    dans l'accueil (vérifiée, gardée dans ce navigateur, « Oublier la clé ») ; mode d'emploi dans l'accueil. Sans clé :
    téléchargement comme avant. Erreurs de GitHub en français avec la prochaine action. Seul le parcours part (aucune
    donnée d'élève), et seulement vers api.github.com.
+24. **Page des élèves et publication jamais bloquée par un parcours ajouté (16/10/2026).** Premier vrai envoi de Thomas
+   (« TEst » 1.0.0) arrivé sur GitHub, mais la publication s'est arrêtée : un test exigeait exactement les 3 parcours
+   d'origine. Les tests ne dépendent plus des parcours ajoutés par le professeur. `site/eleves.html` (demande de
+   Thomas) : tous les parcours, sans code professeur, chacun ouvre l'accueil de l'équipe ; lien (et « Copier le lien »)
+   dans l'accueil du professeur.

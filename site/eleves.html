@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Labo Blocs — Choisis ton parcours</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+<style>
+  /* Page des élèves : tous les parcours, sans code ni outil du professeur. */
+  body.page-eleves { min-height: 100vh; margin: 0; background: var(--fond); color: var(--texte); font-family: var(--police); }
+  .el-bandeau { display: flex; align-items: center; gap: 0.75rem; padding: 0.875rem 1.5rem; background: #FFFFFF; border-bottom: 1px solid var(--bord); border-top: 6px solid var(--action); }
+  .el-bandeau img { width: 2.125rem; height: 2.125rem; }
+  .el-bandeau strong { font-family: var(--titres); font-size: 1.125rem; }
+  .el-contenu { max-width: 60rem; margin: 2rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 1rem; }
+  .el-contenu h1 { margin: 0; font-family: var(--titres); font-size: 2rem; }
+  .el-intro { margin: 0; font-size: 1.0625rem; color: var(--texte-2); line-height: 1.5; }
+  .el-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 0.875rem; }
+  .el-carte { display: flex; flex-direction: column; gap: 0.375rem; padding: 1.125rem 1.25rem; border-radius: 1rem; border: 2px solid var(--bord); background: #FFFFFF; color: inherit; text-decoration: none; }
+  .el-carte:hover, .el-carte:focus-visible { border-color: var(--action); background: var(--action-pale); }
+  .el-carte strong { font-family: var(--titres); font-size: 1.125rem; }
+  .el-carte span { color: var(--texte-2); font-size: 0.9375rem; }
+  .el-carte .el-ouvrir { margin-top: 0.375rem; color: var(--action); font-weight: 700; }
+  .el-vide { margin: 0; padding: 0.75rem 1rem; border-radius: 0.75rem; background: var(--ecart-pale); color: var(--ecart-texte); font-weight: 700; }
+  .el-vide[hidden] { display: none; }
+</style>
+</head>
+<body class="page-eleves">
+
+<header class="el-bandeau">
+  <img src="img/logo.svg" alt="" width="34" height="34">
+  <strong>Labo Blocs</strong>
+</header>
+
+<main class="el-contenu">
+  <h1>Choisis ton parcours</h1>
+  <p class="el-intro">Clique sur le parcours que ton professeur t’a donné. Tu entreras ensuite les prénoms de ton équipe et ta classe.</p>
+  <div class="el-cartes" aria-live="polite"></div>
+  <p class="el-vide" role="status" hidden>Aucun parcours pour l’instant : demande à ton professeur.</p>
+</main>
+
+<!-- Tous les parcours de ../parcours/index.js : un parcours mis en ligne par le professeur apparaît ici tout seul -->
+<script>
+  (function () {
+    'use strict';
+    const NOMS_CARTES = { uno: 'Arduino Uno', mbot: 'mBot', microbit: 'micro:bit' };
+    const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const charger = (src) => new Promise((ok) => {
+      const s = document.createElement('script');
+      s.src = src + '?t=' + Date.now(); // jamais une copie gardée par le navigateur
+      s.onload = ok;
+      s.onerror = ok;
+      document.body.append(s);
+    });
+    const parcours = [];
+    window.definirParcours = (p) => parcours.push(p);
+    let ids = [];
+    window.definirIndexParcours = (liste) => (ids = liste);
+    charger('../parcours/index.js')
+      .then(() => Promise.all(ids.map((id) => charger(`../parcours/${encodeURIComponent(id)}/parcours.js`))))
+      .then(() => {
+        parcours.sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
+        document.querySelector('.el-vide').hidden = parcours.length > 0;
+        document.querySelector('.el-cartes').innerHTML = parcours
+          .map((p) => {
+            const n = (p.exercices || []).length;
+            const carte = NOMS_CARTES[p.carte] || NOMS_CARTES.uno;
+            const classes = p.classes && p.classes.length ? ` · ${p.classes.join(', ')}` : '';
+            return `<a class="el-carte" href="index.html?parcours=${encodeURIComponent(p.id)}"><strong>${echapper(p.titre)}</strong>` +
+              `<span>${n} exercice${n > 1 ? 's' : ''} · ${carte}${echapper(classes)}</span><span class="el-ouvrir">Commencer ›</span></a>`;
+          })
+          .join('');
+      });
+  })();
+</script>
+</body>
+</html>

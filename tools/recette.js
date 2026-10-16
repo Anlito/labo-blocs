@@ -711,7 +711,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const p = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
     const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
     const parcours = await p.$$eval('.ac-carte', (l) => l.map((c) => [c.querySelector('.ac-essayer').getAttribute('href'), c.querySelector('strong').textContent]));
-    verifier(outils.join() === 'editeur.html,prof.html' && parcours.length === 3, JSON.stringify({ outils, parcours }));
+    verifier(outils.join() === 'editeur.html,prof.html' && parcours.length >= 3 && /mBot/.test(parcours[1][1]), JSON.stringify({ outils, parcours }));
     await p.click('.ac-carte:nth-child(2) .ac-essayer');
     await pause(1200);
     const equipe = await texte(p, '.equipe-texte');
@@ -875,6 +875,20 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await e.evaluate(() => localStorage.removeItem('labo-blocs-cle-github'));
     await e.close();
     return `clé enregistrée (vide refusée) ; « ${fin[0].replace(/\s+/g, ' ').slice(0, 60)}… » ; envoyé : ${put.url.split('/contents/')[1]} (version ${envoye.versionParcours})`;
+  });
+
+  await critere('Page des élèves : tous les parcours, sans code professeur, chacun ouvre l’accueil de l’équipe', async () => {
+    const p = await page(pathToFileURL(path.join(RACINE, 'site', 'eleves.html')).href, { porte: true, sansDossiers: true });
+    const cartes = await p.$$eval('.el-carte', (l) => l.map((a) => [a.querySelector('strong').textContent, a.getAttribute('href')]));
+    const porte = !!(await p.$('.porte-professeur'));
+    verifier(cartes.length >= 3 && cartes.some((c) => /mBot/.test(c[0])) && !porte, JSON.stringify({ cartes, porte }));
+    await p.evaluate(() => [...document.querySelectorAll('.el-carte')].find((a) => /micro:bit/.test(a.textContent)).click());
+    await pause(1200);
+    const titre = await p.title();
+    const formulaire = await visible(p, '.formulaire-equipe');
+    verifier(/micro:bit/.test(titre) && formulaire && !(await p.$('.porte-professeur')), `${titre} · formulaire ${formulaire}`);
+    await p.close();
+    return `${cartes.length} parcours (${cartes.map((c) => c[0]).join(', ')}) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code`;
   });
 
   // ---------- Kit nouveau projet ----------

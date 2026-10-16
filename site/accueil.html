@@ -14,6 +14,8 @@
   .ac-section h2 { margin: 0; font-size: 1.25rem; }
   a.ed-carte-choix { color: inherit; text-decoration: none; }
   .ed-carte-choix .ac-detail { font-size: 0.875rem; }
+  .ac-page-eleves { margin: 0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 1rem; }
+  .ac-page-eleves .btn-secondaire { height: 2.25rem; padding: 0 0.875rem; font-size: 0.875rem; }
   .ac-carte { cursor: default; }
   .ac-carte:hover { border-color: var(--bord); background: #FFFFFF; }
   .ac-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.375rem; }
@@ -88,6 +90,7 @@
   <section class="ac-section" aria-labelledby="ac-essayer">
     <h2 id="ac-essayer">Essayer un parcours comme un élève</h2>
     <p class="ed-intro">« Essayer » : tous les exercices sont ouverts et rien n’est enregistré. « Copier le lien élèves » : l’adresse à donner aux élèves (prénoms, classe, dossier de l’équipe).</p>
+    <p class="ac-page-eleves"><strong>Page des élèves</strong> (tous les parcours, sans code) : <a href="eleves.html" target="_blank" rel="noopener">ouvrir</a> · <button type="button" class="btn-secondaire ac-lien-page">Copier le lien</button></p>
     <div class="ed-cartes ac-parcours"></div>
     <p class="ed-erreur" role="alert" hidden></p>
   </section>
@@ -175,6 +178,18 @@
               `<button type="button" class="btn-secondaire ac-lien" data-id="${echapper(p.id)}">Copier le lien élèves</button></span></div>`;
           })
           .join('');
+        // Page des élèves (tous les parcours), copiée dans le presse-papiers.
+        document.querySelector('.ac-lien-page').addEventListener('click', async (e) => {
+          const b = e.currentTarget;
+          const lien = new URL('eleves.html', location.href).href;
+          try {
+            await navigator.clipboard.writeText(lien);
+            b.textContent = 'Lien copié ✓';
+          } catch {
+            window.prompt('Lien de la page des élèves :', lien);
+          }
+          setTimeout(() => (b.textContent = 'Copier le lien'), 2500);
+        });
         // Adresse à donner aux élèves (page des élèves avec ce parcours), copiée dans le presse-papiers.
         zone.addEventListener('click', async (e) => {
           const b = e.target.closest('.ac-lien');
