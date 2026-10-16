@@ -5,7 +5,8 @@
 //   { format: 'labo-blocs/parcours', version: 1, id, titre, versionParcours, date, moteurMinimum, carte, modes,
 //     boutonsVersMasse, parametres, exercices: [ { id (stable, jamais réutilisé), numero, titre, defi, consigne,
 //     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, libre
-//     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), … } ],
+//     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), variables
+//     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), … } ],
 //     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
@@ -80,6 +81,9 @@
     if (paquet.modes && !modesValides(paquet.modes)) pb.push('Modes du parcours inconnus (simulateur, direct, carte ; le simulateur est obligatoire).');
     for (const [i, e] of (paquet.exercices || []).entries()) {
       if (e.modes && !modesValides(e.modes)) pb.push(`Exercice ${e.numero || i + 1} : modes inconnus (simulateur, direct, carte ; le simulateur est obligatoire).`);
+      if (e.variables !== undefined && !(Array.isArray(e.variables) && e.variables.every((v) => typeof v === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,15}$/.test(v)))) {
+        pb.push(`Exercice ${e.numero || i + 1} : noms de variables invalides (lettres sans accent, chiffres, « _ »).`);
+      }
     }
     // Classes et dossier de l'équipe (réglages facultatifs du parcours, pour le site de Labo Blocs).
     if (paquet.classes !== undefined && !(Array.isArray(paquet.classes) && paquet.classes.length && paquet.classes.every((c) => typeof c === 'string' && c.trim()))) {

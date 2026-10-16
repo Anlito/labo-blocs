@@ -70,6 +70,7 @@ function page(source, { titre, css, demarrer, classesBody, commentaire }) {
 <title>${titre}</title>
 <link rel="icon" href="vendor/labo-blocs/logo.svg" type="image/svg+xml">
 ${css.map((f) => `<link rel="stylesheet" href="vendor/labo-blocs/${f}">`).join('\n')}
+<style>html { height: 100%; } /* la page (body.labo-blocs-page) prend toute la fenêtre */</style>
 </head>
 ${body.replace(/src="img\/logo\.svg"/g, 'src="vendor/labo-blocs/logo.svg"')}<!-- Labo Blocs (copié dans le projet : aucun appel réseau) -->
 <script src="vendor/labo-blocs/blockly/blockly_compressed.js"></script>
@@ -163,7 +164,7 @@ function creerProjet(args) {
         ? o.chemin
         : paquet.cheminSauvegarde && paquet.cheminSauvegarde.includes('{equipe}')
           ? paquet.cheminSauvegarde.slice()
-          : ['{classe}', 'COMMUN', 'TECHNOLOGIE', sansAccents(o.titre).toUpperCase(), '{equipe}'],
+          : ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', sansAccents(o.titre).toUpperCase(), '{equipe}'],
   };
   if (!reg.chemin.includes('{equipe}')) throw new Error('Le chemin du dossier doit contenir {equipe}.');
 

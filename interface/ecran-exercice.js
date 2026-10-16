@@ -163,12 +163,14 @@
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
-      if (ex.libre) etat.exercice.composants = composantsLibres().composants;
-      dessinerComposants();
+      const libres = ex.libre ? composantsLibres() : null;
+      if (libres) etat.exercice.composants = libres.composants;
+      dessinerComposants(libres && libres.conflits);
       vue = A.creerVueSimulateur($('.simulateur', ecran), etat.exercice, { appuyerBouton });
       // Exercice libre : « J'ai terminé » à la place de « Vérifier » ; ni indice ni solution s'il n'y en a pas.
       $('.btn-verifier:not(.btn-terminer)', ecran).hidden = !!ex.libre;
       $('.btn-terminer', ecran).hidden = !ex.libre || lecture;
+      $('.verification', ecran).hidden = !!ex.libre && lecture; // mode enseignant : rien à vérifier ni à terminer
       $('.carte-aide', ecran).hidden = !!ex.libre && !(ex.indices || []).some(Boolean);
       btnSolution.hidden = !contexte.solution || !!ex.libre;
       if (panneauCarte) panneauCarte.choisirProfil(A.profil(ex.carte));
@@ -201,18 +203,24 @@
       $('.liste-composants', ecran).innerHTML = (ex.composants || [])
         .map(
           (c) =>
-            `<li><span class="composant-pastille composant-${c.type}">${A.icone(ICONES_COMPOSANTS[c.type] || 'info', { epaisseur: 2.4 })}</span>` +
-            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span></span></li>`,
+            `<li${c.conflit ? ' class="composant-en-conflit"' : ''}><span class="composant-pastille composant-${c.type}">${A.icone(ICONES_COMPOSANTS[c.type] || 'info', { epaisseur: 2.4 })}</span>` +
+            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span>${c.conflit ? ' <span class="broche-partagee">⚠ broche partagée</span>' : ''}</span></li>`,
         )
         .join('');
       // Ce qui est déjà sur la carte (rien à brancher).
       const surLaCarte = { mbot: 'Sur le robot : moteurs, LED, buzzer, bouton, capteur à ultrasons (port 3) et suiveur de ligne (port 2).', microbit: 'Sur la carte : écran 5 × 5, boutons A et B, logo tactile, haut-parleur et capteurs.' }[ex.carte];
       if (surLaCarte) $('.liste-composants', ecran).insertAdjacentHTML('beforeend', `<li class="composants-carte"><span class="composant-pastille composant-carte">${A.icone('puzzle', { epaisseur: 2.4 })}</span><span>${surLaCarte}</span></li>`);
       const note = $('.composants-note', ecran);
-      const conflit = (conflits || [])[0];
-      note.classList.toggle('ecart', !!conflit);
-      if (conflit) {
-        note.textContent = `La broche ${conflit.broche} sert à deux composants (${conflit.types.map((t) => { const n = NOMS_COMPOSANTS[t] || t; return n === n.toUpperCase() ? n : n.toLowerCase(); }).join(' et ')}) : une broche ne peut brancher qu’un seul composant. Choisis une autre broche pour l’un des deux.`;
+      const liste = conflits || [];
+      note.classList.toggle('ecart', liste.length > 0);
+      if (liste.length) {
+        const nom = (t) => {
+          const n = NOMS_COMPOSANTS[t] || t;
+          return n === n.toUpperCase() ? n : n.toLowerCase();
+        };
+        note.textContent =
+          liste.map((c) => `La broche ${c.broche} sert à deux composants (${c.types.map(nom).join(' et ')}).`).join(' ') +
+          ' Une broche ne peut brancher qu’un seul composant : choisis une autre broche pour l’un d’eux.';
         note.hidden = false;
       } else if (ex.libre && (!ex.carte || ex.carte === 'uno')) {
         note.textContent = ex.composants.length ? 'Les composants suivent ton programme : à brancher sur ces broches.' : 'Pose un bloc (LED, bouton, servomoteur, buzzer) : son composant apparaît ici et dans le simulateur.';
@@ -523,6 +531,16 @@
       return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
     };
 
+    // Valeur affichée d'un composant (deux composants d'un exercice libre peuvent partager une broche).
+    function etatComposant(c, sim) {
+      if (c.type === 'bouton') return sim ? sim.entrees[c.broche] || 0 : (etat.boutonsAvant && etat.boutonsAvant[c.broche]) || 0;
+      if (c.type === 'buzzer') {
+        const note = sim && sim.journal.filter((e) => e.broche === c.broche && e.type === 'son').pop();
+        return note && note.valeur && sim.t < note.t + note.duree ? note.valeur : 0;
+      }
+      if (c.type === 'servo') return etat.servos[c.broche] || 0;
+      return sim ? sim.sorties[c.broche] || 0 : 0;
+    }
     function afficher(dtVirtuel) {
       if (!vue) return;
       const sim = etat.sim;
@@ -542,6 +560,7 @@
           if (!sim) etats[c.broche] = etat.servos[c.broche] = 0;
         }
       }
+      for (const c of etat.exercice.composants || []) etats[c.broche + '|' + c.type] = etatComposant(c, sim, dtVirtuel);
       vue.afficher(etats, !!sim, sim);
       editeur.surligner(sim ? sim.blocsEnCours : null);
       $('.chrono-valeur', ecran).textContent = chrono(sim ? sim.t : 0);

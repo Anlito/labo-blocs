@@ -39,17 +39,40 @@
 
     // ---------- Chargement / sauvegarde ----------
 
+    // Variables : celles de l'exercice (CHOIX si l'exercice n'en dit rien), celles déjà dans le programme, et celles que
+    // l'élève crée (« Créer une variable », si l'exercice le permet).
+    let exerciceCourant = null;
+    const optionsPalette = () => ({ variables: A.variablesConnues, creerVariables: !!(exerciceCourant && exerciceCourant.variablesLibres) });
+    function creerVariable() {
+      let message = 'Nom de ta nouvelle variable (par exemple : vitesse, compteur) :';
+      for (;;) {
+        const texte = global.prompt(message, '');
+        if (texte === null) return;
+        const r = A.nomDeVariable(texte, A.variablesConnues);
+        if (r.ok) {
+          A.variablesConnues = A.variablesConnues.concat(r.nom);
+          ws.updateToolbox(A.palette(exerciceCourant.blocsAutorises, exerciceCourant.composants, optionsPalette()));
+          return;
+        }
+        message = r.message + ' Nouveau nom :';
+      }
+    }
+    ws.registerButtonCallback('creerVariable', creerVariable);
+
     function charger(exercice, sauvegarde) {
       enChargement = true;
+      exerciceCourant = exercice;
       // Carte de l'exercice : les menus de broches des blocs la suivent (Uno : D2…D13, micro:bit : P0…P2).
       A.carteCourante = exercice.carte || 'uno';
       // Les événements de Blockly partent un instant plus tard : on les coupe pendant le chargement,
       // sinon ils passeraient pour une modification de l'élève (et arrêteraient la simulation).
       Blockly.Events.disable();
       try {
-        ws.updateToolbox(A.palette(exercice.blocsAutorises, exercice.composants));
-        ws.clear();
         const depart = sauvegarde || A.versBlockly(exercice.blocsDepart || { demarrage: [], boucle: [] });
+        const fournies = Array.isArray(exercice.variables) ? exercice.variables : ['CHOIX'];
+        A.variablesConnues = [...new Set(fournies.concat(A.variablesDeSauvegarde(depart)))];
+        ws.updateToolbox(A.palette(exercice.blocsAutorises, exercice.composants, optionsPalette()));
+        ws.clear();
         Blockly.serialization.workspaces.load(depart, ws);
         // « Au démarrage » et « Répéter indéfiniment » ne se suppriment pas, même dans une sauvegarde.
         for (const b of ws.getTopBlocks(false)) if (b.type === 'demarrage' || b.type === 'boucle') b.setDeletable(false);
@@ -181,7 +204,7 @@
       retablir: () => ws.undo(true),
       horsProgramme: () => horsProgramme.slice(),
       // Éditeur du professeur : les blocs proposés changent sans recharger le programme.
-      changerPalette: (blocsAutorises) => ws.updateToolbox(A.palette(blocsAutorises)),
+      changerPalette: (blocsAutorises) => ws.updateToolbox(A.palette(blocsAutorises, null, optionsPalette())),
     };
   }
 

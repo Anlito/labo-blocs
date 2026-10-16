@@ -8,5 +8,6 @@ definirProjet({
   accent: '#8F5A06',
   parcours: 'distributeur',
   classes: ['5A', '5B', '5C', '5D', '5E', '5F'],
-  cheminSauvegarde: ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'DISTRIBUTEUR DE CEREALES', '{equipe}'],
+  // Les élèves sélectionnent l'avant-dernier dossier (DISTRIBUTEUR DE CEREALES) : Labo Blocs y crée le dossier {equipe}.
+  cheminSauvegarde: ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', 'DISTRIBUTEUR DE CEREALES', '{equipe}'],
 });

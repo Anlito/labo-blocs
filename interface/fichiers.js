@@ -42,12 +42,13 @@
     }
   }
 
-  // Le dossier choisi est-il celui de l'équipe, le dossier du projet (ex. « DISTRIBUTEUR DE CEREALES »), ou un autre ?
-  function analyserDossier(nomDossier, equipe) {
+  // Le dossier choisi est-il le dossier du projet (ex. « DISTRIBUTEUR DE CEREALES », celui qui contient les dossiers des
+  // équipes), celui de l'équipe, ou un autre ? parent : nom attendu du dossier du projet ({classe} déjà remplacé).
+  function analyserDossier(nomDossier, equipe, parent) {
     const s = A.simplifierNom(nomDossier);
-    if (s === A.simplifierNom(equipe)) return 'equipe';
-    const projet = A.projet && A.projet.cheminSauvegarde ? A.projet.cheminSauvegarde[A.projet.cheminSauvegarde.length - 2] : '';
+    const projet = parent !== undefined ? parent : A.projet && A.projet.cheminSauvegarde ? A.projet.cheminSauvegarde[A.projet.cheminSauvegarde.length - 2] : '';
     if (projet && s === A.simplifierNom(projet)) return 'parent';
+    if (s === A.simplifierNom(equipe)) return 'equipe';
     return 'autre';
   }
 

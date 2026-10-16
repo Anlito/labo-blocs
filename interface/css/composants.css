@@ -116,6 +116,9 @@ button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
   display: flex; align-items: center; gap: 0.75rem; min-height: 3.75rem; padding: 0.375rem 0.625rem;
   background: #FFFFFF; border: 2px solid var(--bord); border-left: 6px solid var(--famille); border-radius: 0.75rem;
 }
+/* Exercice libre : deux composants sur la même broche (signalé en ambre, jamais en rouge) */
+.composant.conflit { border-color: var(--ecart, #F5A623); background: var(--ecart-pale, #FFF4DC); flex-wrap: wrap; }
+.composant-conflit { flex-basis: 100%; font-size: 0.8125rem; font-weight: 700; color: var(--ecart-texte, #6B4A00); }
 .composant.compact { gap: 0.5rem; min-height: 2.75rem; padding: 0.1875rem 0.5rem; }
 .composant.survol { border-color: var(--bleu); border-left-color: var(--famille); box-shadow: 0 0 0 3px var(--signal); }
 .composant-dessin { flex: none; width: 3.25rem; height: 3.25rem; }

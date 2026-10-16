@@ -177,3 +177,6 @@ details[open] > .ed-etape-tete .ed-etape-phrase::after { content: ' ▾'; }
 .ed-carte-libre { display: none; }
 .ed-libre .ed-carte-libre { display: block; }
 .ed-libre .ed-carte-composants, .ed-libre .ed-scenarios, .ed-libre .ed-champ-competence { display: none; }
+
+/* Variables de l'exercice (sous les blocs proposés) */
+.ed-variables { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--bord); }

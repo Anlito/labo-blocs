@@ -94,7 +94,7 @@
     // Chemin du dossier (modèle) et dossier du projet, Firefox.
     const modele = A.projet.cheminSauvegarde || ['{classe}', '{equipe}'];
     $('.chemin-texte', racine).textContent = modele.map((p) => p.replace('{classe}', (A.projet.classes || ['5A'])[0]).replace('{equipe}', 'Prénom_Prénom')).join(' › ');
-    $('.nom-dossier-projet', racine).textContent = modele.length > 1 ? modele[modele.length - 2] : '';
+
     $('.info-firefox', racine).hidden = F.accesDossiers;
 
     const choixClasse = $('.champ-classe', racine);
@@ -117,11 +117,17 @@
 
     function preparerDossier() {
       const chemin = (A.projet.cheminSauvegarde || ['{classe}', '{equipe}']).map((p) => p.replace('{classe}', equipe.classe).replace('{equipe}', equipe.nom));
+      // Le chemin jusqu'au dossier du projet, celui-ci surligné : l'élève le sélectionne, Labo Blocs y crée le dossier de l'équipe.
+      const cible = chemin.length - 2;
       $('.chemin', racine).innerHTML = chemin
-        .map((p, i) => `<span class="chemin-dossier${i === chemin.length - 1 ? ' equipe' : ''}">${echapper(p)}</span>`)
+        .slice(0, -1)
+        .map((p, i) => `<span class="chemin-dossier${i === cible ? ' cible' : ''}">${echapper(p)}</span>`)
         .join('<span class="chemin-fleche" aria-hidden="true">›</span>');
       $('.nom-fichier', racine).textContent = equipe.nom + '.json';
       $('.nom-dossier-equipe', racine).textContent = equipe.nom;
+      // Dossier du projet : celui que l'élève choisit ; Labo Blocs y crée lui-même le dossier de l'équipe.
+      equipe.parent = chemin.length > 1 ? chemin[chemin.length - 2] : '';
+      for (const el of racine.querySelectorAll('.nom-dossier-projet')) el.textContent = equipe.parent || 'du projet';
       racine.querySelector('[data-panneau="dossier"]').classList.toggle('sans-acces', !F.accesDossiers);
       $('.dossier-resultat', racine).innerHTML = '';
       $('.btn-choisir-dossier', racine).hidden = !F.accesDossiers;
@@ -141,27 +147,32 @@
         return erreur('dossier', 'Ce dossier ne peut pas être utilisé. Choisis-en un autre.');
       }
       if (!choix) return;
-      const sorte = F.analyserDossier(choix.nom, equipe.nom);
-      if (sorte === 'equipe') return valider(choix.dossier, '');
-      if (sorte === 'parent') {
-        const dossier = await F.creerSousDossier(choix.dossier, equipe.nom);
-        return valider(dossier, `Le dossier « ${equipe.nom} » est prêt dans « ${choix.nom} ».`);
+      // Le dossier de l'équipe est toujours créé (ou retrouvé) par Labo Blocs dans le dossier du projet.
+      const creer = async () =>
+        valider(await F.creerSousDossier(choix.dossier, equipe.nom), `Le dossier « ${equipe.nom} » est prêt dans « ${choix.nom} ».`);
+      const sorte = F.analyserDossier(choix.nom, equipe.nom, equipe.parent);
+      if (sorte === 'parent') return creer();
+      if (sorte === 'equipe') {
+        // L'élève est allé un cran trop loin : le dossier du projet est celui qui contient ce dossier.
+        resultat(
+          `<div class="avertissement"><p>Tu as choisi le dossier <strong>« ${echapper(choix.nom)} »</strong>. ` +
+            `Choisis plutôt le dossier qui le contient, <strong>« ${echapper(equipe.parent || 'du projet')} »</strong> : Labo Blocs y retrouve ou y crée lui-même le dossier de ton équipe.</p>` +
+            '<div class="accueil-actions"><button type="button" class="btn-principal btn-autre-dossier">Choisir le dossier du projet</button></div></div>',
+        );
+        $('.btn-autre-dossier', racine).addEventListener('click', choisirDossier);
+        return;
       }
-      // Un autre dossier : on demande à l'élève.
+      // Un autre dossier : on demande à l'élève (le dossier de l'équipe sera quand même créé par Labo Blocs).
       resultat(
         `<div class="avertissement"><p>Le dossier choisi s’appelle <strong>« ${echapper(choix.nom)} »</strong>. ` +
-          `Le dossier de ton équipe devrait s’appeler <strong>« ${echapper(equipe.nom)} »</strong>.</p>` +
+          `Le dossier du projet s’appelle <strong>« ${echapper(equipe.parent || 'du projet')} »</strong>.</p>` +
           '<div class="accueil-actions">' +
           '<button type="button" class="btn-principal btn-autre-dossier">Choisir un autre dossier</button>' +
-          `<button type="button" class="btn-secondaire btn-creer-ici">Créer « ${echapper(equipe.nom)} » ici</button>` +
-          '<button type="button" class="btn-secondaire btn-garder">Utiliser ce dossier quand même</button>' +
+          `<button type="button" class="btn-secondaire btn-creer-ici">Créer « ${echapper(equipe.nom)} » dans « ${echapper(choix.nom)} »</button>` +
           '</div></div>',
       );
       $('.btn-autre-dossier', racine).addEventListener('click', choisirDossier);
-      $('.btn-creer-ici', racine).addEventListener('click', async () =>
-        valider(await F.creerSousDossier(choix.dossier, equipe.nom), `Le dossier « ${equipe.nom} » est prêt dans « ${choix.nom} ».`),
-      );
-      $('.btn-garder', racine).addEventListener('click', () => valider(choix.dossier, ''));
+      $('.btn-creer-ici', racine).addEventListener('click', creer);
     }
 
     async function valider(dossier, note) {

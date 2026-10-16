@@ -240,3 +240,26 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 15.3 | Éditeur › un parcours › « Publier » | La fenêtre annonce « mise en ligne » ; après « Publier » : « Version … mise en ligne » | |
 | 15.4 | 2 à 3 minutes plus tard, accueil (Ctrl + F5 si besoin) | Le parcours et sa nouvelle version sont proposés | |
 | 15.5 | Sur un autre ordinateur (sans clé), « Publier » | Le fichier est téléchargé, comme avant | |
+
+## 16. Dossier de l'équipe créé par Labo Blocs
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 16.1 | Page des élèves › un parcours › nouvelle équipe › « Choisir mon dossier » | Chemin jusqu'au dossier du projet, celui-ci surligné ; « Labo Blocs crée lui-même dedans le dossier de ton équipe » | |
+| 16.2 | Choisir directement un dossier `Prénom_Prénom` | Message : choisis le dossier qui le contient | |
+| 16.3 | Choisir le dossier du projet | Le dossier de l'équipe et son fichier sont créés ; « Dossier validé » | |
+
+## 17. Exercice libre : deux composants sur la même broche
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 17.1 | Exercice libre : un buzzer et un servomoteur sur D5 | Les deux apparaissent dans le simulateur, marqués « broche partagée » ; message en ambre | |
+| 17.2 | Même chose dans l'aperçu de l'éditeur (exemple) | Message sous l'aperçu | |
+
+## 18. Variables
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 18.1 | Éditeur › exercice › « Variables données aux élèves » : `score` | Les blocs de variables proposent `score` | |
+| 18.2 | Cocher « Les élèves créent leurs propres variables », vider les variables données | Palette : seulement « Créer une variable » (et le nombre) | |
+| 18.3 | Élève : « Créer une variable », taper `delay` puis `ma vitesse` | `delay` refusé (mot du langage), `ma_vitesse` créée et proposée dans les menus | |

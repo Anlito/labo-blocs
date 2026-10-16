@@ -283,7 +283,7 @@
       previousStatement: null,
       nextStatement: null,
       style: 'variable',
-      tooltip: 'Range une valeur dans la boîte CHOIX.',
+      tooltip: 'Range une valeur dans la variable choisie (une boîte qui garde un nombre).',
     },
     {
       type: 'variable',
@@ -291,7 +291,7 @@
       args0: [{ type: 'field_label_serializable', name: 'VAR', text: 'CHOIX' }],
       output: 'Number',
       style: 'variable',
-      tooltip: 'La valeur rangée dans la boîte CHOIX.',
+      tooltip: 'La valeur rangée dans la variable choisie.',
     },
     {
       type: 'nombre',
@@ -359,15 +359,26 @@
 
   const SORTE_BROCHE = { led_etat: 'led', quand_bouton: 'bouton', bouton_etat: 'bouton', son: 'buzzer', servo_angle: 'servo' };
 
+  // Variables connues de l'éditeur en cours (celles de l'exercice, celles de la sauvegarde, celles créées) : les menus
+  // des blocs de variables les proposent. Réglé par l'éditeur à chaque chargement (interface/editeur.js).
+  A.variablesConnues = ['CHOIX'];
+  const BLOCS_VARIABLE = ['affecter', 'ajouter_a', 'variable'];
+  const optionsVariables = () => (A.variablesConnues.length ? A.variablesConnues.map((n) => [n, n]) : [['?', '?']]);
+
   // Palette d'un exercice : seulement ses blocs autorisés ; une catégorie vide n'apparaît pas.
-  function palette(blocsAutorises, composants) {
+  //   options : { variables (noms proposés), creerVariables (bouton « Créer une variable ») }
+  function palette(blocsAutorises, composants, options) {
+    const o = options || {};
+    const variables = o.variables || A.variablesConnues;
     const autorises = new Set(blocsAutorises || []);
     // Les blocs de la palette ne donnent pas la broche de l'exercice : l'élève la choisit en lisant la consigne.
     void composants;
     const contenu = [];
     for (const cat of CATEGORIES) {
-      const blocs = cat.blocs.filter((t) => autorises.has(t));
-      if (!blocs.length) continue;
+      // Blocs de variables : seulement s'il y a au moins une variable (sinon l'élève commence par en créer une).
+      const blocs = cat.blocs.filter((t) => autorises.has(t) && (!BLOCS_VARIABLE.includes(t) || variables.length));
+      const bouton = cat.cle === 'variables' && o.creerVariables;
+      if (!blocs.length && !bouton) continue;
       contenu.push({
         kind: 'category',
         name: cat.nom,
@@ -379,8 +390,10 @@
           label: 'blocklyToolboxCategoryLabel cat-libelle',
           selected: 'blocklyToolboxSelected cat-choisie',
         },
-        contents: blocs.map((type) => {
+        contents: (bouton ? [{ kind: 'button', text: 'Créer une variable', callbackKey: 'creerVariable' }] : []).concat(blocs.map((type) => {
           const forme = JSON.parse(JSON.stringify(FORMES_PALETTE[type] || {}));
+          // Variable de départ : la dernière créée (ou la première de l'exercice).
+          if (BLOCS_VARIABLE.includes(type)) forme.fields = Object.assign({}, forme.fields, { VAR: variables[variables.length - 1] });
           // Broche de départ : la première de la carte (D2 sur l'Uno, P0 sur la micro:bit), jamais celle de l'exercice.
           const sorte = SORTE_BROCHE[type];
           if (sorte && forme.fields && forme.fields.BROCHE) {
@@ -388,7 +401,7 @@
             if (!liste.includes(forme.fields.BROCHE)) forme.fields.BROCHE = liste[0];
           }
           return Object.assign({ kind: 'block', type }, forme);
-        }),
+        })),
       });
     }
     return { kind: 'categoryToolbox', contents: contenu };
@@ -409,6 +422,18 @@
       entree.removeField('ETAT');
       entree.insertFieldAt(rang, new Blockly.FieldDropdown(() => (A.aideLed ? HAUT_BAS_LED : HAUT_BAS)), 'ETAT');
     };
+    // Menus de variables : celles de l'exercice et celles créées par l'élève (le bloc « valeur » aussi).
+    for (const type of BLOCS_VARIABLE) {
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        const champ = this.getField('VAR');
+        const entree = champ.getParentInput();
+        const rang = entree.fieldRow.indexOf(champ);
+        entree.removeField('VAR');
+        entree.insertFieldAt(rang, new Blockly.FieldDropdown(optionsVariables), 'VAR');
+      };
+    }
     // Menus de broches selon la carte de l'exercice.
     for (const [type, sorte] of [['led_etat', 'led'], ['bouton_etat', 'bouton'], ['quand_bouton', 'bouton'], ['servo_angle', 'servo'], ['son', 'buzzer']]) {
       const init = Blockly.Blocks[type].init;

@@ -367,6 +367,13 @@
           cat.blocs.map((t) => `<label class="ed-case"><input type="checkbox" class="champ-bloc" value="${t}"${blocsCoches.has(t) ? ' checked' : ''}> ${echapper(A.NOMS_BLOCS[t] || t)}</label>`).join('') +
           '</fieldset>',
       ).join('') +
+      '</div>' +
+      // Variables : données aux élèves, et/ou créées par eux
+      '<div class="ed-variables">' +
+      `<label>Variables données aux élèves<input class="champ-variables" value="${echapper((Array.isArray(e.variables) ? e.variables : ['CHOIX']).join(', '))}" placeholder="aucune"></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ" data-champ="variablesLibres"${e.variablesLibres ? ' checked' : ''}> Les élèves créent leurs propres variables (bouton « Créer une variable » dans la palette)</label>` +
+      '<p class="ed-aide">Sépare les noms par des virgules. Laisse vide si les élèves doivent créer toutes leurs variables. Les blocs de variables se cochent ci-dessus (Variables).</p>' +
+      '<p class="ed-message ed-ecart ed-message-variables" hidden></p>' +
       '</div></div>' +
       // Indices
       '<div class="carte ed-carte">' +
@@ -455,6 +462,27 @@
         } else e.aSavoir = t.value || null;
         modifie();
         dessinerFormulaire();
+      } else if (t.matches('.champ-variables')) {
+        // Noms vérifiés comme ceux des élèves (lettres sans accent, chiffres, « _ », pas un mot du langage de la carte).
+        const noms = [];
+        const pb = [];
+        for (const brut of t.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean)) {
+          const r = A.nomDeVariable(brut, noms);
+          if (r.ok) noms.push(r.nom);
+          else pb.push(r.message);
+        }
+        e.variables = noms;
+        t.value = noms.join(', ');
+        const m = $('.ed-message-variables', zone);
+        m.textContent = pb.join(' ');
+        m.hidden = !pb.length;
+        modifie();
+        chargerSolution();
+      } else if (t.matches('[data-champ="variablesLibres"]')) {
+        if (t.checked) e.variablesLibres = true;
+        else delete e.variablesLibres;
+        modifie();
+        chargerSolution();
       } else if (t.matches('.champ-bloc')) {
         e.blocsAutorises = $$('.champ-bloc:checked', zone).map((x) => x.value);
         etat.editeur.changerPalette(e.blocsAutorises);
@@ -581,7 +609,7 @@
     // Les paramètres « $nom » prennent leur valeur, comme chez l'élève.
     const solution = A.appliquerParametres(e.solutionReference || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
     A.carteCourante = carteDuParcours();
-    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours() }, A.versBlockly(solution));
+    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres }, A.versBlockly(solution));
     majMessageSolution();
   }
 
@@ -861,6 +889,11 @@
       },
     });
     apercu.exercice = e;
+    // Exercice libre : une broche employée pour deux composants est signalée (les deux restent dans l'aperçu).
+    const conflits = [...new Set((e.composants || []).filter((c) => c.conflit).map((c) => c.broche))];
+    const msg = $('.ed-message-apercu');
+    msg.textContent = conflits.length ? `Broche${conflits.length > 1 ? 's' : ''} ${conflits.join(', ')} : deux composants sur la même broche. L’élève verra ce message.` : '';
+    msg.hidden = !conflits.length;
     lancerApercu();
   }
 

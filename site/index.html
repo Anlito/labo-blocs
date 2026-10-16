@@ -66,11 +66,16 @@
     <!-- A2 · Dossier de l'équipe -->
     <section class="accueil-panneau carte-accueil carte-large" data-panneau="dossier" hidden>
       <h2>Le dossier de ton équipe</h2>
-      <p class="avec-acces">Ton travail sera enregistré dans ce dossier, sur le réseau :</p>
-      <p class="sans-acces-texte">Sur ce navigateur, « Enregistrer » télécharge le fichier <strong class="nom-fichier"></strong>. Range-le ensuite dans ce dossier :</p>
+      <p class="avec-acces">Clique sur « Choisir le dossier », puis va jusqu’au dossier <strong class="nom-dossier-projet"></strong> :</p>
+      <p class="sans-acces-texte">Sur ce navigateur, « Enregistrer » télécharge le fichier <strong class="nom-fichier"></strong>. Range-le ensuite dans le dossier de ton équipe, ici :</p>
       <div class="chemin"></div>
-      <p class="avec-acces dossier-aide">Clique sur « Choisir le dossier », va jusqu’au dossier <strong class="nom-dossier-equipe"></strong> et valide.
-        S’il n’existe pas encore, choisis le dossier du projet <strong class="nom-dossier-projet"></strong> : il sera créé pour toi.</p>
+      <ol class="avec-acces dossier-etapes">
+        <li>Ouvre chaque dossier dans l’ordre, jusqu’à <strong class="nom-dossier-projet"></strong>.</li>
+        <li>Sélectionne <strong class="nom-dossier-projet"></strong> (un seul clic) et valide (« Sélectionner le dossier »).</li>
+        <li>Accepte quand le navigateur demande l’autorisation de modifier les fichiers.</li>
+      </ol>
+      <p class="dossier-equipe-auto dossier-aide"><span class="avec-acces-inline">Labo Blocs crée lui-même dedans le dossier de ton équipe (ne le crée pas toi-même) :</span><span class="sans-acces-inline">Crée dedans le dossier de ton équipe :</span>
+        <span class="chemin-dossier equipe"><span data-icone="dossier" data-epaisseur="2.4"></span><span class="nom-dossier-equipe"></span></span></p>
       <div class="dossier-resultat" aria-live="polite"></div>
       <p class="accueil-erreur erreur-dossier" role="alert" hidden></p>
       <div class="accueil-actions">
