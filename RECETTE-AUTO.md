@@ -1,10 +1,10 @@
 # Recette automatique — jalons 1 à 5
 
-16/10/2026 22:03:04 · chromium · page ouverte en file:// · 33/33 critères
+16/10/2026 22:25:18 · chromium · page ouverte en file:// · 34/34 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
-| L’outil s’ouvre depuis un dossier (file://), sans internet, sans erreur | ✔ | aucune ressource en ligne |
+| L’outil s’ouvre depuis un dossier (file://), sans internet, sans erreur | ✔ | aucune ressource en ligne, sauf la lecture des réglages du collège (copie de secours sinon) |
 | Polices de la charte chargées depuis le dépôt (Lexend, Atkinson Hyperlegible) | ✔ |  |
 | Firefox (sans accès aux dossiers) : message clair, nouvelle équipe, « Enregistrer » télécharge | ✔ | Équipe Léa · 5A |
 | Parcours : 14 exercices, le 1 ouvert, les autres verrouillés, 13B en défi facultatif | ✔ |  |
@@ -35,5 +35,6 @@
 | Page des élèves : tous les parcours, sans code professeur, chacun ouvre l’accueil de l’équipe | ✔ | 3 parcours (Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code |
 | Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe | ✔ | dossier de l’équipe refusé (« choisis celui qui le contient ») ; autre dossier : créer dedans ou rechoisir (plus de « utiliser quand même ») ; dossier du projet : « Ana_Ben/Ana_Ben.json » créé |
 | Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié | ✔ | créée par l’élève : « delay » refusé, « ma vitesse » → ma_vitesse (= 7 en simulation) ; donnée par le professeur : score (sans bouton) |
+| Réglages du collège : liste commune publiée depuis l’accueil ; la page des élèves suit (niveaux du projet, version en ligne) | ✔ | accueil : 6 classes lues, 4 publiées (site/college.js) ; élèves (niveau 5) : 5A, 5B, 5C, 5D, 5E, 5F → version en ligne 5A, 5G ; « Reseau › 5A › TECHNO › DISTRIBUTEUR DE CEREALES › Prénom_Prénom » |
 | Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « Bureau›Classe›4B›COMMUN›TECHNOLOGIE›PONT-LEVIS › Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
 | Aucune erreur dans la console du navigateur | ✔ |  |

@@ -149,6 +149,10 @@
 <script src="../interface/ecran-exercice.js"></script>
 <script src="../interface/app.js"></script>
 <!-- Projet et parcours (données modifiables par le professeur) -->
+<!-- Réglages du collège (classes, chemin des dossiers de classe) : copie de secours, puis version en ligne -->
+<script src="../interface/college.js"></script>
+<script src="college.js"></script>
+<script>LaboBlocs.chargerCollegeEnLigne();</script>
 <script src="projet.js"></script>
 <!-- Parcours : tous ceux de ../parcours/index.js (un parcours ajouté au dossier apparaît sans toucher à cette page) -->
 <script>LaboBlocs.chargerParcoursDuSite('../parcours/').then(() => LaboBlocs.demarrerApplication());</script>

@@ -42,7 +42,10 @@ test('un projet créé : pages, réglages, parcours, module, consignes', () => {
   vm.runInNewContext(fs.readFileSync(path.join(site, 'projet-labo-blocs.js'), 'utf8'), { definirProjet: (p) => (projet = JSON.parse(JSON.stringify(p))) }); // objets de ce contexte
   assert.strictEqual(projet.parcours, 'decouverte-microbit');
   assert.deepStrictEqual(projet.classes, ['3A']);
-  assert.deepStrictEqual(projet.cheminSauvegarde, ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', 'SERRE AUTOMATIQUE', '{equipe}']);
+  // Dossier : celui du projet dans le dossier de la classe (le début du chemin vient des réglages du collège).
+  assert.strictEqual(projet.cheminSauvegarde, undefined);
+  assert.deepStrictEqual(projet.cheminProjet, ['SERRE AUTOMATIQUE']);
+  assert.ok(fs.existsSync(path.join(site, 'college.js')), 'copie de secours des réglages du collège');
 
   // Le noyau copié se charge sous Node et accepte le parcours copié.
   const L = require(path.join(site, 'vendor', 'labo-blocs', 'labo-blocs-noyau.js'));

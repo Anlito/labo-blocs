@@ -22,7 +22,7 @@ const vm = require('node:vm');
 
 const RACINE = join(__dirname, '..');
 const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde', 'competences', 'classe'];
-const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration', 'professeur'];
+const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration', 'professeur', 'college'];
 const { VERSION_MOTEUR } = require('../noyau/parcours.js');
 
 // ---------- CSS limitée à .labo-blocs ----------

@@ -13,7 +13,7 @@
 // Blocs. Rien n'est jamais écrasé : si une de ces pages ou les réglages existent déjà, rien n'est écrit.
 //
 // Usage : npm run nouveau-projet -- <dossier> --titre "Pont-levis" --parcours <id | fichier .labo-parcours.json>
-//           [--id pont-levis] [--accent "#2547D0"] [--classes 4A,4B,4C] [--chemin "{classe}/COMMUN/TECHNOLOGIE/PONT-LEVIS/{equipe}"]
+//           [--id pont-levis] [--accent "#2547D0"] [--niveaux 4] [--classes 4A,4B,4C] [--chemin "{classe}/COMMUN/TECHNOLOGIE/PONT-LEVIS/{equipe}"]
 const { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } = require('node:fs');
 const { join, resolve, basename } = require('node:path');
 const { construire, lireParcours } = require('./construire-module.js');
@@ -78,6 +78,9 @@ ${body.replace(/src="img\/logo\.svg"/g, 'src="vendor/labo-blocs/logo.svg"')}<!--
 <script src="vendor/labo-blocs/labo-blocs-noyau.js"></script>
 <script src="vendor/labo-blocs/labo-blocs-interface.js"></script>
 <script>LaboBlocs.mediaBlockly = 'vendor/labo-blocs/blockly/media/';</script>
+<!-- Réglages du collège (classes, chemin des dossiers de classe) : copie de secours, puis version en ligne -->
+<script src="college.js"></script>
+<script>LaboBlocs.chargerCollegeEnLigne();</script>
 <!-- Réglages du projet et parcours -->
 <script src="${REGLAGES}"></script>
 <script src="parcours/__PARCOURS__.js"></script>
@@ -91,11 +94,26 @@ function reglages(o) {
   return `// Réglages du projet dans Labo Blocs (modifiables par le professeur, avec un éditeur de texte).
 //   titre : affiché en haut des pages ; accent : couleur du bandeau ;
 //   parcours : identifiant du parcours chargé (fichier parcours/<id>.js) ;
-//   classes : proposées à l'accueil des élèves ;
-//   cheminSauvegarde : dossier de l'équipe sur le réseau, du plus haut au plus bas ({classe} et {equipe} sont remplacés).
+//   classes (facultatif) : proposées à l'accueil des élèves ; sans elles, celles du collège (site/college.js,
+//     modifiées dans « Réglages du collège » de Labo Blocs), limitées aux niveaux (ex. ['4']) ;
+//   cheminProjet : dossier du projet dans le dossier de la classe (le début du chemin vient des réglages du collège) ;
+//   cheminSauvegarde (facultatif, à la place) : chemin complet ({classe} et {equipe} sont remplacés).
 //   reglagesDuProjetPrioritaires : ces classes et ce dossier comptent, même si le parcours en propose d'autres.
 definirProjet(${JSON.stringify(
-    { id: o.id, titre: o.titre, accent: o.accent, logo: 'vendor/labo-blocs/logo.svg', parcours: o.parcours, classes: o.classes, cheminSauvegarde: o.chemin, reglagesDuProjetPrioritaires: true },
+    Object.fromEntries(
+      Object.entries({
+        id: o.id,
+        titre: o.titre,
+        accent: o.accent,
+        logo: 'vendor/labo-blocs/logo.svg',
+        parcours: o.parcours,
+        classes: o.classes,
+        niveaux: o.niveaux,
+        cheminSauvegarde: o.chemin,
+        cheminProjet: o.chemin ? null : o.cheminProjet,
+        reglagesDuProjetPrioritaires: true,
+      }).filter(([, v]) => v !== null && v !== undefined),
+    ),
     null,
     2,
   )});
@@ -123,8 +141,8 @@ Chrome ou Edge conseillés (enregistrement automatique, envoi dans les cartes).
 
 ## Réglages choisis
 
-- Classes : ${o.classes.join(', ')}
-- Dossier d'une équipe : \`${o.chemin.join(' › ')}\`
+- Classes : ${o.classes ? o.classes.join(', ') : `celles du collège${o.niveaux ? ` (niveaux ${o.niveaux.join(', ')})` : ''}, modifiées dans « Réglages du collège » (accueil de Labo Blocs)`}
+- Dossier d'une équipe : \`${o.chemin ? o.chemin.join(' › ') : `(chemin du collège jusqu’à la classe) › ${o.cheminProjet.join(' › ')} › Prénom_Prénom`}\`
 - Couleur : \`${o.accent}\`
 
 Pour les changer : ouvrir \`site/${REGLAGES}\` avec un éditeur de texte (ou demander à Claude Code).
@@ -157,16 +175,15 @@ function creerProjet(args) {
     titre: o.titre,
     accent: o.accent || '#2547D0',
     parcours: paquet.id,
-    // Valeurs de départ : celles données, sinon celles réglées dans le parcours, sinon des valeurs par défaut.
-    classes: o.classes && o.classes.length ? o.classes : paquet.classes && paquet.classes.length ? paquet.classes.slice() : ['5A', '5B', '5C', '5D'],
-    chemin:
-      o.chemin && o.chemin.length
-        ? o.chemin
-        : paquet.cheminSauvegarde && paquet.cheminSauvegarde.includes('{equipe}')
-          ? paquet.cheminSauvegarde.slice()
-          : ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', sansAccents(o.titre).toUpperCase(), '{equipe}'],
+    // Classes : celles données, sinon celles du parcours, sinon la liste commune du collège (site/college.js), filtrée
+    // par les niveaux donnés. Dossier : celui donné, sinon celui du parcours, sinon le chemin du collège jusqu'au dossier
+    // de la classe, puis le dossier du projet (son titre).
+    classes: o.classes && o.classes.length ? o.classes : paquet.classes && paquet.classes.length ? paquet.classes.slice() : null,
+    niveaux: o.niveaux && o.niveaux.length ? o.niveaux : null,
+    chemin: o.chemin && o.chemin.length ? o.chemin : paquet.cheminSauvegarde && paquet.cheminSauvegarde.includes('{equipe}') ? paquet.cheminSauvegarde.slice() : null,
+    cheminProjet: [sansAccents(o.titre).toUpperCase()],
   };
-  if (!reg.chemin.includes('{equipe}')) throw new Error('Le chemin du dossier doit contenir {equipe}.');
+  if (reg.chemin && !reg.chemin.includes('{equipe}')) throw new Error('Le chemin du dossier doit contenir {equipe}.');
 
   const projet = resolve(o.dossier);
   const site = join(projet, 'site');
@@ -193,6 +210,8 @@ function creerProjet(args) {
   for (const [f, texte] of Object.entries(fichiers)) writeFileSync(f, texte);
   const fichierParcours = join(site, 'parcours', `${paquet.id}.js`);
   if (!existsSync(fichierParcours)) writeFileSync(fichierParcours, scriptParcours(paquet));
+  // Copie de secours des réglages du collège (la version en ligne la remplace quand internet répond).
+  writeFileSync(join(site, 'college.js'), readFileSync(join(RACINE, 'site', 'college.js'), 'utf8'));
   const vendor = join(site, 'vendor', 'labo-blocs');
   rmSync(vendor, { recursive: true, force: true });
   mkdirSync(vendor, { recursive: true });
@@ -215,6 +234,7 @@ function lireArguments(argv) {
     else if (!o.dossier) o.dossier = a;
   }
   if (o.classes) o.classes = o.classes.split(/[,;\s]+/).filter(Boolean);
+  if (o.niveaux) o.niveaux = o.niveaux.split(/[,;\s]+/).filter(Boolean);
   if (o.chemin) o.chemin = o.chemin.split(/[\\/›]+/).map((s) => s.trim()).filter(Boolean);
   return o;
 }
