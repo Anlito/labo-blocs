@@ -314,3 +314,19 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      (« Vérifier »). Éditeur : réglages du parcours et « Modes pour tester » de chaque exercice. Distributeur 1.2.0 et
      découvertes 1.1.0 avec les trois modes ; atelier : « Essayer en direct sur la maquette ».
    - Recette automatique : Labo Blocs 23/23, atelier 24/24.
+17. **Jalon 5 livré le 20/10/2026** (recette à faire, `RECETTE.md` §10). Décisions de Thomas (16/10) : compétences qui
+   donnent une note ; pas de lien direct avec Pronote : la correspondance avec les élèves se fait dans son **Carnet de
+   classe** (`Anlito/gestion-de-classe-et-suivi-projet`), avec correction à la main ; liste de compétences proposée ;
+   un outil du professeur par projet (l'atelier garde le sien).
+   - `noyau/competences.js` : C5, C6, C8, C9 (libellés du programme de cycle 4, BO 2024, repris du Carnet) ; score d'un
+     exercice (retenues pour indices et vérifications ratées avant la réussite, participation) ; niveau par compétence
+     (seuils 25 % / 60 %, Dépassé = Atteint + défi réussi) ; note /20 = moyenne des niveaux × 5 (comme le Carnet) ;
+     fichier `labo-blocs/resultats` (prénoms, classe, niveaux, note, commentaire) et CSV.
+   - `noyau/classe.js` + `site/prof.html` (B10 tableau, B11 fiche) : dossier de la classe relu toutes les 30 s ou fichiers
+     importés ; fiche avec niveaux forcés, commentaire, programme rejoué dans l'écran d'exercice (lecture seule) ;
+     réglages du professeur dans `labo-blocs-professeur.json` (fichiers des élèves jamais modifiés).
+   - Éditeur : « Compétence évaluée » de chaque exercice ; distributeur 1.3.0 (C9 : 1–3, 9–11, 13A/B ; C6 : 4–8, 12),
+     découvertes 1.2.0.
+   - Carnet de classe 1.22.0 : Notes › « Importer des résultats Labo Blocs » (branche `claude/nice-volta-xpl2bp`).
+   - Atelier : bouton « Carnet de classe » et compétences dans le bilan d'une équipe.
+   - Recette automatique : Labo Blocs 24/24, atelier 24/24, tests du Carnet 71/71 (dont 4 nouveaux).

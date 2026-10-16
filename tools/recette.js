@@ -602,12 +602,64 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `bouton A de la vraie carte → P0 allumée et « ${ext.split(' | ').find((x) => /X 2 2/.test(x))} » ; exercice réglé « simulateur seulement » : sélecteur de modes caché`;
   });
 
+  // ---------- Jalon 5 : outil du professeur ----------
+
+  await critere('Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée', async () => {
+    const { creerClasse } = require('./classe-test.js');
+    const tmp = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-classe-'));
+    try {
+      const fichiers = creerClasse(path.join(tmp, '5A')).map((f, i) => {
+        const copie = path.join(tmp, `equipe${i + 1}.json`); // noms ASCII pour l'envoi de fichiers du navigateur
+        fs.copyFileSync(f, copie);
+        return copie;
+      });
+      const telechargements = path.join(tmp, 'telechargements');
+      fs.mkdirSync(telechargements);
+      const p = await page(pathToFileURL(path.join(RACINE, 'site', 'prof.html')).href);
+      const cdp = await p.target().createCDPSession();
+      await cdp.send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: telechargements });
+      await (await p.$('.pr-accueil .pr-fichiers')).uploadFile(...fichiers);
+      await pause(800);
+      const lignes = await p.$$eval('.pr-tableau tbody tr', (l) => l.length);
+      const chiffres = await texte(p, '.pr-chiffres');
+      const bloquees = await p.$$eval('.pr-etat-bloquee', (l) => l.map((x) => x.textContent.trim()));
+      verifier(lignes === 8 && /8\s*équipes/.test(chiffres) && bloquees.length === 2, `${lignes} lignes, « ${chiffres.replace(/\s+/g, ' ')} », ${bloquees}`);
+      // Fiche de Lucas · Ethan : niveau C9 forcé à 3, commentaire, programme rejoué.
+      await p.evaluate(() => [...document.querySelectorAll('.pr-lien-equipe')].find((b) => /Lucas/.test(b.textContent)).click());
+      await pause(300);
+      await p.select('.pr-forcer[data-code="C9"]', '3');
+      await p.type('.pr-commentaire', 'Beaucoup d’aide au début.');
+      await pause(800);
+      const note = await texte(p, '.pr-note');
+      await p.click('.pr-voir');
+      await pause(1200);
+      const programme = await p.evaluate(() => [document.querySelector('.pr-programme').open, document.querySelector('.pr-programme .titre-exercice').textContent, document.querySelectorAll('.pr-programme .blocklyDraggable').length]);
+      verifier(programme[0] && programme[2] > 1, 'programme non affiché : ' + JSON.stringify(programme));
+      await p.click('.pr-programme .btn-vers-parcours');
+      await p.click('.pr-retour');
+      await pause(200);
+      await p.click('.pr-csv');
+      await p.click('.pr-carnet');
+      await pause(1200);
+      const noms = fs.readdirSync(telechargements);
+      const csv = fs.readFileSync(path.join(telechargements, noms.find((n) => n.endsWith('.csv'))), 'utf8');
+      const r = JSON.parse(fs.readFileSync(path.join(telechargements, noms.find((n) => n.endsWith('.labo-resultats.json'))), 'utf8'));
+      const lucas = r.equipes.find((e) => e.eleves[0] === 'Lucas');
+      verifier(csv.trim().split('\r\n').length === 9 && r.format === 'labo-blocs/resultats' && r.equipes.length === 8, `${noms.join(', ')}`);
+      verifier(lucas.niveaux.C9 === 3 && /aide/.test(lucas.commentaire), JSON.stringify(lucas));
+      await p.close();
+      return `8 équipes, 2 bloquées ; fiche : C9 forcé à 3, ${note.replace(/\s+/g, ' ')} ; programme rejoué (« ${programme[1]} ») ; exports : ${noms.join(' + ')} (compétences ${r.competences.map((c) => c.code).join(', ')})`;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   await b.close();
   await critere('Aucune erreur dans la console du navigateur', async () => verifier(!erreurs.length, erreurs.join(' | ')));
 
   const ok = resultats.filter((r) => r.ok).length;
   const md =
-    `# Recette automatique — jalons 1 à 4\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
+    `# Recette automatique — jalons 1 à 5\n\n${new Date().toLocaleString('fr-FR')} · ${path.basename(navigateur)} · page ouverte en file:// · ${ok}/${resultats.length} critères\n\n` +
     '| Critère | Résultat | Détail |\n|---|---|---|\n' +
     resultats.map((r) => `| ${r.nom} | ${r.ok ? '✔' : '✘'} | ${String(r.detail).replace(/\|/g, '/').replace(/\n/g, ' ')} |`).join('\n') +
     '\n';

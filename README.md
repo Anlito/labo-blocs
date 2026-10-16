@@ -28,7 +28,7 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 | `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur (micro:bit, tableau du mBot), aides, mode « Dans la carte » (`carte.js`, `televersement.js`), fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
 | `cartes/` | programmes des cartes 0.2 (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
 | `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `decouverte-mbot/`, `decouverte-microbit/` : `site/index.html?parcours=…` ; `index.js` : la liste ouverte par l'éditeur) |
-| `site/` | application Labo Blocs : `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
+| `site/` | application Labo Blocs : `prof.html` (professeur : suivi de classe, niveaux par compétence, exports), `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
 | `tests/` | tests Node (`node:test`) |
 | `tools/` | serveur local, copie de Blockly et des polices, recette dans un vrai navigateur, conversion du distributeur, construction du module (`construire-module.js`), copie dans un projet (`vers-projet.js`), publication (`publier.js`) |
@@ -46,6 +46,7 @@ npm run module           # construit le module dans dist/labo-blocs-<version>/ e
 npm run vers-projet -- ../atelier-cereales [--parcours distributeur]   # copie le module (et le parcours) dans un projet
 npm run publier          # dossier _site/ publié sur GitHub Pages (application + parcours en ligne)
 npm run firmwares        # reconstruire les programmes des cartes (cartes/ ; avr-gcc + ARDUINO_CORE et SERVO, microbit-fs)
+npm run classe-test      # classe test de 8 équipes fictives (dist/classe-test/5A)
 npm run essais:mesures   # taille du code octet des programmes
 npm run essais:firmware  # recompiler le firmware (arduino-cli, ou avr-gcc + ARDUINO_CORE et SERVO)
 npm run essais:microbit  # refaire les fichiers micro:bit
@@ -71,3 +72,6 @@ Le site marche aussi en ouvrant directement `site/index.html` depuis un dossier 
 - **Jalon 4 (en direct) validé** (Uno et micro:bit ; clé 2.4G du mBot en V2) : mode « En direct » (le programme
   tourne dans l'ordinateur, la carte obéit, ses boutons et capteurs remontent), clé 2.4G du mBot, modes par parcours
   et par exercice — [RECETTE.md](RECETTE.md) §9.
+- **Jalon 5 (professeur) livré (20/10/2026), recette à faire** : suivi de classe et fiche d'équipe (`site/prof.html`),
+  niveaux par compétence du programme de cycle 4 et note, exports CSV et « résultats » importés par le Carnet de
+  classe — [RECETTE.md](RECETTE.md) §10.

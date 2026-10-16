@@ -14,6 +14,7 @@
     "module": "node tools/construire-module.js",
     "vers-projet": "node tools/vers-projet.js",
     "publier": "node tools/publier.js",
+    "classe-test": "node tools/classe-test.js",
     "firmwares": "node tools/construire-firmwares.js"
   },
   "devDependencies": {

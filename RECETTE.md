@@ -1,4 +1,4 @@
-# Recette — jalons 1 à 4 (noyau, parcours du distributeur, éditeur, cartes, mode direct)
+# Recette — jalons 1 à 5 (noyau, parcours du distributeur, éditeur, cartes, mode direct, professeur)
 
 À faire par Thomas sur un poste du collège, avec **Chrome ou Edge**, en ouvrant `site/index.html` depuis le dossier
 réseau (double-clic). Compter 30 à 40 minutes. Noter ✔ ou ✘ et une remarque pour chaque ligne.
@@ -166,3 +166,24 @@ Dans un exercice : « Solution », puis à droite **« Tester » › « En direc
 
 Limite connue : en direct, une note de la micro:bit dure au moins 1 s (la suivante la remplace à son heure). Dans la
 carte et dans le simulateur, la durée est exacte.
+
+## 10. Jalon 5 — le professeur : suivi de classe, niveaux par compétence, Carnet de classe
+
+Pas de matériel. Une **classe test de 8 équipes fictives** est dans le paquet (`classe-test/5A`, refaite par
+`npm run classe-test`). La recette automatique (`npm run recette`, 24 critères) la suit et l'exporte déjà. Réussite du
+jalon : **une classe test de 8 équipes est suivie et exportée**.
+
+| # | Action | Attendu | ✔/✘ |
+|---|---|---|---|
+| 10.1 | Ouvrir `site/prof.html` (Chrome ou Edge) › « Ouvrir le dossier de la classe » › le dossier `classe-test/5A` | « Classe 5A », 8 équipes, 2 bloquées depuis plus de 10 min, 2 envois dans la carte ; une ligne par équipe : exercices (✓ ▶), indices, dernier envoi, activité, niveaux C6 / C9, note /20, état | |
+| 10.2 | Cliquer sur « Lucas · Ethan » | Fiche : compétences avec niveau calculé, note, commentaire ; exercices (état, vérifications, indices, temps, envois) | |
+| 10.3 | « Voir » sur un exercice | L'écran d'exercice de Labo Blocs s'ouvre avec le programme de l'équipe ; « Lancer » le rejoue dans le simulateur ; « Fermer » | |
+| 10.4 | Forcer C9 à « 3 · Atteint », écrire un commentaire, revenir à la classe, recharger la page, « Reprendre » | La note a changé ; le niveau forcé (3*) et le commentaire sont toujours là (fichier `labo-blocs-professeur.json` dans le dossier de la classe). Les fichiers des élèves ne sont pas modifiés | |
+| 10.5 | « Exercices attendus : jusqu'à l'exercice 5 » | Les niveaux et les notes ne comptent plus que les 5 premiers exercices | |
+| 10.6 | « Exporter (.csv) » | Ouvert dans Excel : une ligne par équipe, colonnes C6 / C9 (« 3 - Atteint »…), note, commentaire | |
+| 10.7 | « Exporter pour le Carnet de classe » | Fichier `…labo-resultats.json` dans les Téléchargements | |
+| 10.8 | **Carnet de classe** (version de la branche, voir ci-dessous) : une classe avec un projet et des élèves aux mêmes prénoms › Notes › « Importer des résultats Labo Blocs » › ce fichier | Panneau : compétences → critères (retrouvés si même libellé du programme), équipes → élèves (« ⚠ à choisir » pour deux élèves du même prénom ou un prénom introuvable) et groupe (existant ou nouveau) | |
+| 10.9 | Corriger un élève à la main, « Importer » | Niveaux posés sur les groupes, commentaire ajouté ; « Annuler » dans le message remet tout comme avant ; ajustements et export Pronote comme d'habitude | |
+| 10.10 | Atelier (ZIP) : `prof.html` › classe › bouton « Carnet de classe » ; une équipe › Bilan | Même fichier de résultats ; « Compétences (Labo Blocs) » dans le bilan | |
+| 10.11 | Éditeur de parcours : un exercice › « Compétence évaluée » | C5, C6, C8, C9 (libellés du programme) ; le choix change les colonnes du suivi de classe | |
+| 10.12 | Avis | Seuils (moins de 25 % : Non atteint ; moins de 60 % : Partiellement ; sinon Atteint ; Dépassé avec un défi réussi), compétences de chaque exercice du distributeur, colonnes du tableau | |
