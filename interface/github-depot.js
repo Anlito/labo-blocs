@@ -87,19 +87,25 @@
     return { ok: true };
   }
 
+  // Écrit un fichier texte du dépôt (créé, ou remplacé avec son sha s'il existe déjà).
+  async function mettreFichierEnLigne(chemin, texte, message, cle) {
+    const corps = { message, content: base64(texte), branch: BRANCHE };
+    const existant = await appel(`/repos/${DEPOT}/contents/${chemin}?ref=${BRANCHE}`, cle);
+    if (existant.ok && existant.donnees && existant.donnees.sha) corps.sha = existant.donnees.sha;
+    else if (!existant.ok && existant.statut !== 404) return { ok: false, message: existant.message || expliquer(existant.statut) };
+    const r = await appel(`/repos/${DEPOT}/contents/${chemin}`, cle, { method: 'PUT', corps });
+    if (!r.ok) return { ok: false, message: r.message || expliquer(r.statut) };
+    return { ok: true, lien: `https://github.com/${DEPOT}/blob/${BRANCHE}/${chemin}` };
+  }
+
   // Envoie le parcours dans parcours/ (remplace le fichier s'il existe déjà, ex. même version publiée deux fois).
   async function mettreEnLigne(paquet, cle) {
     const e = envoiParcours(paquet);
-    const corps = { message: e.message, content: e.contenu, branch: BRANCHE };
-    const existant = await appel(`/repos/${DEPOT}/contents/${e.chemin}?ref=${BRANCHE}`, cle);
-    if (existant.ok && existant.donnees && existant.donnees.sha) corps.sha = existant.donnees.sha;
-    else if (!existant.ok && existant.statut !== 404) return { ok: false, message: existant.message || expliquer(existant.statut) };
-    const r = await appel(`/repos/${DEPOT}/contents/${e.chemin}`, cle, { method: 'PUT', corps });
-    if (!r.ok) return { ok: false, message: r.message || expliquer(r.statut) };
-    return { ok: true, nom: e.nom, lien: `https://github.com/${DEPOT}/blob/${BRANCHE}/${e.chemin}` };
+    const r = await mettreFichierEnLigne(e.chemin, JSON.stringify(paquet, null, 2) + '\n', e.message, cle);
+    return r.ok ? Object.assign(r, { nom: e.nom }) : r;
   }
 
-  const api = { DEPOT_GITHUB: DEPOT, envoiParcours, lireCleGithub: lireCle, ecrireCleGithub: ecrireCle, verifierCleGithub: verifierCle, mettreEnLigne, expliquerGithub: expliquer };
+  const api = { DEPOT_GITHUB: DEPOT, envoiParcours, lireCleGithub: lireCle, ecrireCleGithub: ecrireCle, verifierCleGithub: verifierCle, mettreEnLigne, mettreFichierEnLigne, expliquerGithub: expliquer };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

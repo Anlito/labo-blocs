@@ -405,3 +405,17 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    carte et code Arduino acceptaient déjà tout nom.
    - Pages du kit nouveau projet : `html { height: 100% }` (l'espace de programmation était trop petit en mode
      enseignant).
+28. **Réglages du collège communs à tous les outils (16/10/2026)**, demande de Thomas (« avoir la main facilement sur
+   l'ensemble des projets »). Décisions : liste en ligne avec copie de secours (exception à « aucune ressource en
+   ligne », inscrite dans CLAUDE.md) ; modification dans une page protégée ; liste commune d'abord, puis l'écran de
+   départ uniformisé projet par projet (validé à chaque fois).
+   - `site/college.js` : `definirCollege({ classes, cheminClasse })` (ex. `Bureau › Classe › {classe} › COMMUN ›
+     TECHNOLOGIE`), publié à https://anlito.github.io/labo-blocs/site/college.js (même adresse que Labo Blocs : la clé
+     GitHub de Thomas suffit). Accueil › « Réglages du collège » : classes et chemin, « Publier les réglages ».
+   - `interface/college.js` (aussi dans le module) : copie de secours lue d'abord, version en ligne ensuite
+     (`chargerCollegeEnLigne`, jamais bloquant, jamais une copie gardée par le navigateur) ; un projet dit ses
+     `niveaux` (['5']) et son `cheminProjet` (['DISTRIBUTEUR DE CEREALES']) ; `projetAvecCollege` complète classes et
+     chemin ; l'accueil des élèves se redessine si la version en ligne arrive après.
+   - Distributeur : niveaux 5 ; autres parcours du site : toutes les classes, dossier = titre du parcours (sauf
+     réglages du parcours dans l'éditeur) ; kit nouveau projet : `--niveaux`, copie de secours `site/college.js`.
+   - Prochaines étapes (une validation à chaque fois) : atelier céréales, Théâtre d'ombre, Concept Store 3D, Vitrine.

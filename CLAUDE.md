@@ -9,7 +9,9 @@
 ## Règles
 - Tout en **français** : interface, messages, commentaires, noms de fichiers et de fonctions (comme l'atelier).
 - Le site doit marcher en **`file://`** : scripts classiques (pas de modules ES au chargement), données en
-  `definirXxx({...})`, aucune ressource en ligne, Blockly copié dans le dépôt.
+  `definirXxx({...})`, aucune ressource en ligne, Blockly copié dans le dépôt. Seule exception (décision de Thomas,
+  16/10/2026) : la lecture des **réglages du collège** (`site/college.js` : classes, chemin des dossiers de classe),
+  toujours avec une copie de secours locale lue en premier ; rien n'est envoyé.
 - Aucun compte, aucune donnée envoyée ailleurs. Sauvegarde = un `.json` par équipe, rubrique `programmation`
   versionnée, jamais d'écrasement, anciennes sauvegardes lisibles.
 - Messages : décrire ce que le programme fait, jamais « tu as faux » ; un seul écart ; écart en **ambre**, jamais en

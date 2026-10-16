@@ -32,6 +32,10 @@ const EMPREINTE_PORTE = (() => {
   return r.empreinte;
 })();
 
+// Réglages du collège : adresse en ligne et copie du dépôt (servie à la place pendant la recette).
+const { ADRESSE_COLLEGE } = require('../interface/college.js');
+const COLLEGE_LOCAL = fs.readFileSync(path.join(RACINE, 'site', 'college.js'), 'utf8');
+
 const resultats = [];
 async function critere(nom, f) {
   try {
@@ -54,6 +58,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   async function page(url, options) {
     const p = await b.newPage();
     await p.setViewport({ width: 1366, height: 768 });
+    // Réglages du collège « en ligne » : servis par la copie du dépôt (la recette ne dépend pas d'internet).
+    await p.setRequestInterception(true);
+    p.on('request', (r) => (r.url().startsWith(ADRESSE_COLLEGE) ? r.respond({ status: 200, contentType: 'text/javascript', body: COLLEGE_LOCAL }) : r.continue()));
     p.on('pageerror', (e) => erreurs.push(e.message));
     p.on('console', (m) => m.type() === 'error' && erreurs.push(m.text()));
     // « Quitter la page ? » (travail pas encore enregistré dans un fichier) : on accepte.
@@ -85,9 +92,10 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   await critere('L’outil s’ouvre depuis un dossier (file://), sans internet, sans erreur', async () => {
     const p = await page(PAGE);
     verifier(await visible(p, '.ecran-accueil'), 'accueil absent');
-    const reseau = await p.evaluate(() => performance.getEntriesByType('resource').filter((r) => !r.name.startsWith('file:')).map((r) => r.name));
+    // Seule exception (décision de Thomas, 16/10/2026) : la lecture des réglages du collège, avec copie de secours.
+    const reseau = await p.evaluate((adresse) => performance.getEntriesByType('resource').filter((r) => !r.name.startsWith('file:') && !r.name.startsWith(adresse)).map((r) => r.name), ADRESSE_COLLEGE);
     verifier(!reseau.length, 'ressources en ligne : ' + reseau.join(', '));
-    return 'aucune ressource en ligne';
+    return 'aucune ressource en ligne, sauf la lecture des réglages du collège (copie de secours sinon)';
   });
 
   await critere('Polices de la charte chargées depuis le dépôt (Lexend, Atkinson Hyperlegible)', async () => {
@@ -992,6 +1000,44 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }
+  });
+
+  // ---------- Réglages du collège (liste de classes commune à tous les outils) ----------
+
+  await critere('Réglages du collège : liste commune publiée depuis l’accueil ; la page des élèves suit (niveaux du projet, version en ligne)', async () => {
+    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+    // GitHub simulé : rien ne part vraiment.
+    await a.evaluate(() => {
+      window.__appels = [];
+      localStorage.setItem('labo-blocs-cle-github', 'github_pat_essai');
+      window.fetch = async (url, o) => {
+        const methode = (o && o.method) || 'GET';
+        window.__appels.push({ url: String(url), methode, corps: o && o.body ? JSON.parse(o.body) : null });
+        return new Response('{}', { status: methode === 'PUT' ? 200 : 404 });
+      };
+    });
+    const avant = await a.$eval('.ac-classes', (t) => t.value.split('\n'));
+    await a.$eval('.ac-classes', (t) => (t.value = '5A\n5B\n4A\n4B'));
+    await a.click('.ac-publier-college');
+    await pause(400);
+    const envoi = await a.evaluate(() => [document.querySelector('.ac-message-college').textContent, window.__appels.find((x) => x.methode === 'PUT')]);
+    verifier(envoi[1] && /contents\/site\/college\.js$/.test(envoi[1].url) && /Réglages publiés \(4 classes\)/.test(envoi[0]), JSON.stringify(envoi));
+    const contenu = Buffer.from(envoi[1].corps.content, 'base64').toString('utf8');
+    verifier(/"4B"/.test(contenu) && /"cheminClasse"/.test(contenu), contenu.slice(0, 200));
+    await a.evaluate(() => localStorage.removeItem('labo-blocs-cle-github'));
+    await a.close();
+    // Page des élèves (distributeur, niveau 5) : classes du collège de niveau 5, puis la version « en ligne » arrive.
+    const p = await page(PAGE, { sansDossiers: true });
+    const classes = () => p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
+    const debut = await classes();
+    const chemin = await texte(p, '.chemin-texte');
+    await p.evaluate(() => definirCollege({ format: 'labo-blocs/college', version: 1, classes: ['5A', '5G', '4A'], cheminClasse: ['Reseau', '{classe}', 'TECHNO'] }));
+    await pause(200);
+    const apres = await classes();
+    const cheminApres = await texte(p, '.chemin-texte');
+    verifier(debut.every((c) => c.startsWith('5')) && apres.join() === '5A,5G' && /Reseau › 5A › TECHNO › DISTRIBUTEUR DE CEREALES/.test(cheminApres), JSON.stringify({ debut, chemin, apres, cheminApres }));
+    await p.close();
+    return `accueil : ${avant.length} classes lues, 4 publiées (site/college.js) ; élèves (niveau 5) : ${debut.join(', ')} → version en ligne ${apres.join(', ')} ; « ${cheminApres} »`;
   });
 
   // ---------- Kit nouveau projet ----------

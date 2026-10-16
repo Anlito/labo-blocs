@@ -390,6 +390,8 @@
 
     const peutDossier = 'showDirectoryPicker' in global;
     const ouvrir = $('.pr-ouvrir');
+    // Réglages du collège (liste commune) appliqués au projet.
+    if (A.projet && A.projetAvecCollege) A.projet = A.projetAvecCollege(A.projet);
     // Exemple du dossier d'une classe, d'après les réglages du projet (dossier des équipes sans « {equipe} »).
     const chemin = A.projet && A.projet.cheminSauvegarde;
     if (chemin && chemin.length > 1) {

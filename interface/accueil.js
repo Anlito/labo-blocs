@@ -91,15 +91,20 @@
 
     // ----- Équipe -----
 
-    // Chemin du dossier (modèle) et dossier du projet, Firefox.
-    const modele = A.projet.cheminSauvegarde || ['{classe}', '{equipe}'];
-    $('.chemin-texte', racine).textContent = modele.map((p) => p.replace('{classe}', (A.projet.classes || ['5A'])[0]).replace('{equipe}', 'Prénom_Prénom')).join(' › ');
-
     $('.info-firefox', racine).hidden = F.accesDossiers;
 
+    // Classes proposées et chemin du dossier (modèle) : redessinés si la liste du collège en ligne arrive après.
     const choixClasse = $('.champ-classe', racine);
-    choixClasse.innerHTML =
-      '<option value="">Choisis ta classe</option>' + (A.projet.classes || []).map((c) => `<option>${echapper(c)}</option>`).join('');
+    function majClasses() {
+      const modele = A.projet.cheminSauvegarde || ['{classe}', '{equipe}'];
+      $('.chemin-texte', racine).textContent = modele.map((p) => p.replace('{classe}', (A.projet.classes || ['5A'])[0] || '5A').replace('{equipe}', 'Prénom_Prénom')).join(' › ');
+      const choisie = choixClasse.value;
+      choixClasse.innerHTML =
+        '<option value="">Choisis ta classe</option>' + (A.projet.classes || []).map((c) => `<option>${echapper(c)}</option>`).join('');
+      if ((A.projet.classes || []).includes(choisie)) choixClasse.value = choisie;
+    }
+    majClasses();
+    A.surCollege = majClasses;
 
     $('.formulaire-equipe', racine).addEventListener('submit', (e) => {
       e.preventDefault();

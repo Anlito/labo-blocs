@@ -79,17 +79,33 @@
     if (!A.projet) return erreurFatale('Le fichier du projet (projet.js) est absent.');
     // ?parcours=<id> : un autre parcours chargé par la page (essais des cartes mBot et micro:bit), comme un projet à part.
     const autre = q.get('parcours') && q.get('parcours') !== A.projet.parcours ? A.parcoursDefinis.find((p) => p.id === q.get('parcours')) : null;
-    if (autre) A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', cheminSauvegarde: ['{classe}', '{equipe}'] });
+    // Un autre parcours du site : ses classes (tous les niveaux) et son dossier (nom du parcours) dans le dossier de la classe.
+    if (autre) {
+      const dossier = autre.titre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+      A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', niveaux: null, classes: null, cheminSauvegarde: null, cheminProjet: [dossier] });
+    }
     const brut = A.parcoursDefinis.find((p) => p.id === A.projet.parcours);
     if (!brut) return erreurFatale(`Le parcours « ${A.projet.parcours} » est introuvable.`);
-    // Classes et dossier de l'équipe réglés dans le parcours (éditeur › Réglages) : sur le site de Labo Blocs, ils
-    // remplacent ceux de projet.js ; un projet qui garde ses propres réglages (reglagesDuProjetPrioritaires) les garde.
-    if (!A.projet.reglagesDuProjetPrioritaires) {
-      const r = {};
-      if (brut.classes && brut.classes.length) r.classes = brut.classes.slice();
-      if (brut.cheminSauvegarde && brut.cheminSauvegarde.includes('{equipe}')) r.cheminSauvegarde = brut.cheminSauvegarde.slice();
-      A.projet = Object.assign({}, A.projet, r);
-    }
+    // Classes et dossier de l'équipe : réglages du collège (liste commune), sauf s'ils sont réglés dans le parcours
+    // (éditeur › Réglages, sur le site de Labo Blocs) ; un projet qui garde ses propres réglages
+    // (reglagesDuProjetPrioritaires) les garde. Recalculé quand la version en ligne des réglages du collège arrive.
+    const base = A.projet;
+    const calculer = () => {
+      let p = A.projetAvecCollege ? A.projetAvecCollege(base) : base;
+      if (!base.reglagesDuProjetPrioritaires) {
+        const r = {};
+        if (brut.classes && brut.classes.length) r.classes = brut.classes.slice();
+        if (brut.cheminSauvegarde && brut.cheminSauvegarde.includes('{equipe}')) r.cheminSauvegarde = brut.cheminSauvegarde.slice();
+        p = Object.assign({}, p, r);
+      }
+      if (!p.cheminSauvegarde) p = Object.assign({}, p, { cheminSauvegarde: ['{classe}', '{equipe}'] });
+      return p;
+    };
+    A.projet = calculer();
+    document.addEventListener(A.EVENEMENT_COLLEGE || 'labo-blocs:college', () => {
+      A.projet = Object.assign({}, A.projet, { classes: calculer().classes, cheminSauvegarde: calculer().cheminSauvegarde });
+      if (A.surCollege) A.surCollege();
+    });
     const projet = A.projet;
     const problemes = A.controler(brut);
     if (problemes.length) return erreurFatale(problemes.join(' '));

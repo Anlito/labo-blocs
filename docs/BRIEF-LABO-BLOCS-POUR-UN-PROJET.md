@@ -29,11 +29,23 @@ Créé par `npm run nouveau-projet` (dans le dépôt labo-blocs) puis mis à jou
 
 Ces deux pages suffisent pour un projet qui n'a besoin que des exercices.
 
+## 2 bis. Classes et dossiers : les réglages du collège
+
+La liste des classes et le chemin des dossiers de classe sont **communs à tous les outils** : un seul fichier,
+https://anlito.github.io/labo-blocs/site/college.js (`definirCollege({ classes, cheminClasse })`), modifié par Thomas
+dans l'accueil de Labo Blocs (« Réglages du collège »). Un projet :
+- garde une **copie de secours** (`site/college.js`, lue en premier : hors ligne, c'est elle qui sert), puis lit la
+  version en ligne (`LaboBlocs.chargerCollegeEnLigne()` ; rien n'est envoyé) ;
+- dit seulement ses **niveaux** (`niveaux: ['4']`) et la **fin de son chemin** (`cheminProjet: ['CONCEPT STORE']`) ;
+- propose à l'élève de choisir sa classe dans cette liste, puis de sélectionner le **dossier du projet** : l'outil y crée
+  lui-même le dossier de l'équipe (`Prénom_Prénom`), comme Labo Blocs et l'atelier du distributeur.
+
 ## 3. Contraintes non négociables (les mêmes que Labo Blocs)
 
 - **Tout en français** : interface, messages, commentaires, noms de fichiers et de fonctions.
 - **Marche en `file://`** depuis le réseau du collège : scripts classiques (pas de modules ES au chargement),
-  données en `definirXxx({...})`, **aucune ressource en ligne**, aucun CDN.
+  données en `definirXxx({...})`, **aucune ressource en ligne**, aucun CDN — sauf la lecture des réglages du collège,
+  avec sa copie de secours.
 - **Aucun compte, aucune donnée envoyée ailleurs.**
 - **Sauvegarde = un fichier `.json` par équipe**, le même pour tout le projet. Labo Blocs y écrit **seulement** sa
   rubrique `programmation` (versionnée). Le projet y range ses propres rubriques (carnet…), sans jamais toucher à

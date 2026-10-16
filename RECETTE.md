@@ -263,3 +263,12 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 18.1 | Éditeur › exercice › « Variables données aux élèves » : `score` | Les blocs de variables proposent `score` | |
 | 18.2 | Cocher « Les élèves créent leurs propres variables », vider les variables données | Palette : seulement « Créer une variable » (et le nombre) | |
 | 18.3 | Élève : « Créer une variable », taper `delay` puis `ma vitesse` | `delay` refusé (mot du langage), `ma_vitesse` créée et proposée dans les menus | |
+
+## 19. Réglages du collège (liste de classes commune)
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 19.1 | Accueil de Labo Blocs › « Réglages du collège » | Les classes actuelles (5A à 5F) et le chemin `Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE` | |
+| 19.2 | Ajouter les classes des autres niveaux (ex. 4A… 3F), « Publier les réglages » | « Réglages publiés (n classes) » | |
+| 19.3 | 2 à 3 minutes plus tard, page des élèves › Distributeur | Seulement les classes de 5e ; chemin `Bureau › Classe › 5A › COMMUN › TECHNOLOGIE › DISTRIBUTEUR DE CEREALES` | |
+| 19.4 | Page des élèves › un autre parcours | Toutes les classes du collège | |

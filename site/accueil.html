@@ -21,6 +21,7 @@
   .ac-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.375rem; }
   .ac-github-form { display: flex; flex-direction: column; gap: 0.625rem; max-width: 36rem; }
   .ac-github-form label { display: flex; flex-direction: column; gap: 0.375rem; font-weight: 700; font-size: 0.9375rem; }
+  .ac-college-form textarea { font: inherit; font-weight: 400; padding: 0.5rem 0.75rem; border: 2px solid var(--bord-fort); border-radius: 0.625rem; background: #FFFFFF; resize: vertical; }
   .ac-github-form input { font: inherit; font-weight: 400; height: 2.75rem; padding: 0 0.75rem; border: 2px solid var(--bord-fort); border-radius: 0.625rem; background: #FFFFFF; }
   .ac-github-form .btn-principal { height: 2.375rem; padding: 0 1rem; font-size: 0.9375rem; }
   .ac-message { margin: 0; padding: 0.625rem 0.75rem; border-radius: 0.625rem; font-weight: 700; font-size: 0.9375rem; }
@@ -63,6 +64,18 @@
     </div>
   </section>
 
+  <section class="ac-section ac-college" aria-labelledby="ac-college">
+    <h2 id="ac-college">Réglages du collège</h2>
+    <p class="ed-intro">Communs à tous tes outils (Labo Blocs, atelier du distributeur, autres projets) : chaque projet propose les classes de ses niveaux et ajoute son propre dossier au bout du chemin.</p>
+    <div class="ac-github-form ac-college-form">
+      <label>Classes (une par ligne, ou séparées par des virgules)<textarea class="ac-classes" rows="4" spellcheck="false"></textarea></label>
+      <label>Chemin jusqu’au dossier d’une classe, sur le réseau<input class="ac-chemin" spellcheck="false" placeholder="Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE"></label>
+      <p class="ed-aide"><code>{classe}</code> est remplacé par la classe de l’élève. Ensuite vient le dossier du projet (ex. DISTRIBUTEUR DE CEREALES), puis celui de l’équipe, créé par l’outil.</p>
+      <div class="ac-actions"><button type="button" class="btn-principal ac-publier-college">Publier les réglages</button></div>
+      <p class="ac-message ac-message-college" role="status" hidden></p>
+    </div>
+  </section>
+
   <section class="ac-section ac-github" aria-labelledby="ac-github">
     <h2 id="ac-github">Mise en ligne des parcours</h2>
     <p class="ed-intro ac-github-etat"></p>
@@ -98,6 +111,43 @@
 
 <!-- Clé GitHub pour la mise en ligne des parcours (interface/github-depot.js) -->
 <script src="../interface/github-depot.js"></script>
+<!-- Réglages du collège : le fichier du site (site/college.js), modifiable ici -->
+<script src="../interface/college.js"></script>
+<script src="college.js"></script>
+<script>
+  (function () {
+    'use strict';
+    const L = window.LaboBlocs;
+    const $ = (s) => document.querySelector(s);
+    const c = L.college || { classes: [], cheminClasse: ['{classe}'] };
+    $('.ac-classes').value = c.classes.join('\n');
+    $('.ac-chemin').value = (c.cheminClasse || []).join(' › ');
+    const message = (texte, ok) => {
+      const m = $('.ac-message-college');
+      m.textContent = texte;
+      m.className = 'ac-message ac-message-college ' + (ok ? 'ok' : 'ecart');
+      m.hidden = false;
+    };
+    $('.ac-publier-college').addEventListener('click', async () => {
+      const classes = L.lireListeClasses($('.ac-classes').value);
+      if (!classes.length) return message('Écris au moins une classe.', false);
+      const chemin = L.lireCheminClasse($('.ac-chemin').value);
+      if (!chemin.ok) return message(chemin.message, false);
+      const cle = L.lireCleGithub();
+      if (!cle) return message('Enregistre d’abord ta clé GitHub (« Mise en ligne des parcours », plus bas) : les réglages partent avec elle.', false);
+      const b = $('.ac-publier-college');
+      b.disabled = true;
+      b.textContent = 'Envoi…';
+      const r = await L.mettreFichierEnLigne('site/college.js', L.scriptCollege({ classes, cheminClasse: chemin.chemin }), `Réglages du collège : ${classes.length} classes (accueil de Labo Blocs)`, cle);
+      b.disabled = false;
+      b.textContent = 'Publier les réglages';
+      if (!r.ok) return message(r.message, false);
+      $('.ac-classes').value = classes.join('\n');
+      $('.ac-chemin').value = chemin.chemin.join(' › ');
+      message(`Réglages publiés (${classes.length} classes). Dans 2 à 3 minutes, tous les outils proposent cette liste.`, true);
+    });
+  })();
+</script>
 <script>
   (function () {
     'use strict';
