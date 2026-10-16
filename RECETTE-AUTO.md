@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 et 2
 
-16/10/2026 09:42:01 · chromium · page ouverte en file:// · 15/15 critères
+16/10/2026 10:24:33 · chromium · page ouverte en file:// · 15/15 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -11,7 +11,7 @@
 | Programme faux : un seul écart, observable, en ambre, sans « faux » ni « erreur » | ✔ | Quand le bouton D3 est appuyé, la LED D9 devrait être allumée. Dans ton programme, elle reste éteinte. |
 | Solution : réussite en vert, exercice suivant ouvert, avancement mis à jour | ✔ |  |
 | Les 14 solutions de référence réussissent dans la page | ✔ |  |
-| Simulateur : un appui sur le bouton allume la LED, le bloc en cours est surligné | ✔ |  |
+| Simulateur : le bouton poussoir allume la LED tant qu’on le tient, le bloc en cours est surligné | ✔ | appui maintenu : LED allumée ; bouton lâché : LED éteinte |
 | Niveau 3 : code Arduino en lecture seule, un clic sur un bloc surligne ses lignes | ✔ |  |
 | Indices : trois niveaux ouverts un par un, compteur visible, la solution jamais montrée | ✔ |  |
 | Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé | ✔ | 502 → 1198 px |

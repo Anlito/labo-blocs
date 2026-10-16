@@ -147,15 +147,22 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(!rates.length, 'ratées : ' + rates.join(' '));
   });
 
-  await critere('Simulateur : un appui sur le bouton allume la LED, le bloc en cours est surligné', async () => {
+  await critere('Simulateur : le bouton poussoir allume la LED tant qu’on le tient, le bloc en cours est surligné', async () => {
     const p = await page(PAGE + '?enseignant=1&exercice=dist-05');
     await charger(p, 'dist-05', 'solution');
     await p.click('.btn-lancer');
     await pause(300);
-    await p.click('.bouton-poussoir');
+    // Bouton poussoir : appuyé tant qu'on garde le clic.
+    const b = await (await p.$('.bouton-poussoir')).boundingBox();
+    await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await p.mouse.down();
     await pause(400);
-    verifier((await texte(p, '.composant-led .pastille-etat')).includes('Allumée'), 'LED éteinte');
+    verifier((await texte(p, '.composant-led .pastille-etat')).includes('Allumée'), 'LED éteinte pendant l’appui');
     verifier((await p.$$('.bloc-en-cours')).length >= 1, 'aucun bloc surligné');
+    await p.mouse.up();
+    await pause(400);
+    verifier((await texte(p, '.composant-led .pastille-etat')).includes('Éteinte'), 'LED encore allumée après avoir lâché');
+    return 'appui maintenu : LED allumée ; bouton lâché : LED éteinte';
   });
 
   await critere('Niveau 3 : code Arduino en lecture seule, un clic sur un bloc surligne ses lignes', async () => {

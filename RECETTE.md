@@ -31,7 +31,7 @@ dossiers du réseau, l'écran du collège, et l'avis du professeur.
 | # | Action | Attendu | ✔/✘ |
 |---|---|---|---|
 | 3.1 | Lire la consigne (bandeau en haut), ouvrir « À savoir », cliquer sur un mot souligné, ouvrir « Lexique » | Fiche, définition (sous le mot) et lexique comme dans l'atelier ; « Besoin d'aide ? » et les composants restent visibles à gauche, même au 8 et au 13A | |
-| 3.2 | Construire le programme, « Lancer », cliquer sur les boutons du simulateur | Les LED, le servo et le bloc en cours (contour jaune) suivent | |
+| 3.2 | Construire le programme, « Lancer », maintenir le clic sur un bouton du simulateur, puis lâcher | Le bouton est un poussoir : appuyé tant qu'on le tient. Les LED, le servo et le bloc en cours (contour jaune) suivent | |
 | 3.3 | « Pas » plusieurs fois | Un bloc à la fois, surligné | |
 | 3.4 | « Vérifier mon programme » avec un programme incomplet | Une phrase en **ambre**, qui décrit ce que fait le programme, sans la réponse ; « Voir le test » rejoue le test | |
 | 3.5 | Vérifier le bon programme | Message vert « Ton programme fait ce qu'on attend. L'exercice 2 est ouvert. » | |
@@ -92,7 +92,7 @@ du professeur, la souris et l'avis sur les mots.
 |---|---|---|---|
 | 7.1 | Ouvrir `site/editeur.html` | « Distributeur de céréales · version 1.0.0 · 14 exercices », « Ouvrir un fichier… », « Nouveau parcours » | |
 | 7.2 | Ouvrir le distributeur, cliquer sur plusieurs exercices | Formulaire (titre, consigne, niveau, fiche), composants, blocs cochés, indices ; solution en blocs ; scénarios en phrases (« Vérifier que la LED D9 est allumée ») ; aperçu du simulateur | |
-| 7.3 | Exercice 7 : « Tester mes scénarios sur ma solution », puis « Lancer la solution » et cliquer sur les boutons de l'aperçu | Chaque scénario en vert ; les LED de l'aperçu suivent les boutons | |
+| 7.3 | Exercice 7 : « Tester mes scénarios sur ma solution », puis maintenir un bouton de l'aperçu | Chaque scénario en vert ; l'aperçu fait tourner la solution du moment (sans rien lancer) : la LED s'allume tant qu'on tient le bouton | |
 | 7.4 | Exercice 7 : changer la broche du bouton PetiteDose (D3 → D7) | « 1 bloc de la solution et 4 étapes des scénarios mis à jour » ; « Remplacer aussi dans la consigne » corrige la consigne ; le test reste vert | |
 | 7.5 | Cliquer sur 13B puis « Ajouter » : créer un exercice complet à la souris (titre, consigne, une LED, blocs cochés, solution construite avec les blocs, scénario « Vérifier / Attendre / Vérifier », deux indices) | « Tester mes scénarios » : vert. Sans vérification : message « Ce scénario ne vérifie rien » | |
 | 7.6 | Glisser un exercice plus haut, « Dupliquer », « Supprimer » | Les numéros suivent l'ordre (13A / 13B restent ensemble) ; l'identifiant (ex. `dist-14`) ne change pas | |

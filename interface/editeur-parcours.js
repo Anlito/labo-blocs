@@ -525,7 +525,7 @@
         }
         etat.resultats = null;
         $('.ed-resultats') && ($('.ed-resultats').innerHTML = '');
-        arreterApercu();
+        lancerApercu();
         modifie();
       },
       zoom() {},
@@ -780,18 +780,19 @@
 
   const apercu = { sim: null, servos: {}, boutons: {}, raf: null, dernier: 0 };
 
+  // L'aperçu fait tourner la solution en continu : appuyer sur un bouton montre tout de suite ce qu'elle fait.
   function dessinerApercu() {
     arreterApercu();
     const e = A.exercicePrepare(etat.paquet, ex());
     etat.apercu = A.creerVueSimulateur($('.ed-simulateur'), e, {
-      basculerBouton(broche) {
-        if (apercu.sim) apercu.sim.changerEntree(broche, apercu.sim.entrees[broche] ? 0 : 1);
-        else apercu.boutons[broche] = apercu.boutons[broche] ? 0 : 1;
+      appuyerBouton(broche, valeur) {
+        apercu.boutons[broche] = valeur;
+        if (apercu.sim) apercu.sim.changerEntree(broche, valeur);
         afficherApercu(0);
       },
     });
     apercu.exercice = e;
-    afficherApercu(0);
+    lancerApercu();
   }
 
   function afficherApercu(dt) {
@@ -813,8 +814,9 @@
   }
 
   function lancerApercu() {
-    if (apercu.sim) return arreterApercu();
-    const e = apercu.exercice;
+    cancelAnimationFrame(apercu.raf);
+    // Toujours la solution du moment (elle a pu changer depuis le dessin de l'aperçu).
+    const e = (apercu.exercice = A.exercicePrepare(etat.paquet, ex()));
     apercu.sim = A.creerSimulation(e.solutionReference, { composants: e.composants, boutonsVersMasse: e.boutonsVersMasse });
     for (const [b, v] of Object.entries(apercu.boutons)) if (v) apercu.sim.changerEntree(b, 1);
     apercu.servos = {};
@@ -829,7 +831,6 @@
       apercu.raf = requestAnimationFrame(image);
     };
     apercu.raf = requestAnimationFrame(image);
-    majBoutonApercu();
   }
 
   function arreterApercu() {
@@ -837,15 +838,8 @@
     apercu.sim = null;
     apercu.servos = {};
     if (etat.apercu) afficherApercu(0);
-    majBoutonApercu();
   }
 
-  function majBoutonApercu() {
-    const b = $('.btn-apercu');
-    b.setAttribute('aria-pressed', String(!!apercu.sim));
-    b.classList.toggle('actif', !!apercu.sim);
-    $('.texte-apercu', b).textContent = apercu.sim ? 'Arrêter' : 'Lancer la solution';
-  }
 
   // ---------- Réglages du parcours ----------
 
@@ -999,7 +993,7 @@
     A.poserIcones(document);
     lierListe();
     lierScenarios();
-    $('.btn-apercu').addEventListener('click', lancerApercu);
+    $('.btn-apercu').addEventListener('click', lancerApercu); // « Recommencer » : la solution repart de zéro
     $('.btn-reglages').addEventListener('click', ouvrirReglages);
     $('.btn-exporter').addEventListener('click', exporter);
     $('.btn-publier').addEventListener('click', ouvrirPublier);

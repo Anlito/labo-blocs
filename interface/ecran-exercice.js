@@ -170,7 +170,7 @@
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
-      vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { basculerBouton });
+      vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
       niveauDeLExercice(ex);
       afficher();
       A.noterOuverture(D, ex.id);
@@ -364,13 +364,14 @@
       for (const [b, v] of Object.entries(etat.boutonsAvant)) etat.sim.changerEntree(b, v);
       etat.boutonsAvant = null;
     }
-    function basculerBouton(broche) {
+    // Bouton poussoir du simulateur : appuyé tant qu'on le tient. Programme arrêté : l'élève est invité à le lancer.
+    function appuyerBouton(broche, valeur) {
       if (etat.rejeu) return;
       if (!etat.sim) {
-        // Simulation arrêtée : on garde l'appui, il servira au lancement.
         etat.boutonsAvant = etat.boutonsAvant || {};
-        etat.boutonsAvant[broche] = etat.boutonsAvant[broche] ? 0 : 1;
-      } else etat.sim.changerEntree(broche, etat.sim.entrees[broche] ? 0 : 1);
+        etat.boutonsAvant[broche] = valeur;
+        if (valeur) $('.simu-note', ecran).textContent = 'Clique sur « Lancer » pour que ton programme réagisse au bouton.';
+      } else etat.sim.changerEntree(broche, valeur);
       afficher();
     }
     function majCommandes() {
