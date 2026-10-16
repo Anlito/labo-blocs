@@ -1,0 +1,77 @@
+{
+  "format": "labo-blocs/parcours",
+  "version": 1,
+  "id": "test",
+  "titre": "TEst",
+  "versionParcours": "1.2.0",
+  "date": "2026-10-16",
+  "moteurMinimum": "0.3.0",
+  "carte": "uno",
+  "modes": [
+    "simulateur"
+  ],
+  "boutonsVersMasse": true,
+  "parametres": {},
+  "exercices": [
+    {
+      "id": "test-01",
+      "numero": "1",
+      "titre": "Nouvel exercice",
+      "defi": false,
+      "consigne": "amuse toig ghj nghb",
+      "composants": [],
+      "blocsAutorises": [
+        "led_etat",
+        "son",
+        "attendre",
+        "bouton_etat",
+        "servo_angle",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "repeter_n",
+        "tant_que",
+        "repeter_jusqua",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true
+    }
+  ],
+  "fiches": {},
+  "lexique": [],
+  "classes": [
+    "4A",
+    "4D",
+    "5R"
+  ],
+  "cheminSauvegarde": [
+    "{classe}",
+    "COMMUN",
+    "TECHNOLOGIE",
+    "TEST",
+    "{equipe}"
+  ]
+}
