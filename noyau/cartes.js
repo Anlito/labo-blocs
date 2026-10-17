@@ -12,6 +12,9 @@
 //   Extension 2 = micro:bit : 1 nombre · 2 image · 3 pixel (x, y, 0..9) · 4 effacer · 5 bouton A · 6 bouton B ·
 //     7 accélération (axe) · 8 température · 9 logo touché · 10 lumière · 11 texte (codes des lettres) ·
 //     12 note (Hz, s) · 13 geste · 14 lettres du texte à suivre (4 par commande)
+//   Extension 3 = caméra (toutes les cartes) : 1 la caméra reconnaît (étiquette n°, 0 = rien) → 0/1 ·
+//     2 certitude de l'IA pour l'étiquette → 0..100. La webcam et l'IA sont dans l'ordinateur : ces commandes ne
+//     partent jamais vers la carte (simulateur et mode « En direct » seulement, jamais « Dans la carte »).
 (function (global) {
   'use strict';
 
@@ -121,6 +124,25 @@
   //   champs { NOM: options [[libellé, valeur]] | 'texte' }, entrees { NOM: valeur de départ }, derouler(p) → blocs de base
   //   (p : les champs et entrées du bloc, nommés en minuscules : DIRECTION → p.direction)
   const BLOCS = {
+    // ----- Caméra et IA (toutes les cartes) : l'étiquette est un numéro (1, 2… ; 0 = rien), son nom vient de l'exercice -----
+    camera_reconnait: {
+      carte: '*',
+      categorie: 'camera',
+      sorte: 'condition',
+      texte: 'la caméra reconnaît %ETIQUETTE',
+      champs: { ETIQUETTE: 'etiquette' },
+      defauts: { ETIQUETTE: '1' },
+      derouler: (p) => cmp('=', ext(3, 1, [Number(p.etiquette) || 0]), 1),
+    },
+    camera_certitude: {
+      carte: '*',
+      categorie: 'camera',
+      sorte: 'valeur',
+      texte: 'certitude de l’IA pour %ETIQUETTE (%)',
+      champs: { ETIQUETTE: 'etiquette' },
+      defauts: { ETIQUETTE: '1' },
+      derouler: (p) => ext(3, 2, [Number(p.etiquette) || 0]),
+    },
     // ----- mBot : moteurs -----
     mbot_deplacer: {
       carte: 'mbot',
@@ -271,6 +293,7 @@
 
   // Catégories de la palette pour ces blocs (famille « extensions » : lilas, pictogramme puzzle).
   const CATEGORIES_CARTES = [
+    { nom: 'Caméra', cle: 'camera', carte: '*' },
     { nom: 'Moteurs', cle: 'mbot_moteurs', carte: 'mbot' },
     { nom: 'Capteurs', cle: 'mbot_capteurs', carte: 'mbot' },
     { nom: 'LED et son', cle: 'mbot_led_son', carte: 'mbot' },
@@ -546,6 +569,8 @@
         return `la lumière vaut ${v}`;
       case 'temperature':
         return `la température est de ${v} °C`;
+      case 'camera':
+        return Number(valeur) ? `la caméra reconnaît l’étiquette ${v}` : 'la caméra ne reconnaît rien';
       case 'geste': {
         const g = GESTES.find((x) => Number(x[1]) === Number(valeur));
         return g ? `la carte est ${g[0]}` : 'la carte est immobile';
