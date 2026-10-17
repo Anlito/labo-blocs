@@ -10,7 +10,7 @@ definirCollege({
     "4B",
     "4G",
     "3E",
-    "EB",
+    "3B",
     "3G",
     "3D1",
     "3D2",
