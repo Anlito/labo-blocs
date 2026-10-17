@@ -283,3 +283,19 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 20.3 | Téléphone (ou fenêtre étroite) | Une colonne, aucun défilement horizontal, boutons en pleine largeur | |
 | 20.4 | Ouvrir `reglages.html` sans code | Le code professeur est demandé | |
 
+## 21. Jalon 6 — Caméra et IA
+
+À faire sur un poste du collège avec une webcam (Chrome ou Edge), page des élèves › « Découverte de la caméra (IA) ».
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 21.1 | Exercice 1 | Panneau « Caméra et IA » sous le simulateur : Rien, Pouce levé, Main ouverte ; pas de mode « Dans la carte » | |
+| 21.2 | « Allumer la caméra » | Le navigateur demande la caméra (accepter) ; l'image s'affiche en quelques secondes (la première fois, l'IA se charge) | |
+| 21.3 | « Prendre 10 photos » pour chaque étiquette (pouce levé, main ouverte, rien devant) | 10 photos chacune ; « L'IA reconnaît : … » suit le geste montré | |
+| 21.4 | Programme : « quand la caméra reconnaît Pouce levé → allumer D3 », « … ne reconnaît plus … → éteindre D3 », Lancer | La LED du simulateur suit le pouce levé | |
+| 21.5 | Même chose « En direct » avec une Uno (LED sur D3) | La vraie LED suit le pouce levé | |
+| 21.6 | « Vérifier mon programme » | Réussite ; un programme qui n'éteint pas : « Quand la caméra ne reconnaît rien, la LED D3 devrait être éteinte… » (ambre) | |
+| 21.7 | Fermer, rouvrir la sauvegarde de l'équipe | Les photos sont toujours là (nombre et vignettes) | |
+| 21.8 | Sans webcam : boutons « Sans caméra, faire comme si elle voyait » | Le programme réagit comme avec la caméra | |
+| 21.9 | Éditeur de parcours : un exercice › « Caméra et IA » › étiquettes « Loup, Roi » | Catégorie « Caméra » dans les blocs ; scénario « Régler : la caméra reconnaît « Loup » » | |
+

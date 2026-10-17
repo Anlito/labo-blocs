@@ -2,7 +2,9 @@
 // Avec --parcours <id> : écrit aussi <projet>/site/parcours/<id>.js (première installation, ou mise à jour du
 // dépôt du projet ; en classe, le professeur passe par « Mettre à jour les exercices »).
 //
-// Usage : npm run vers-projet -- ../atelier-cereales [--parcours distributeur]
+// L'IA de la caméra (vision/, ~12 Mo) n'est copiée que si le projet en a besoin : --camera, ou un parcours avec caméra.
+//
+// Usage : npm run vers-projet -- ../atelier-cereales [--parcours distributeur] [--camera]
 const { cpSync, mkdirSync, rmSync, writeFileSync, existsSync } = require('node:fs');
 const { join, resolve } = require('node:path');
 const { construire } = require('./construire-module.js');
@@ -22,7 +24,10 @@ const cible = join(resolve(projet), 'site', 'vendor', 'labo-blocs');
 rmSync(cible, { recursive: true, force: true });
 mkdirSync(cible, { recursive: true });
 cpSync(r.dossier, cible, { recursive: true });
-console.log(`Module ${r.nom} copié dans ${cible}`);
+const parcoursChoisi = idParcours && require('./parcours-depot.js').lireTousLesParcours().parcours.find((p) => p.id === idParcours);
+const avecCamera = args.includes('--camera') || !!(parcoursChoisi && parcoursChoisi.exercices.some((e) => e.camera));
+if (!avecCamera) rmSync(join(cible, 'vision'), { recursive: true, force: true });
+console.log(`Module ${r.nom} copié dans ${cible}${avecCamera ? ' (avec l’IA de la caméra)' : ''}`);
 
 if (idParcours) {
   // Dossier parcours/<id>/ ou fichier .labo-parcours.json déposé dans parcours/ : la version la plus récente.

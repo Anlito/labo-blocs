@@ -137,6 +137,20 @@
       tooltip: 'Les blocs placés ici s’exécutent à chaque appui (ou relâchement), en même temps que « Répéter indéfiniment ».',
     },
     {
+      // Caméra et IA (jalon 6) : l'étiquette vient de l'exercice ouvert (menu A.optionsEtiquettes, 0 = rien).
+      type: 'quand_camera',
+      message0: '%1 quand la caméra %2 %3 %4 %5',
+      args0: [
+        image('camera', 'Caméra'),
+        { type: 'field_dropdown', name: 'FRONT', options: [['reconnaît', 'voit'], ['ne reconnaît plus', 'plus']] },
+        { type: 'field_dropdown', name: 'ETIQUETTE', options: () => A.optionsEtiquettes() },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' },
+      ],
+      style: 'debut',
+      tooltip: 'Les blocs placés ici s’exécutent une fois chaque fois que l’IA de la caméra se met à reconnaître (ou cesse de reconnaître) cette étiquette.',
+    },
+    {
       type: 'repeter_n',
       message0: 'répéter %1 fois %2 %3',
       args0: [{ type: 'input_value', name: 'FOIS', check: 'Number' }, { type: 'input_dummy' }, { type: 'input_statement', name: 'DO' }],
@@ -305,13 +319,14 @@
 
   // Blocs des cartes (mBot, micro:bit), décrits dans noyau/cartes.js.
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
-    const args = [image('puzzle', 'Bloc de la carte')];
+    const args = [d.categorie === 'camera' ? image('camera', 'Caméra') : image('puzzle', 'Bloc de la carte')];
     let n = 1;
     const message = d.texte.replace(/%([A-Z]+)/g, (m, nom) => {
       n++;
       if (d.champs && nom in d.champs) {
         const c = d.champs[nom];
-        args.push(Array.isArray(c) ? { type: 'field_dropdown', name: nom, options: c } : { type: 'field_input', name: nom, text: (d.defauts || {})[nom] || '' });
+        if (c === 'etiquette') args.push({ type: 'field_dropdown', name: nom, options: () => A.optionsEtiquettes() });
+        else args.push(Array.isArray(c) ? { type: 'field_dropdown', name: nom, options: c } : { type: 'field_input', name: nom, text: (d.defauts || {})[nom] || '' });
       } else args.push({ type: 'input_value', name: nom, check: 'Number' });
       return '%' + n;
     });
@@ -334,7 +349,7 @@
     { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard'] },
     { nom: 'Variables', cle: 'variables', couleur: COULEURS.variable, blocs: ['affecter', 'ajouter_a', 'variable', 'nombre'] },
     // Une carte à la fois : la palette d'un exercice ne montre que les blocs autorisés.
-    ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: 'puzzle', carte: c.carte, blocs: c.blocs })),
+    ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: c.cle === 'camera' ? 'camera' : 'puzzle', carte: c.carte, blocs: c.cle === 'camera' ? ['quand_camera'].concat(c.blocs) : c.blocs })),
   ];
 
   const FORMES_PALETTE = {
@@ -343,6 +358,7 @@
     affecter: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 0 } } } } },
     led_etat: { fields: { ETAT: '1', BROCHE: 'D2' } },
     quand_bouton: { fields: { BROCHE: 'D2', FRONT: 'appui' } },
+    quand_camera: { fields: { FRONT: 'voit', ETIQUETTE: '1' } },
     repeter_n: { inputs: { FOIS: { shadow: { type: 'nombre', fields: { NUM: 3 } } } } },
     ajouter_a: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
     son: { fields: { BROCHE: 'D2' }, inputs: { FREQUENCE: { shadow: { type: 'nombre', fields: { NUM: 440 } } }, DUREE: { shadow: { type: 'nombre', fields: { NUM: 0.5 } } } } },
@@ -356,6 +372,11 @@
     FORMES_PALETTE[type] = { inputs: {} };
     for (const [nom, v] of Object.entries(d.entrees)) FORMES_PALETTE[type].inputs[nom] = { shadow: { type: 'nombre', fields: { NUM: v } } };
   }
+
+  // Menu des étiquettes des blocs de la caméra : celles de l'exercice ouvert (réglées par interface/camera.js et
+  // l'éditeur de parcours), 0 = « rien ».
+  A.etiquettesCamera = ['Rien', 'Étiquette 1', 'Étiquette 2'];
+  A.optionsEtiquettes = () => A.etiquettesCamera.map((nom, n) => [n ? nom : 'rien', String(n)]);
 
   const SORTE_BROCHE = { led_etat: 'led', quand_bouton: 'bouton', bouton_etat: 'bouton', son: 'buzzer', servo_angle: 'servo' };
 
@@ -501,6 +522,7 @@
   // Noms des blocs pour l'éditeur du professeur (cases « blocs proposés aux élèves »), dans les mots de la palette.
   const NOMS_BLOCS_BASE = {
     quand_bouton: 'quand le bouton est appuyé',
+    quand_camera: 'quand la caméra reconnaît…',
     led_etat: 'contrôler la LED',
     son: 'jouer une note',
     attendre: 'attendre … seconde(s)',

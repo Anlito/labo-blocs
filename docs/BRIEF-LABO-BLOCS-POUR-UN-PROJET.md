@@ -125,6 +125,8 @@ n'abîment pas les pages du projet. La page des élèves de Labo Blocs complète
 
 - Thomas modifie le parcours dans l'éditeur de Labo Blocs, qui le publie (GitHub Pages :
   `https://anlito.github.io/labo-blocs/parcours/<id>.labo-parcours.json`) et l'exporte (`dist/parcours/`).
+- Caméra et IA : un parcours dont un exercice a des étiquettes (`camera`) emporte l'IA (`vendor/labo-blocs/vision/`,
+  ~12 Mo) ; sinon elle n'est pas copiée (`--camera` pour la forcer).
 - Le projet reçoit la nouvelle version par `npm run vers-projet -- <dossier du projet> --parcours <id>` (module et
   parcours), ou par un écran « Mettre à jour les exercices » comme celui de l'atelier
   (`atelier-cereales/site/js/mise-a-jour.js` : en ligne ou fichier, différences affichées, version précédente

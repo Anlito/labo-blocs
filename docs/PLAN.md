@@ -426,4 +426,19 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    cartes à liseré coloré, liste des parcours en lignes, `interface/css/accueil-refonte.css` ; nouvelle page
    `site/reglages.html` (« Réglages du collège », « Mise en ligne des parcours »), liée depuis le bandeau et le pied de
    l'accueil, protégée par le code professeur. Textes conservés.
+31. **Jalon 6 — caméra et IA (17/10/2026)**, demande de Thomas (projets futurs avec Arduino, micro:bit, mBot ; le
+   Théâtre d'ombre passera dessus plus tard). Décisions : apprentissage par les élèves dans Labo Blocs (panneau
+   « Caméra et IA ») ; blocs en simulateur et « En direct » seulement (la caméra est dans l'ordinateur).
+   - Noyau : extension 3 « caméra » (1 reconnaît n° → 0/1, 2 certitude n° → 0..100), jamais envoyée à la carte ;
+     blocs `camera_reconnait`, `camera_certitude` ; événement `quand_camera` (reconnaît / ne reconnaît plus) compilé en
+     boucle de surveillance (aucun changement de la machine virtuelle ni des programmes de carte). Simulation :
+     capteur `camera` (n°, 0 = rien) et `certitudes` ; scénarios `regler: { camera: n }`.
+   - Exercice : `camera: { etiquettes: ['Pouce levé', 'Main ouverte'] }` (n° 1, 2… ; 0 = « Rien »). Éditeur de
+     parcours : champ « Étiquettes », catégorie « Caméra », réglage de la caméra dans les scénarios.
+   - IA : `noyau/knn.js` (k plus proches voisins, cosinus ; stabilité : 5 images à 80 %) ; `interface/camera.js`
+     (webcam, photos, vignettes, « faire comme si » sans caméra) ; MobileNet v2 0.5 et TensorFlow.js dans
+     `site/vendor/vision/`, le modèle en script classique (`tools/vision-modele.js`) pour marcher en `file://`.
+     Photos de l'équipe : rubrique `programmation.camera` (par nom d'étiquette, partagée par les exercices).
+   - Module : `vision/` copié dans le module ; `vers-projet` ne le copie que pour un parcours avec caméra (ou
+     `--camera`). Parcours d'exemple « Découverte de la caméra (IA) » (Uno).
 

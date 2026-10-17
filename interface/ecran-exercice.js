@@ -107,6 +107,18 @@
     });
     let vue = null;
 
+    // ----- Caméra et IA (exercices avec « camera » : étiquettes à apprendre, blocs de la caméra) -----
+    const panneauCamera = A.creerPanneauCamera
+      ? A.creerPanneauCamera($('.camera-ia', ecran), {
+          lecture,
+          donnees: () => A.lireCamera(D),
+          enregistrer(camera) {
+            A.noterCamera(D, camera);
+            session.aEnregistrer(true, true);
+          },
+        })
+      : null;
+
     // ----- Aides : indices, fiche « À savoir », lexique -----
 
     const aides = A.creerAides({
@@ -162,11 +174,16 @@
       $('.consigne', ecran).classList.toggle('longue', ex.consigne.length > 300);
       const avant = A.progressionExercice(D, ex.id);
       const statutAvant = avant.statut;
+      // Étiquettes de la caméra d'abord : les menus des blocs de la caméra les proposent au chargement.
+      if (panneauCamera) panneauCamera.ouvrir(ex, {});
       editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
       const libres = ex.libre ? composantsLibres() : null;
       if (libres) etat.exercice.composants = libres.composants;
       dessinerComposants(libres && libres.conflits);
       vue = A.creerVueSimulateur($('.simulateur', ecran), etat.exercice, { appuyerBouton });
+      // Ce que voit la caméra arrive dans les capteurs du simulateur (et du mode « En direct »).
+      if (!vue.capteurs) vue.capteurs = {};
+      if (panneauCamera) panneauCamera.relier(vue.capteurs);
       // Exercice libre : « J'ai terminé » à la place de « Vérifier » ; ni indice ni solution s'il n'y en a pas.
       $('.btn-verifier:not(.btn-terminer)', ecran).hidden = !!ex.libre;
       $('.btn-terminer', ecran).hidden = !ex.libre || lecture;
@@ -236,6 +253,8 @@
       dessinerComposants(r.conflits);
       if (JSON.stringify(r.composants) === avant || !vue) return;
       vue = A.creerVueSimulateur($('.simulateur', ecran), ex, { appuyerBouton });
+      if (!vue.capteurs) vue.capteurs = {};
+      if (panneauCamera) panneauCamera.relier(vue.capteurs);
       if (vue.verrouillerCapteurs) vue.verrouillerCapteurs(etat.modeTest === 'direct');
       afficher();
     }
@@ -373,7 +392,8 @@
     // ----- Modes : ceux que le parcours propose, ou ceux de l'exercice s'il en choisit d'autres -----
     //   simulateur · direct (« En direct » : le programme tourne dans l'ordinateur, la carte obéit) · carte
 
-    const modesDe = (ex) => (ex && ex.modes) || paquet.modes || ['simulateur'];
+    // La caméra est dans l'ordinateur : un exercice avec caméra ne se fait pas « Dans la carte ».
+    const modesDe = (ex) => ((ex && ex.modes) || paquet.modes || ['simulateur']).filter((m) => !(ex && ex.camera && m === 'carte'));
     const tousLesModes = new Set([paquet.modes || ['simulateur'], ...exercices.map((e) => e.modes || [])].flat());
     etat.modeTest = 'simulateur';
     const sectionTest = $('.simulateur', ecran);

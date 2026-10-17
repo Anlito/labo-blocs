@@ -64,7 +64,7 @@ const verifier = (condition, message) => {
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
-  const b = await puppeteer.launch({ executablePath: navigateur, headless: true, args: ['--allow-file-access-from-files', ...(process.getuid && process.getuid() === 0 ? ['--no-sandbox'] : [])] });
+  const b = await puppeteer.launch({ executablePath: navigateur, headless: true, protocolTimeout: 300000, args: ['--allow-file-access-from-files', '--use-fake-device-for-media-stream', '--use-fake-ui-for-media-stream', ...(process.getuid && process.getuid() === 0 ? ['--no-sandbox'] : [])] });
   const erreurs = [];
   async function page(url, options) {
     const p = await b.newPage();
@@ -956,6 +956,39 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   });
 
   // ---------- Variables créées par les élèves ----------
+
+  await critere('Caméra et IA : étiquettes de l’exercice, photos (webcam simulée), IA chargée depuis le dossier, solution vérifiée', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-camera&enseignant=1&exercice=cam-01');
+    await pause(500);
+    const etat = await p.evaluate(() => ({
+      noms: [...document.querySelectorAll('.cam-nom')].map((x) => x.textContent),
+      modes: [...document.querySelectorAll('.btn-mode')].filter((x) => !x.hidden).map((x) => x.dataset.mode),
+      menu: LaboBlocs.optionsEtiquettes().map((x) => x[0]),
+    }));
+    verifier(etat.noms.join() === 'Rien,Pouce levé,Main ouverte' && !etat.modes.includes('carte') && etat.menu.join() === 'rien,Pouce levé,Main ouverte', JSON.stringify(etat));
+    // Sans caméra : « faire comme si », puis la solution vérifiée.
+    await p.click('.cam-comme[data-n="1"]');
+    await charger(p, 'cam-01', 'solution');
+    await p.click('.btn-verifier');
+    await pause(400);
+    const resultat = await texte(p, '.resultat');
+    verifier(resultat.includes('Ton programme fait ce qu’on attend'), resultat);
+    // Webcam simulée : l'IA (TensorFlow.js + MobileNet, copiés dans le dépôt) apprend 10 photos de « Pouce levé » et de « Rien ».
+    await p.click('.cam-allumer');
+    await p.waitForFunction(() => !document.querySelector('.cam-video').hidden || !document.querySelector('.cam-message').hidden && !/Chargement/.test(document.querySelector('.cam-message').textContent), { timeout: 120000 });
+    verifier(await visible(p, '.cam-video'), await texte(p, '.cam-message'));
+    for (const n of [1, 0]) {
+      await p.click(`.cam-etiquette[data-n="${n}"] .cam-photo`);
+      await p.waitForFunction((n) => /^10 photos/.test(document.querySelector(`.cam-etiquette[data-n="${n}"] .cam-nb`).textContent), { timeout: 120000 }, n);
+    }
+    await pause(1500);
+    const vu = await texte(p, '.cam-vu');
+    verifier(/L’IA reconnaît : (Rien|Pouce levé) \(\d+ %\)/.test(vu), vu);
+    const enLigne = await p.evaluate((adresse) => performance.getEntriesByType('resource').filter((r) => !r.name.startsWith('file:') && !r.name.startsWith(adresse)).map((r) => r.name), ADRESSE_COLLEGE);
+    verifier(!enLigne.length, 'ressources en ligne : ' + enLigne.join(', '));
+    await p.click('.cam-allumer');
+    return `étiquettes ${etat.noms.join(', ')} ; modes ${etat.modes.join(', ')} ; solution réussie ; webcam simulée : « ${vu} »`;
+  });
 
   await critere('Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié', async () => {
     const { creerProjet } = require('./nouveau-projet.js');

@@ -225,7 +225,7 @@
     { cle: 'maintenir', nom: 'Maintenir un bouton appuyé', champs: [{ nom: 'maintenir', type: 'bouton', libelle: 'bouton' }] },
     { cle: 'relacher', nom: 'Relâcher un bouton', champs: [{ nom: 'relacher', type: 'bouton', libelle: 'bouton' }] },
     // Seulement pour une carte qui a des capteurs (mBot, micro:bit).
-    { cle: 'regler', nom: 'Régler un capteur de la carte', avecCapteurs: true, champs: [{ nom: 'regler', type: 'capteur', libelle: 'capteur' }] },
+    { cle: 'regler', nom: 'Régler un capteur (ou la caméra)', avecCapteurs: true, champs: [{ nom: 'regler', type: 'capteur', libelle: 'capteur' }] },
     {
       cle: 'verifier',
       nom: 'Vérifier l’état',
@@ -279,6 +279,22 @@
   ];
   const VERIFICATIONS = ['verifier', 'stable', 'impulsion', 'sequence', 'opposees'];
 
+  // Capteurs qu'un scénario peut régler : ceux de la carte, plus la caméra si l'exercice en a une (étiquettes).
+  function capteursExercice(exercice, carte) {
+    const liste = K().capteursCarte(carte).slice();
+    const cam = exercice && exercice.camera;
+    if (cam) liste.unshift({ nom: 'camera', libelle: 'caméra (ce que l’IA reconnaît)', options: [['rien', 0]].concat((cam.etiquettes || []).map((nom, i) => [nom, i + 1])) });
+    return liste;
+  }
+  function decrireReglage(nom, valeur, exercice) {
+    if (nom === 'camera') {
+      const n = Number(valeur) || 0;
+      const noms = (exercice && exercice.camera && exercice.camera.etiquettes) || [];
+      return n ? `la caméra reconnaît « ${noms[n - 1] || 'étiquette ' + n} »` : 'la caméra ne reconnaît rien';
+    }
+    return K().decrireCapteur(nom, valeur);
+  }
+
   function typeEtape(etape) {
     const t = TYPES_ETAPES.find((x) => x.cle in etape);
     return t ? t.cle : null;
@@ -299,7 +315,7 @@
       case 'relacher':
         return { [cle]: bouton };
       case 'regler': {
-        const capteur = K().capteursCarte(carte)[0];
+        const capteur = capteursExercice(exercice, carte)[0];
         if (!capteur) throw new Error('Cette carte n’a pas de capteur à régler.');
         return { regler: { [capteur.nom]: capteur.options ? capteur.options[0][1] : capteur.min } };
       }
@@ -341,7 +357,7 @@
       case 'relacher':
         return `Relâcher ${c(etape.relacher)}`;
       case 'regler':
-        return 'Régler le capteur : ' + Object.entries(etape.regler || {}).map(([n, v]) => K().decrireCapteur(n, v)).join(' et ');
+        return (Object.keys(etape.regler || {}).includes('camera') ? 'Régler : ' : 'Régler le capteur : ') + Object.entries(etape.regler || {}).map(([n, v]) => decrireReglage(n, v, exercice)).join(' et ');
       case 'verifier':
         return `${debut}érifier que ${etats(etape.verifier)}`;
       case 'stable':
@@ -463,6 +479,7 @@
     changerBroche,
     remplacerDansConsigne,
     TYPES_ETAPES,
+    capteursExercice,
     CHAMPS_PHRASE,
     VERIFICATIONS,
     typeEtape,

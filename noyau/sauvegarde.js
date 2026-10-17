@@ -5,7 +5,9 @@
 //   { application, formatVersion, equipe: { eleves, classe }, creeLe, modifieLe, …(rubriques du projet),
 //     programmation: { format: 'labo-blocs/sauvegarde', version: 1, parcours: { id, version },
 //       exerciceCourant, exercices: { <id stable>: { statut, tentatives, indicesOuverts, tempsPasseSecondes,
-//         premiereReussite, empreinte, aReverifier, programme (sauvegarde Blockly), historique } } } }
+//         premiereReussite, empreinte, aReverifier, programme (sauvegarde Blockly), historique } },
+//       camera: { modele, exemples: { <nom de l'étiquette>: [{ f: caractéristiques (base64), v: vignette }] } } } }
+//   (« camera » : ce que l'équipe a appris à l'IA de la caméra, jalon 6 ; partagé par les exercices du parcours.)
 //
 // Les sauvegardes de l'atelier du distributeur (exercices « 1 » … « 13B ») se lisent : leur travail est recopié
 // dans la rubrique « programmation » sous les identifiants du parcours (« dist-01 » …), rien n'est effacé.
@@ -258,7 +260,19 @@
     return { reussis: n(obligatoires), total: obligatoires.length, defisReussis: n(defis), defis: defis.length, aReverifier };
   }
 
+  // Ce que l'équipe a appris à l'IA de la caméra (par nom d'étiquette : « Loup » sert à tous les exercices).
+  function lireCamera(d) {
+    const c = d.programmation && d.programmation.camera;
+    return c && c.exemples ? c : { modele: null, exemples: {} };
+  }
+  function noterCamera(d, camera) {
+    d.programmation.camera = { modele: camera.modele || null, exemples: camera.exemples || {} };
+    d.modifieLe = maintenant();
+  }
+
   const api = {
+    lireCamera,
+    noterCamera,
     noterTermine,
     FORMAT_SAUVEGARDE: FORMAT,
     APPLICATION,

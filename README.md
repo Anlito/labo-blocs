@@ -92,3 +92,9 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
 - **Kit nouveau projet (16/10/2026)** : `npm run nouveau-projet` crée le dossier d'un futur projet déjà relié à Labo
   Blocs (page des élèves, outil du professeur, réglages, parcours, module) et y range
   [la consigne pour Claude Code](docs/BRIEF-LABO-BLOCS-POUR-UN-PROJET.md) — [RECETTE.md](RECETTE.md) §11.
+- **Jalon 6 (caméra et IA), en recette** : un exercice peut avoir des **étiquettes** (« Pouce levé », « Loup »…) ;
+  l'élève les apprend à l'IA avec la webcam (panneau « Caméra et IA », photos gardées dans le fichier de l'équipe) et
+  programme avec les blocs « quand la caméra reconnaît … », « la caméra reconnaît … », « certitude de l'IA ». Arduino,
+  micro:bit et mBot, en simulateur et « En direct » (la caméra est dans l'ordinateur). IA : TensorFlow.js et MobileNet
+  copiés dans `site/vendor/vision/` (aucun CDN, marche en `file://`). Parcours d'exemple « Découverte de la caméra
+  (IA) » — [RECETTE.md](RECETTE.md) §21.
