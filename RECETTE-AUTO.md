@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-16/10/2026 22:25:18 · chromium · page ouverte en file:// · 34/34 critères
+17/10/2026 09:10:28 · chromium · page ouverte en file:// · 34/34 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -26,7 +26,7 @@
 | Un même exercice : simulateur, puis En direct, puis Dans la carte (Uno, exercice 7) | ✔ | simulateur : réussi ; en direct : boutons D3 D4 surveillés, appui sur le vrai D3 → LED D9 allumée (carte et écran), signe de vie tenu 3,5 s, « Arrêter » → W, OFF ; dans la carte : 61 octets envoyés |
 | En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
 | En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice | ✔ | bouton A de la vraie carte → P0 allumée et « X 2 2 3 » ; exercice réglé « simulateur seulement » : sélecteur de modes caché |
-| Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-16.csv + labo-blocs-distributeur-5A-2026-10-16.labo-resultats.json (compétences C6, C9) |
+| Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-17.csv + labo-blocs-distributeur-5A-2026-10-17.labo-resultats.json (compétences C6, C9) |
 | Code professeur : accueil, éditeur, suivi et mode enseignant cachés sans le code ; page des élèves libre | ✔ | accueil.html : code demandé ; mauvais code : « Ce n’est pas le code professeur. Vérifie-le et recommence. » (ambre) ; editeur.html : code demandé ; prof.html : code demandé ; index.html (enseignant) : code demandé ; index.html : libre ; « Verrouiller » redemande le code |
 | Accueil de Labo Blocs : éditeur, suivi de classe, et chaque parcours à essayer en mode enseignant | ✔ | Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit ; « Découverte du mBot — Labo Blocs » ouvert en mode enseignant ; lien Accueil dans l’éditeur |
 | Parcours déposé dans parcours/ (.labo-parcours.json) : publié, à l’accueil, classes et dossier du parcours | ✔ | « Robot du couloir » publié et proposé à l’accueil ; élèves : classes 4A, 4C, dossier « 4C›COMMUN›ROBOT › Inès » ; distributeur : 5A, 5B, 5C, 5D, 5E, 5F |

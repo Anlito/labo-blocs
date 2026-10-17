@@ -18,7 +18,7 @@ test('classes d’un projet : celles de ses niveaux (toutes s’il n’en dit ri
 test('projet complété : chemin du collège + dossier du projet ; ses propres réglages restent prioritaires', () => {
   const p = C.projetAvecCollege({ id: 'd', niveaux: ['5'], cheminProjet: ['DISTRIBUTEUR DE CEREALES'] }, college);
   assert.deepStrictEqual(p.classes, ['5A', '5B']);
-  assert.deepStrictEqual(p.cheminSauvegarde, ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', 'DISTRIBUTEUR DE CEREALES', '{equipe}']);
+  assert.deepStrictEqual(p.cheminSauvegarde, ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE', '{groupe}', 'DISTRIBUTEUR DE CEREALES', '{equipe}']);
   const propre = C.projetAvecCollege({ classes: ['6A'], cheminSauvegarde: ['{classe}', '{equipe}'], cheminProjet: ['X'] }, college);
   assert.deepStrictEqual(propre.classes, ['6A']);
   assert.deepStrictEqual(propre.cheminSauvegarde, ['{classe}', '{equipe}']);
@@ -42,4 +42,14 @@ test('le fichier du site se relit, et le fichier écrit par la page de réglages
   assert.strictEqual(site.format, 'labo-blocs/college');
   assert.ok(site.classes.length > 0 && site.cheminClasse.includes('{classe}'));
   assert.deepStrictEqual(lire(C.scriptCollege(college)).classes, college.classes);
+});
+
+test('groupes : 3D1 est un groupe de la classe 3D, son dossier est au bout du chemin de la classe', () => {
+  assert.deepStrictEqual(C.classeEtGroupe('3D1'), { classe: '3D', groupe: '3D1' });
+  assert.deepStrictEqual(C.classeEtGroupe('5A'), { classe: '5A', groupe: '' });
+  assert.strictEqual(C.niveauDe('3C2'), '3');
+  const college = { classes: ['5A', '3D1'], cheminClasse: ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE'] };
+  const p = C.projetAvecCollege({ niveaux: ['3'], cheminProjet: ['CONCEPT STORE'] }, college);
+  assert.deepStrictEqual(C.remplirChemin(p.cheminSauvegarde, '3D1', 'Lea_Malik'), ['Bureau', 'Classe', '3D', 'COMMUN', 'TECHNOLOGIE', '3D1', 'CONCEPT STORE', 'Lea_Malik']);
+  assert.deepStrictEqual(C.remplirChemin(p.cheminSauvegarde, '5A', 'Lea_Malik'), ['Bureau', 'Classe', '5A', 'COMMUN', 'TECHNOLOGIE', 'CONCEPT STORE', 'Lea_Malik']);
 });

@@ -97,7 +97,7 @@
     const choixClasse = $('.champ-classe', racine);
     function majClasses() {
       const modele = A.projet.cheminSauvegarde || ['{classe}', '{equipe}'];
-      $('.chemin-texte', racine).textContent = modele.map((p) => p.replace('{classe}', (A.projet.classes || ['5A'])[0] || '5A').replace('{equipe}', 'Prénom_Prénom')).join(' › ');
+      $('.chemin-texte', racine).textContent = A.remplirChemin(modele, (A.projet.classes || ['5A'])[0] || '5A', 'Prénom_Prénom').join(' › ');
       const choisie = choixClasse.value;
       choixClasse.innerHTML =
         '<option value="">Choisis ta classe</option>' + (A.projet.classes || []).map((c) => `<option>${echapper(c)}</option>`).join('');
@@ -121,7 +121,7 @@
     // ----- Dossier de l'équipe -----
 
     function preparerDossier() {
-      const chemin = (A.projet.cheminSauvegarde || ['{classe}', '{equipe}']).map((p) => p.replace('{classe}', equipe.classe).replace('{equipe}', equipe.nom));
+      const chemin = A.remplirChemin(A.projet.cheminSauvegarde || ['{classe}', '{equipe}'], equipe.classe, equipe.nom);
       // Le chemin jusqu'au dossier du projet, celui-ci surligné : l'élève le sélectionne, Labo Blocs y crée le dossier de l'équipe.
       const cible = chemin.length - 2;
       $('.chemin', racine).innerHTML = chemin

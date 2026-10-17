@@ -32,9 +32,20 @@ const EMPREINTE_PORTE = (() => {
   return r.empreinte;
 })();
 
-// Réglages du collège : adresse en ligne et copie du dépôt (servie à la place pendant la recette).
+// Réglages du collège : la recette ne dépend ni d'internet ni des classes publiées par le professeur.
+// Copie de secours et version « en ligne » sont remplacées par des réglages d'essai fixes (5A à 5F) ;
+// seul un appel marqué __recette (critère « Réglages du collège ») passe tel quel.
 const { ADRESSE_COLLEGE } = require('../interface/college.js');
-const COLLEGE_LOCAL = fs.readFileSync(path.join(RACINE, 'site', 'college.js'), 'utf8');
+const COLLEGE_ESSAI = { format: 'labo-blocs/college', version: 1, classes: ['5A', '5B', '5C', '5D', '5E', '5F'], cheminClasse: ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE'] };
+const COLLEGE_LOCAL = `definirCollege(${JSON.stringify(COLLEGE_ESSAI)});`;
+function collegeDEssai(essai) {
+  let vraie;
+  Object.defineProperty(window, 'definirCollege', {
+    configurable: true,
+    get: () => (c) => vraie && vraie(c && c.__recette ? c : essai),
+    set: (f) => { vraie = f; },
+  });
+}
 
 const resultats = [];
 async function critere(nom, f) {
@@ -61,6 +72,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     // Réglages du collège « en ligne » : servis par la copie du dépôt (la recette ne dépend pas d'internet).
     await p.setRequestInterception(true);
     p.on('request', (r) => (r.url().startsWith(ADRESSE_COLLEGE) ? r.respond({ status: 200, contentType: 'text/javascript', body: COLLEGE_LOCAL }) : r.continue()));
+    await p.evaluateOnNewDocument(collegeDEssai, COLLEGE_ESSAI);
     p.on('pageerror', (e) => erreurs.push(e.message));
     p.on('console', (m) => m.type() === 'error' && erreurs.push(m.text()));
     // « Quitter la page ? » (travail pas encore enregistré dans un fichier) : on accepte.
@@ -1031,7 +1043,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const classes = () => p.$$eval('.champ-classe option', (o) => o.map((x) => x.value).filter(Boolean));
     const debut = await classes();
     const chemin = await texte(p, '.chemin-texte');
-    await p.evaluate(() => definirCollege({ format: 'labo-blocs/college', version: 1, classes: ['5A', '5G', '4A'], cheminClasse: ['Reseau', '{classe}', 'TECHNO'] }));
+    await p.evaluate(() => definirCollege({ format: 'labo-blocs/college', version: 1, classes: ['5A', '5G', '4A'], cheminClasse: ['Reseau', '{classe}', 'TECHNO'], __recette: true }));
     await pause(200);
     const apres = await classes();
     const cheminApres = await texte(p, '.chemin-texte');

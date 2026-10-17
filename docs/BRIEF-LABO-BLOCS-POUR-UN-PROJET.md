@@ -39,6 +39,9 @@ dans l'accueil de Labo Blocs (« Réglages du collège »). Un projet :
 - dit seulement ses **niveaux** (`niveaux: ['4']`) et la **fin de son chemin** (`cheminProjet: ['CONCEPT STORE']`) ;
 - propose à l'élève de choisir sa classe dans cette liste, puis de sélectionner le **dossier du projet** : l'outil y crée
   lui-même le dossier de l'équipe (`Prénom_Prénom`), comme Labo Blocs et l'atelier du distributeur.
+- **groupes** : une classe qui finit par un chiffre après la lettre (`3D1`, `3C2`) est un groupe de la classe `3D`,
+  `3C` ; son dossier est au bout du chemin de la classe, avant le dossier du projet :
+  `Bureau › Classe › 3D › COMMUN › TECHNOLOGIE › 3D1 › CONCEPT STORE › Lea_Malik` (`LaboBlocs.remplirChemin`).
 
 ## 3. Contraintes non négociables (les mêmes que Labo Blocs)
 
