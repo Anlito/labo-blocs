@@ -146,6 +146,11 @@
 
     ajouter(`// ${o.titre || 'Programme'} — écrit par Labo Blocs à partir des blocs.`);
     ajouter(versMasse ? '// LED : HAUT = allumée. Bouton poussoir (signal + GND) : HAUT = appuyé. Servo : 0° à 180°.' : '// LED : HAUT = allumée. Module bouton : HAUT = appuyé. Servo : 0° à 180°.');
+    // Caméra et IA : dans l'ordinateur, pas dans la carte (ses blocs valent 0 ici, ses événements ne sont pas écrits).
+    if (JSON.stringify(v1.fils).includes('camera')) {
+      ajouter('// La caméra et son IA sont dans l’ordinateur : ce programme marche seulement en mode « En direct ».');
+      ajouter('// Ici, les blocs de la caméra valent 0 et les « quand la caméra … » ne sont pas écrits.');
+    }
     if (servos.size) ajouter('#include <Servo.h>');
     ajouter('');
     for (const n of trier(servos)) ajouter(`Servo servo${n};`);

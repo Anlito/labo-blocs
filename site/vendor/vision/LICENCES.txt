@@ -1,0 +1,8 @@
+TensorFlow.js (@tensorflow/tfjs, tf.min.js) et @tensorflow-models/mobilenet (mobilenet.min.js) — Google LLC.
+Licence Apache 2.0 : https://www.apache.org/licenses/LICENSE-2.0
+
+MobileNet v2 (alpha 0.5, 224) — Google, TensorFlow Hub. Licence Apache 2.0 (modele-mobilenet.js, produit par
+tools/vision-modele.js à partir de model.json et de ses fichiers .bin).
+https://tfhub.dev/google/imagenet/mobilenet_v2_050_224/classification/2
+
+Copies reprises du site « Théâtre d'ombre augmenté » (anlito/theatre-ombre, site/vendor/).

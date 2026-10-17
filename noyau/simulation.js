@@ -73,6 +73,23 @@
       for (const n of sorties) sim.sorties[n] = sim.initiales[n] = 0;
     }
 
+    // Caméra (extension 3) : ce que l'IA reconnaît, réglé par la page (webcam), par un scénario (« regler: { camera: 2 } »)
+    // ou à la main dans le simulateur. capteurs.camera : n° de l'étiquette reconnue (0 = rien) ;
+    // capteurs.certitudes (facultatif) : { n°: 0..100 } donnés par l'IA.
+    if (!sim.capteurs) sim.capteurs = opts.capteurs || {};
+    if (!('camera' in sim.capteurs)) sim.capteurs.camera = 0;
+    function camera(c, args) {
+      const n = Math.round(Number(args[0]) || 0);
+      const vue = Math.round(Number(sim.capteurs.camera) || 0);
+      if (c === 1) return vue === n ? 1 : 0;
+      if (c === 2) {
+        const certitudes = sim.capteurs.certitudes;
+        if (certitudes && n in certitudes) return Math.round(Number(certitudes[n]) || 0);
+        return vue === n ? 100 : 0;
+      }
+      return 0;
+    }
+
     function ecrire(n, valeur, type) {
       ecrireNom(nom(n), valeur, type);
     }
@@ -103,6 +120,7 @@
         return min + ((alea >>> 8) % (max - min + 1));
       },
       ext(e, c, args) {
+        if (e === 3) return camera(c, args); // la caméra est dans l'ordinateur : rien ne part vers la carte
         if (opts.extension) return Number(opts.extension(e, c, args)) || 0;
         const r = carteSimulee ? Number(carteSimulee.ext(e, c, args)) || 0 : 0;
         // Mode « En direct » : la commande part aussi vers la vraie carte (noyau/direct.js).

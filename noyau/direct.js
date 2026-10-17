@@ -64,6 +64,7 @@
       return null;
     }
     function envoyerExtension(e, c, args) {
+      if (e === 3) return; // caméra : dans l'ordinateur, jamais vers la carte
       const ligne = ligneExtension(e, c, args);
       const g = groupe(e, c, args.map((x) => Math.round(Number(x) || 0)));
       if (g) {

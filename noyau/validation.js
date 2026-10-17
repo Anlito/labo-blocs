@@ -13,6 +13,7 @@
 //   { impulsion: { D5: 1 }, duree: 5, tolerance: 0.5, delai: 0.3 }   allumé 5 s ±0,5 puis éteint
 //   { stable: { D6: 90 }, duree: 2 }
 //   { regler: { distance: 10 } }      capteur de la carte (mBot, micro:bit) réglé à cette valeur
+//   { regler: { camera: 2 } }         la caméra reconnaît l'étiquette n° 2 de l'exercice (0 = rien)
 // Toute vérification accepte « contexte » et « attendu » pour remplacer le début de la phrase.
 
 (function (global) {
@@ -37,6 +38,14 @@
 
   function majuscule(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // « la caméra reconnaît « Loup » » : le nom de l'étiquette vient de l'exercice (camera.etiquettes, n° 1, 2…).
+  function decrireCamera(exercice, valeur) {
+    const n = Math.round(Number(valeur) || 0);
+    const noms = (exercice.camera && exercice.camera.etiquettes) || [];
+    if (!n) return 'la caméra ne reconnaît rien';
+    return noms[n - 1] ? `la caméra reconnaît « ${noms[n - 1]} »` : `la caméra reconnaît l’étiquette ${n}`;
   }
 
   // ---------- Noms des composants dans les phrases ----------
@@ -125,6 +134,7 @@
           ? `après un appui sur ${derniers[0]} puis sur ${derniers[1]}`
           : `après un appui sur ${derniers[0]}`;
       }
+      if (reglage && reglage.nom === 'camera') return `quand ${decrireCamera(exercice, reglage.valeur)}`;
       if (reglage) return `quand ${CARTES().decrireCapteur(reglage.nom, reglage.valeur)}`;
       if (boutons.length) return 'quand aucun bouton n’est appuyé';
       // Sans bouton, seule une vérification d'état à un instant donné a besoin d'un repère de temps.

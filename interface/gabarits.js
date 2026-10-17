@@ -144,6 +144,7 @@
         </div>
       </div>
     </section>
+    <section class="carte camera-ia" aria-label="Caméra et IA" hidden></section>
     <section class="carte verification">
       <button type="button" class="btn-verifier"><span data-icone="coche"></span>Vérifier mon programme</button>
       <button type="button" class="btn-verifier btn-terminer" hidden><span data-icone="coche"></span>J’ai terminé</button>

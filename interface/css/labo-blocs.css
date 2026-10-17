@@ -422,3 +422,32 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .simulateur.mode-direct .pc-message { font-size: 0.9375rem; }
 /* Exercice libre : composant sur une broche déjà prise (ambre, avec le pictogramme et le texte) */
 .broche-partagee { font-size: 0.8125rem; font-weight: 700; color: var(--ecart-texte); }
+
+/* ---------- Caméra et IA (jalon 6) : panneau de l'exercice ---------- */
+.camera-ia { display: flex; flex-direction: column; gap: 0.625rem; }
+.camera-ia[hidden] { display: none; }
+.cam-titre { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap; font-size: 1rem; }
+.cam-titre .btn-secondaire { height: 2.25rem; padding: 0 0.875rem; font-size: 0.875rem; }
+.cam-video { position: relative; border-radius: 0.75rem; overflow: hidden; background: #14213D; }
+.cam-video[hidden] { display: none; }
+.cam-video video { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transform: scaleX(-1); }
+.cam-vu { position: absolute; left: 0.5rem; right: 0.5rem; bottom: 0.5rem; margin: 0; padding: 0.375rem 0.625rem; border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.92); color: var(--texte); font-weight: 700; font-size: 0.875rem; }
+.cam-message { margin: 0; padding: 0.5rem 0.75rem; border-radius: 0.625rem; background: var(--ecart-pale); color: var(--ecart-texte); font-size: 0.875rem; font-weight: 700; }
+.cam-message[hidden] { display: none; }
+.cam-aide { margin: 0; font-size: 0.8125rem; line-height: 1.45; color: var(--texte-2); }
+.cam-etiquettes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.cam-etiquette { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nom nb' 'vignettes vignettes' 'actions actions'; gap: 0.375rem 0.5rem; align-items: center; padding: 0.5rem 0.625rem; border: 1px solid var(--bord); border-radius: 0.625rem; min-width: 0; }
+.cam-nom { grid-area: nom; } .cam-nb { grid-area: nb; } .cam-vignettes { grid-area: vignettes; } .cam-actions { grid-area: actions; }
+.cam-nom { font-weight: 700; font-size: 0.9375rem; }
+.cam-nb { font-size: 0.8125rem; color: var(--texte-2); justify-self: end; }
+.cam-nb.cam-peu { color: var(--ecart-texte); background: var(--ecart-pale); padding: 0 0.375rem; border-radius: 0.375rem; font-weight: 700; }
+.cam-vignettes { display: flex; gap: 0.25rem; min-height: 0; }
+.cam-vignettes img { border-radius: 0.25rem; transform: scaleX(-1); }
+.cam-actions { display: flex; gap: 0.375rem; flex-wrap: wrap; }
+.cam-vignettes:empty { display: none; }
+.cam-actions .btn-principal, .cam-actions .btn-secondaire, .cam-sans .btn-secondaire { height: 2rem; padding: 0 0.75rem; font-size: 0.8125rem; }
+.cam-sans { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; font-size: 0.8125rem; color: var(--texte-2); }
+.cam-sans[hidden] { display: none; }
+.cam-sans-boutons { display: flex; flex-wrap: wrap; gap: 0.375rem; }
+.cam-sans .btn-secondaire[aria-pressed="true"] { background: var(--action); color: #FFFFFF; }

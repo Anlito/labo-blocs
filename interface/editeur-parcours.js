@@ -347,6 +347,12 @@
           '<p class="ed-aide">Une fiche peut servir à plusieurs exercices : la modifier la change partout.</p></details>'
         : '') +
       '</div>' +
+      // Caméra et IA
+      '<div class="carte ed-carte">' +
+      '<div class="ed-carte-tete"><h3>Caméra et IA</h3><span class="ed-aide">Facultatif</span></div>' +
+      `<label>Étiquettes que les élèves apprennent à l’IA<input class="champ-camera" value="${echapper(((e.camera && e.camera.etiquettes) || []).join(', '))}" placeholder="aucune caméra (ex. Loup, Roi, Sorcière)"></label>` +
+      '<p class="ed-aide">Sépare les noms par des virgules. Avec des étiquettes, l’élève a un panneau « Caméra et IA » : il prend des photos de chaque étiquette (et de « Rien »). Coche ensuite les blocs de la catégorie « Caméra ». La caméra est dans l’ordinateur : simulateur et « En direct » seulement (pas « Dans la carte »). Dans les scénarios, « Régler » la caméra fait comme si elle reconnaissait une étiquette.</p>' +
+      '</div>' +
       // Composants
       '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
@@ -361,9 +367,9 @@
       '<div class="carte ed-carte">' +
       '<div class="ed-carte-tete"><h3>Blocs proposés aux élèves</h3><span class="ed-aide">Coche ce qui apparaît dans la palette.</span></div>' +
       '<div class="ed-blocs">' +
-      A.CATEGORIES.filter((cat) => !cat.carte || cat.carte === carteDuParcours()).map(
+      A.CATEGORIES.filter((cat) => !cat.carte || cat.carte === '*' || cat.carte === carteDuParcours()).map(
         (cat) =>
-          `<fieldset><legend>${echapper(cat.nom)}${cat.carte ? ` <span class="ed-aide">· ${echapper(A.profil(cat.carte).nom)}</span>` : ''}</legend>` +
+          `<fieldset><legend>${echapper(cat.nom)}${cat.carte && cat.carte !== '*' ? ` <span class="ed-aide">· ${echapper(A.profil(cat.carte).nom)}</span>` : ''}</legend>` +
           cat.blocs.map((t) => `<label class="ed-case"><input type="checkbox" class="champ-bloc" value="${t}"${blocsCoches.has(t) ? ' checked' : ''}> ${echapper(A.NOMS_BLOCS[t] || t)}</label>`).join('') +
           '</fieldset>',
       ).join('') +
@@ -483,6 +489,14 @@
         else delete e.variablesLibres;
         modifie();
         chargerSolution();
+      } else if (t.matches('.champ-camera')) {
+        const noms = [...new Set(t.value.split(',').map((x) => x.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 8);
+        if (noms.length) e.camera = { etiquettes: noms };
+        else delete e.camera;
+        A.etiquettesCamera = ['Rien'].concat(noms);
+        modifie();
+        chargerSolution();
+        dessinerScenarios();
       } else if (t.matches('.champ-bloc')) {
         e.blocsAutorises = $$('.champ-bloc:checked', zone).map((x) => x.value);
         etat.editeur.changerPalette(e.blocsAutorises);
@@ -609,6 +623,7 @@
     // Les paramètres « $nom » prennent leur valeur, comme chez l'élève.
     const solution = A.appliquerParametres(e.solutionReference || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
     A.carteCourante = carteDuParcours();
+    A.etiquettesCamera = ['Rien'].concat((e.camera && e.camera.etiquettes) || []);
     etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres }, A.versBlockly(solution));
     majMessageSolution();
   }
@@ -668,7 +683,7 @@
       case 'capteur': {
         // Un capteur et sa valeur : { distance: 10 }.
         const [nom, val] = Object.entries(v || {})[0] || [];
-        const liste = A.capteursCarte(carteDuParcours());
+        const liste = A.capteursExercice(e, carteDuParcours());
         const choisi = liste.find((x) => x.nom === nom) || liste[0];
         const menu = liste.map((x) => `<option value="${x.nom}"${x === choisi ? ' selected' : ''}>${echapper(x.libelle)}</option>`).join('');
         const valeur = choisi.options
@@ -730,7 +745,7 @@
       });
       h +=
         '</ol><div class="ed-ajout-etape">' +
-        `<select class="ed-sorte-etape" data-s="${s}" aria-label="Sorte d’étape">${A.TYPES_ETAPES.filter((t) => !t.avecCapteurs || A.capteursCarte(carteDuParcours()).length).map((t) => `<option value="${t.cle}">${t.nom}</option>`).join('')}</select>` +
+        `<select class="ed-sorte-etape" data-s="${s}" aria-label="Sorte d’étape">${A.TYPES_ETAPES.filter((t) => !t.avecCapteurs || A.capteursExercice(e, carteDuParcours()).length).map((t) => `<option value="${t.cle}">${t.nom}</option>`).join('')}</select>` +
         `<button type="button" class="btn-aide" data-s="${s}" data-action="ajouter-etape">Ajouter une étape</button></div></section>`;
     });
     h +=
@@ -769,7 +784,7 @@
       const champ = t.dataset.champ;
       const nombre = (x) => Number(String(x).replace(',', '.'));
       if (t.dataset.quoi === 'nom-capteur') {
-        const c = A.capteursCarte(carteDuParcours()).find((x) => x.nom === t.value);
+        const c = A.capteursExercice(ex(), carteDuParcours()).find((x) => x.nom === t.value);
         etape.regler = { [t.value]: c.options ? c.options[0][1] : Math.max(c.min, 0) };
         etat.resultats = null;
         modifie();

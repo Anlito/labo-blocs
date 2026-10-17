@@ -21,8 +21,8 @@ const { join } = require('node:path');
 const vm = require('node:vm');
 
 const RACINE = join(__dirname, '..');
-const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde', 'competences', 'classe'];
-const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'ecran-exercice', 'app', 'integration', 'professeur', 'college'];
+const NOYAU = ['cartes', 'programme', 'code-octet', 'vm', 'simulation', 'direct', 'validation', 'arduino', 'parcours', 'sauvegarde', 'competences', 'classe', 'knn'];
+const INTERFACE = ['gabarits', 'icones', 'blocs', 'editeur', 'simulateur-vue', 'aides', 'televersement', 'carte', 'fichiers', 'session', 'accueil', 'ecran-parcours', 'camera', 'ecran-exercice', 'app', 'integration', 'professeur', 'college'];
 const { VERSION_MOTEUR } = require('../noyau/parcours.js');
 
 // ---------- CSS limitée à .labo-blocs ----------
@@ -125,6 +125,8 @@ function construire() {
   cpSync(join(RACINE, 'site', 'img', 'logo.svg'), join(OUT, 'logo.svg'));
 
   for (const d of ['polices', 'blockly', 'LICENCES']) cpSync(join(RACINE, 'site', 'vendor', d), join(OUT, d), { recursive: true });
+  // IA de la caméra (TensorFlow.js et MobileNet, ~12 Mo) : chargée seulement quand un exercice allume la caméra.
+  cpSync(join(RACINE, 'site', 'vendor', 'vision'), join(OUT, 'vision'), { recursive: true });
   const date = new Date().toISOString().slice(0, 10);
   writeFileSync(join(OUT, 'VERSION.json'), JSON.stringify({ moteur: VERSION_MOTEUR, construit: date }, null, 2) + '\n');
   writeFileSync(
