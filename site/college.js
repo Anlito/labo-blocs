@@ -4,16 +4,18 @@ definirCollege({
   "format": "labo-blocs/college",
   "version": 1,
   "classes": [
-    "5X",
-    "5B",
-    "5C",
-    "5D",
     "5E",
-    "5F",
-    "3C",
-    "CB",
+    "5C",
     "4E",
-    "4G"
+    "4B",
+    "4G",
+    "3E",
+    "EB",
+    "3G",
+    "3D1",
+    "3D2",
+    "3C1",
+    "3C2"
   ],
   "cheminClasse": [
     "Bureau",
@@ -22,5 +24,5 @@ definirCollege({
     "COMMUN",
     "TECHNOLOGIE"
   ],
-  "modifieLe": "2026-10-16"
+  "modifieLe": "2026-10-17"
 });
