@@ -116,6 +116,22 @@
             A.noterCamera(D, camera);
             session.aEnregistrer(true, true);
           },
+          // Étiquettes créées ou renommées par l'équipe : les blocs déjà posés affichent les nouveaux noms.
+          surEtiquettes() {
+            const Blockly = global.Blockly;
+            Blockly.Events.disable();
+            try {
+              for (const b of editeur.ws.getAllBlocks(false)) {
+                const f = b.getField('ETIQUETTE');
+                if (!f) continue;
+                f.getOptions(false);
+                if (f.doValueUpdate_) f.doValueUpdate_(f.getValue());
+                if (f.forceRerender) f.forceRerender();
+              }
+            } finally {
+              Blockly.Events.enable();
+            }
+          },
         })
       : null;
 

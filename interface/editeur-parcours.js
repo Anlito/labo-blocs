@@ -351,6 +351,7 @@
       '<div class="carte ed-carte">' +
       '<div class="ed-carte-tete"><h3>Caméra et IA</h3><span class="ed-aide">Facultatif</span></div>' +
       `<label>Étiquettes que les élèves apprennent à l’IA<input class="champ-camera" value="${echapper(((e.camera && e.camera.etiquettes) || []).join(', '))}" placeholder="aucune caméra (ex. Loup, Roi, Sorcière)"></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ-camera-libres"${e.camera && e.camera.etiquettesLibres ? ' checked' : ''}> Les élèves créent leurs propres étiquettes (celles ci-dessus sont celles de départ, il peut n’y en avoir aucune)</label>` +
       '<p class="ed-aide">Sépare les noms par des virgules. Avec des étiquettes, l’élève a un panneau « Caméra et IA » : il prend des photos de chaque étiquette (et de « Rien »). Coche ensuite les blocs de la catégorie « Caméra ». La caméra est dans l’ordinateur : simulateur et « En direct » seulement (pas « Dans la carte »). Dans les scénarios, « Régler » la caméra fait comme si elle reconnaissait une étiquette.</p>' +
       '</div>' +
       // Composants
@@ -489,9 +490,11 @@
         else delete e.variablesLibres;
         modifie();
         chargerSolution();
-      } else if (t.matches('.champ-camera')) {
-        const noms = [...new Set(t.value.split(',').map((x) => x.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 8);
-        if (noms.length) e.camera = { etiquettes: noms };
+      } else if (t.matches('.champ-camera') || t.matches('.champ-camera-libres')) {
+        const champ = $('.champ-camera', zone);
+        const noms = [...new Set(champ.value.split(',').map((x) => x.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 8);
+        const libres = $('.champ-camera-libres', zone).checked;
+        if (noms.length || libres) e.camera = libres ? { etiquettes: noms, etiquettesLibres: true } : { etiquettes: noms };
         else delete e.camera;
         A.etiquettesCamera = ['Rien'].concat(noms);
         modifie();
