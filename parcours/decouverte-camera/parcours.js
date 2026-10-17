@@ -1,11 +1,11 @@
-// Parcours « Découverte de la caméra (IA) », version 1.0.0 (Labo Blocs).
+// Parcours « Découverte de la caméra (IA) », version 1.1.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-camera",
   "titre": "Découverte de la caméra (IA)",
-  "versionParcours": "1.0.0",
+  "versionParcours": "1.1.0",
   "date": "2026-10-17",
   "moteurMinimum": "0.3.0",
   "carte": "uno",
@@ -261,6 +261,40 @@ definirParcours({
             ]
           }
         ]
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "cam-03",
+      "numero": "3",
+      "titre": "À toi d’inventer",
+      "defi": false,
+      "libre": true,
+      "consigne": "Crée tes propres étiquettes dans le panneau « Caméra et IA » (par exemple tes personnages ou tes objets), apprends-les à l’IA, puis invente un programme : chaque étiquette reconnue allume une LED ou fait sonner le buzzer.\nQuand ton programme marche, clique sur « J’ai terminé ».",
+      "composants": [],
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      },
+      "blocsAutorises": [
+        "quand_camera",
+        "camera_reconnait",
+        "camera_certitude",
+        "led_etat",
+        "son",
+        "attendre",
+        "si_sinon",
+        "si_alors"
+      ],
+      "blocsDepart": null,
+      "scenarios": [],
+      "indices": [
+        "",
+        ""
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
       },
       "competence": "C9"
     }

@@ -298,4 +298,9 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 21.7 | Fermer, rouvrir la sauvegarde de l'équipe | Les photos sont toujours là (nombre et vignettes) | |
 | 21.8 | Sans webcam : boutons « Sans caméra, faire comme si elle voyait » | Le programme réagit comme avec la caméra | |
 | 21.9 | Éditeur de parcours : un exercice › « Caméra et IA » › étiquettes « Loup, Roi » | Catégorie « Caméra » dans les blocs ; scénario « Régler : la caméra reconnaît « Loup » » | |
+| 21.10 | Cliquer deux fois « + 10 photos » sur une étiquette | 20 photos : les photos s'ajoutent, rien n'est effacé ; « Effacer les photos » repart de zéro | |
+| 21.11 | Caméra allumée, bouger devant | « Ce que pense l'IA, en direct » : une barre par étiquette avec le trait du seuil (80 %), « … : n images sur 5 de suite », et la photo apprise qui ressemble le plus (avec le %) | |
+| 21.12 | Exercice 3 « À toi d'inventer » : créer « Loup », puis « loup » | « Loup » ajoutée (et dans le menu des blocs) ; « loup » : « L’étiquette « loup » existe déjà. » (ambre) | |
+| 21.13 | Renommer « Loup » en « Renard », fermer et rouvrir la sauvegarde | Le bloc affiche « Renard » ; étiquettes et photos retrouvées | |
+| 21.14 | Éditeur de parcours : cocher « Les élèves créent leurs propres étiquettes » | L'exercice propose « Nouvelle étiquette » aux élèves | |
 

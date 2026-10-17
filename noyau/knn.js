@@ -3,7 +3,8 @@
 // (cosinus) votent. Tout est calculé dans le navigateur : rien n'est envoyé.
 //
 //   const ia = creerReconnaissance();            ia.ajouter(n° étiquette, caracteristiques) ; ia.retirer(n°, i)
-//   ia.reconnaitre(caracteristiques) → { etiquette, certitudes: { n°: 0..100 } } (étiquette 0 = rien appris)
+//   ia.reconnaitre(caracteristiques) → { etiquette, certitudes: { n°: 0..100 }, proche: { n, i, ressemblance } }
+//     (étiquette 0 = rien appris ; « proche » : la photo apprise qui ressemble le plus, n° de l'étiquette, rang, 0..100)
 //   const stable = creerStabilite({ seuil: 80, images: 5 }) ; stable.pousser(resultat) → n° vu de façon stable
 (function (global) {
   'use strict';
@@ -40,11 +41,11 @@
         const q = normer(caracteristiques);
         const proches = [];
         for (const [n, liste] of exemples) {
-          for (const e of liste) {
+          liste.forEach((e, rang) => {
             let s = 0;
             for (let i = 0; i < q.length; i++) s += q[i] * e[i];
-            proches.push({ n, s });
-          }
+            proches.push({ n, s, rang });
+          });
         }
         if (!proches.length) return { etiquette: 0, certitudes: {} };
         proches.sort((a, b) => b.s - a.s);
@@ -55,7 +56,8 @@
         for (const n of exemples.keys()) certitudes[n] = Math.round(((votes[n] || 0) * 100) / votants.length);
         let etiquette = votants[0].n;
         for (const n of Object.keys(votes)) if (votes[n] > votes[etiquette]) etiquette = Number(n);
-        return { etiquette: Number(etiquette), certitudes };
+        const p = proches[0];
+        return { etiquette: Number(etiquette), certitudes, proche: { n: p.n, i: p.rang, ressemblance: Math.max(0, Math.min(100, Math.round(p.s * 100))) } };
       },
     };
   }
@@ -82,6 +84,15 @@
       get vue() {
         return vue;
       },
+      // Pour montrer la « réflexion » : l'étiquette en train de gagner et depuis combien d'images (sur « images »).
+      get candidat() {
+        return candidat;
+      },
+      get suite() {
+        return Math.min(suite, images);
+      },
+      images,
+      seuil,
       remettre() {
         candidat = 0;
         suite = 0;

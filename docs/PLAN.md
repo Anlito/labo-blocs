@@ -441,4 +441,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      Photos de l'équipe : rubrique `programmation.camera` (par nom d'étiquette, partagée par les exercices).
    - Module : `vision/` copié dans le module ; `vers-projet` ne le copie que pour un parcours avec caméra (ou
      `--camera`). Parcours d'exemple « Découverte de la caméra (IA) » (Uno).
-
+32. **Caméra : améliorations après essai (17/10/2026)**, demandes de Thomas : étiquettes créées par les élèves
+   (option d'exercice `camera.etiquettesLibres`, case dans l'éditeur ; ajouter, renommer, supprimer la dernière —
+   les programmes utilisent les numéros ; enregistrées dans `programmation.camera.etiquettes` ; exercice d'exemple
+   `cam-03`) ; « + 10 photos » cumule (et « Effacer les photos ») ; « Ce que pense l'IA, en direct » : barres par
+   étiquette avec le seuil, images de suite, photo apprise la plus proche (`reconnaitre` renvoie `proche`).

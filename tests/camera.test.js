@@ -116,10 +116,14 @@ test('IA : les exemples les plus proches votent ; une étiquette n’est vue qu�
   assert.strictEqual(r.etiquette, 1);
   assert.strictEqual(r.certitudes[1], 100);
   assert.strictEqual(ia.reconnaitre(v(0.1, 0.9)).etiquette, 2);
+  // La photo apprise la plus ressemblante (pour montrer la « réflexion » de l'IA).
+  assert.strictEqual(r.proche.n, 1);
+  assert.ok(r.proche.ressemblance > 90 && r.proche.ressemblance <= 100);
   assert.deepStrictEqual(creerReconnaissance().reconnaitre(v(1, 0)), { etiquette: 0, certitudes: {} });
   const s = creerStabilite({ seuil: 80, images: 3 });
   assert.strictEqual(s.pousser(r), 0);
   assert.strictEqual(s.pousser(r), 0);
+  assert.deepStrictEqual([s.candidat, s.suite, s.images, s.seuil], [1, 2, 3, 80]);
   assert.strictEqual(s.pousser(r), 1);
   assert.strictEqual(s.pousser({ etiquette: 2, certitudes: { 2: 60 } }), 1); // pas assez sûr : on garde
   const t = versTexte(v(1, 0));
@@ -130,8 +134,9 @@ test('sauvegarde : ce que l’équipe a appris à la caméra', () => {
   const S = require('../noyau/sauvegarde.js');
   const d = S.creerSauvegarde({ eleves: ['Léa'], classe: '4B' });
   assert.deepStrictEqual(S.lireCamera(d).exemples, {});
-  S.noterCamera(d, { modele: 'mobilenet_v2_050_224', exemples: { Loup: [{ f: 'AAAA', v: 'data:' }] } });
+  S.noterCamera(d, { modele: 'mobilenet_v2_050_224', exemples: { Loup: [{ f: 'AAAA', v: 'data:' }] }, etiquettes: ['Loup', 'Roi'] });
   const relu = S.lireSauvegarde(JSON.stringify(d));
   assert.ok(relu.ok);
   assert.strictEqual(S.lireCamera(relu.donnees).exemples.Loup.length, 1);
+  assert.deepStrictEqual(S.lireCamera(relu.donnees).etiquettes, ['Loup', 'Roi']); // étiquettes créées par l'équipe
 });

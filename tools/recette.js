@@ -984,10 +984,24 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await pause(1500);
     const vu = await texte(p, '.cam-vu');
     verifier(/L’IA reconnaît : (Rien|Pouce levé) \(\d+ %\)/.test(vu), vu);
+    // « Ce que pense l'IA » en direct : une barre par étiquette, la photo la plus ressemblante ; photos qui s'ajoutent.
+    const reflexion = await p.evaluate(() => ({ barres: document.querySelectorAll('.cam-barre').length, proche: !!document.querySelector('.cam-proche img'), suite: document.querySelector('.cam-suite').textContent }));
+    verifier(reflexion.barres === 3 && reflexion.proche, JSON.stringify(reflexion));
+    await p.click('.cam-etiquette[data-n="1"] .cam-photo');
+    await p.waitForFunction(() => /^20 photos/.test(document.querySelector('.cam-etiquette[data-n="1"] .cam-nb').textContent), { timeout: 120000 });
     const enLigne = await p.evaluate((adresse) => performance.getEntriesByType('resource').filter((r) => !r.name.startsWith('file:') && !r.name.startsWith(adresse)).map((r) => r.name), ADRESSE_COLLEGE);
     verifier(!enLigne.length, 'ressources en ligne : ' + enLigne.join(', '));
     await p.click('.cam-allumer');
-    return `étiquettes ${etat.noms.join(', ')} ; modes ${etat.modes.join(', ')} ; solution réussie ; webcam simulée : « ${vu} »`;
+    // Exercice 3 : les élèves créent leurs étiquettes (menu des blocs compris).
+    const q = await page(PAGE + '?parcours=decouverte-camera&enseignant=1&exercice=cam-03');
+    await pause(500);
+    await q.type('.cam-nouveau-nom', 'Loup');
+    await q.click('.cam-nouvelle button');
+    await q.type('.cam-nouveau-nom', 'loup');
+    await q.click('.cam-nouvelle button');
+    const libres = await q.evaluate(() => ({ noms: [...document.querySelectorAll('.cam-nom')].map((x) => x.textContent), ecart: document.querySelector('.cam-ecart').textContent, menu: LaboBlocs.optionsEtiquettes().map((x) => x[0]) }));
+    verifier(libres.noms.join() === 'Rien,Loup' && /existe déjà/.test(libres.ecart) && libres.menu.join() === 'rien,Loup', JSON.stringify(libres));
+    return `étiquettes ${etat.noms.join(', ')} ; modes ${etat.modes.join(', ')} ; solution réussie ; webcam simulée : « ${vu} » ; réflexion : ${reflexion.barres} barres, « ${reflexion.suite} » ; 10 + 10 photos ; étiquette créée par l’élève : ${libres.noms.slice(1).join(', ')}`;
   });
 
   await critere('Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié', async () => {

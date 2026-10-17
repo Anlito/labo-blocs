@@ -6,7 +6,8 @@
 //     programmation: { format: 'labo-blocs/sauvegarde', version: 1, parcours: { id, version },
 //       exerciceCourant, exercices: { <id stable>: { statut, tentatives, indicesOuverts, tempsPasseSecondes,
 //         premiereReussite, empreinte, aReverifier, programme (sauvegarde Blockly), historique } },
-//       camera: { modele, exemples: { <nom de l'étiquette>: [{ f: caractéristiques (base64), v: vignette }] } } } }
+//       camera: { modele, exemples: { <nom de l'étiquette>: [{ f: caractéristiques (base64), v: vignette }] },
+//                 etiquettes?: [noms créés par l'équipe, dans l'ordre : n° 1, 2…] } } }
 //   (« camera » : ce que l'équipe a appris à l'IA de la caméra, jalon 6 ; partagé par les exercices du parcours.)
 //
 // Les sauvegardes de l'atelier du distributeur (exercices « 1 » … « 13B ») se lisent : leur travail est recopié
@@ -267,6 +268,7 @@
   }
   function noterCamera(d, camera) {
     d.programmation.camera = { modele: camera.modele || null, exemples: camera.exemples || {} };
+    if (Array.isArray(camera.etiquettes)) d.programmation.camera.etiquettes = camera.etiquettes.slice();
     d.modifieLe = maintenant();
   }
 
