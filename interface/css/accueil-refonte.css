@@ -1,0 +1,172 @@
+/* Labo Blocs — refonte de l’accueil professeur et de la page Réglages.
+   À charger APRÈS labo-blocs.css et editeur-parcours.css dans site/accueil.html ET site/reglages.html :
+   <link rel="stylesheet" href="../interface/css/accueil-refonte.css">
+   N’utilise que les variables de la charte (labo-blocs.css) et les classes existantes. */
+
+body.page-editeur { height: auto; min-height: 100%; overflow: auto; }
+
+/* ---------- Bandeau ---------- */
+.ed-bandeau .ac-lien-bandeau {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 0.375rem; height: 2.5rem; padding: 0 0.875rem;
+  border-radius: 0.625rem; font: 500 0.875rem var(--titres); color: var(--texte); text-decoration: none;
+}
+.ed-bandeau .ac-lien-bandeau:hover { background: var(--fond); }
+.ac-pied { margin: 0; padding-top: 1.25rem; border-top: 1px solid var(--bord); font-size: 0.875rem; color: var(--texte-2); }
+.ac-pied a { font-weight: 700; color: var(--action); }
+.ed-bandeau {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.625rem max(1.25rem, calc((100% - 67.5rem) / 2 + 1.25rem));
+  background: #FFFFFF; border-bottom: 1px solid var(--bord);
+}
+.ed-bandeau .logo { flex: none; }
+.ed-bandeau-titre { display: flex; flex-direction: column; min-width: 0; }
+.ed-bandeau-titre strong { font-family: var(--titres); font-weight: 700; white-space: nowrap; }
+.ed-bandeau-titre strong span { font-weight: 500; color: var(--texte-2); }
+.ed-bandeau .ed-parcours-titre { font-size: 0.8125rem; color: var(--texte-2); }
+.ed-bandeau .ed-btn { flex: none; height: 2.5rem; border-radius: 0.625rem; }
+
+/* ---------- Page ---------- */
+.ed-accueil {
+  max-width: 67.5rem; margin: 0 auto; width: 100%;
+  padding: clamp(1.75rem, 6vw, 3.5rem) 1.25rem 5rem;
+  display: flex; flex-direction: column;
+  gap: clamp(1rem, 3vw, 1.5rem);
+}
+.ed-accueil.ed-reglages { max-width: 47.5rem; }
+.ed-accueil > h1 {
+  margin: 0; font-family: var(--titres); font-weight: 700;
+  font-size: clamp(2.125rem, 6vw, 3.25rem); line-height: 1.05; letter-spacing: -0.02em;
+  display: flex; align-items: center; gap: 1rem;
+}
+.ed-accueil > h1::before {
+  content: ""; flex: none; width: 3.25rem; height: 3.25rem;
+  background: url("../../site/img/logo.svg") center / contain no-repeat;
+}
+.ed-accueil > .ed-intro {
+  margin: -0.25rem 0 clamp(1rem, 4vw, 2rem); max-width: 45rem;
+  font-size: clamp(1rem, 2.2vw, 1.125rem); line-height: 1.55; color: var(--texte-2); text-wrap: pretty;
+}
+
+.ac-section { margin-top: 0; gap: 1rem; }
+.ac-section h2 { font-family: var(--titres); font-size: 1.25rem; }
+.ac-section .ed-intro { margin: 0; font-size: 0.9375rem; line-height: 1.5; color: var(--texte-2); text-wrap: pretty; }
+
+/* Page Réglages : Réglages du collège + Mise en ligne, en panneaux empilés */
+.ac-college, .ac-github {
+  padding: clamp(1.125rem, 3vw, 1.625rem);
+  background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.875rem;
+}
+.ac-section:last-of-type { margin-top: clamp(0.5rem, 3vw, 1.5rem); }
+
+/* ---------- Cartes « Que veux-tu faire ? » ---------- */
+.ed-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18.75rem), 1fr)); gap: 1rem; }
+a.ed-carte-choix {
+  --c: var(--action); --c-pale: var(--action-pale);
+  display: flex; flex-direction: column; gap: 0.625rem;
+  padding: 1.375rem 1.375rem 1.25rem 1.625rem;
+  background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.875rem;
+  box-shadow: inset 0.375rem 0 0 var(--c);
+  transition: border-color .15s, box-shadow .15s;
+}
+a.ed-carte-choix:nth-child(2) { --c: var(--reussi); --c-pale: var(--reussi-pale); }
+a.ed-carte-choix:hover { border-color: var(--c); background: #FFFFFF; box-shadow: inset 0.375rem 0 0 var(--c), 0 0.375rem 1.125rem rgba(20, 33, 61, .08); }
+a.ed-carte-choix strong { font-family: var(--titres); font-size: 1.125rem; line-height: 1.25; }
+a.ed-carte-choix > span { font-size: 0.9375rem; line-height: 1.5; color: var(--texte-2); text-wrap: pretty; }
+a.ed-carte-choix::after { content: "Ouvrir →"; margin-top: auto; padding-top: 0.25rem; font: 500 0.875rem var(--titres); color: var(--c); }
+
+/* ---------- Formulaires ---------- */
+.ac-github-form { max-width: none; gap: 1rem; }
+.ac-github-form label { font-weight: 700; font-size: 0.9375rem; }
+.ac-github-form input, .ac-college-form textarea {
+  font: 400 0.9375rem/1.45 var(--police); min-width: 0;
+  padding: 0.625rem 0.75rem; border: 1px solid var(--bord-fort); border-radius: 0.625rem; background: #FFFFFF; color: var(--texte);
+}
+.ac-github-form input { height: 2.75rem; font-family: var(--mono); font-size: 0.875rem; }
+.ac-college-form textarea { resize: vertical; }
+.ed-aide { margin: -0.5rem 0 0; font-size: 0.875rem; line-height: 1.5; color: var(--texte-2); }
+.ed-aide code, .ac-aide code { font: 500 0.8125rem var(--mono); padding: 0.0625rem 0.375rem; border-radius: 0.3125rem; background: var(--ecart-pale); color: var(--ecart-texte); }
+.ac-message { margin: 0; font-size: 0.875rem; font-weight: 700; color: var(--reussi-texte); }
+
+/* Aide GitHub repliable */
+details.ac-aide { border: 1px solid var(--bord); border-radius: 0.75rem; background: var(--fond); }
+details.ac-aide summary {
+  display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 0.875rem; cursor: pointer; font-weight: 700; font-size: 0.9375rem; list-style: none;
+}
+details.ac-aide summary::-webkit-details-marker { display: none; }
+details.ac-aide summary::after { content: "+"; font: 500 1.125rem var(--titres); color: var(--texte-2); }
+details.ac-aide[open] summary::after { content: "−"; }
+details.ac-aide ol { margin: 0; padding: 0 0.875rem; list-style: none; counter-reset: etape; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.875rem; line-height: 1.5; }
+details.ac-aide li { counter-increment: etape; position: relative; padding-left: 2.125rem; min-height: 1.5rem; overflow-wrap: anywhere; }
+details.ac-aide li::before {
+  content: counter(etape); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; border-radius: 0.4375rem;
+  background: var(--action); color: #FFFFFF; display: grid; place-items: center; font: 700 0.75rem var(--titres);
+}
+details.ac-aide > p {
+  margin: 0.875rem; padding: 0.625rem 0.75rem; border-radius: 0.625rem;
+  font-size: 0.875rem; line-height: 1.5; background: var(--ecart-pale); color: var(--ecart-texte);
+}
+
+/* ---------- Essayer un parcours ---------- */
+.ac-carte { border-radius: 0.875rem; }
+.ac-actions { gap: 0.5rem; }
+.ac-page-eleves {
+  padding: 0.875rem 1rem; border: 1px solid var(--bord); border-radius: 0.875rem; background: #FFFFFF; font-size: 0.9375rem;
+}
+
+/* ---------- Petits écrans ---------- */
+@media (max-width: 30rem) {
+  .ed-bandeau-titre strong span { display: none; }
+  .ac-actions .btn-principal, .ac-actions .btn-secondaire { flex: 1 1 100%; }
+  .ed-accueil > h1::before { width: 2.5rem; height: 2.5rem; }
+}
+
+/* ---------- Compléments (maquettes) ---------- */
+/* Bandeau clair : textes et bouton « Verrouiller » foncés (le bandeau de l'éditeur est sombre). */
+.ed-bandeau { color: var(--texte); }
+.ed-bandeau .ed-btn { color: var(--texte); background: #FFFFFF; border: 1px solid var(--bord); padding: 0 0.875rem; font: 500 0.875rem var(--titres); }
+.ed-bandeau .ed-btn:hover { background: var(--fond); border-color: var(--bord-fort); }
+/* Boutons secondaires des listes : bordure grise, texte foncé. */
+.ac-bloc-parcours .btn-secondaire { border: 1px solid var(--bord-fort); color: var(--texte); background: #FFFFFF; }
+.ac-bloc-parcours .btn-secondaire:hover { background: var(--fond); }
+/* Cartes : pastille d'icône à côté du titre, texte du lien d'action (data-action). */
+a.ed-carte-choix > .ac-carte-tete { display: flex; align-items: center; gap: 0.625rem; color: var(--texte); font-size: 1rem; }
+a.ed-carte-choix .ac-pastille { flex: none; width: 2.25rem; height: 2.25rem; border-radius: 0.625rem; display: grid; place-items: center; background: var(--c-pale); color: var(--c); }
+a.ed-carte-choix[data-action]::after { content: attr(data-action); }
+/* Liens du bandeau (Réglages / ← Accueil) : le premier pousse le reste à droite. */
+.ed-bandeau .ac-lien-bandeau svg { flex: none; }
+.ed-bandeau .ac-lien-bandeau + .ed-btn { margin-left: 0; }
+/* Intro de la page Réglages (sous le h1, sans le logo). */
+.ed-reglages > h1::before { display: none; }
+.ed-reglages > .ed-intro { margin-bottom: 0; }
+.ed-reglages .ac-section:last-of-type { margin-top: 0; }
+
+/* Essayer un parcours : une ligne par parcours, puis la page des élèves en pied de bloc. */
+.ac-bloc-parcours { display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.875rem; overflow: hidden; }
+.ac-parcours { display: flex; flex-direction: column; }
+.ac-ligne { display: flex; align-items: center; flex-wrap: wrap; gap: 0.625rem 0.875rem; padding: 0.875rem 1rem; border-top: 1px solid #ECEFF5; }
+.ac-ligne:first-child { border-top: none; }
+.ac-ligne-texte { flex: 1 1 13.75rem; display: flex; flex-direction: column; gap: 0.125rem; min-width: 0; }
+.ac-ligne-texte strong { font: 500 1rem var(--titres); }
+.ac-ligne-texte span { font-size: 0.8125rem; color: var(--texte-2); overflow-wrap: anywhere; }
+.ac-ligne .ac-actions { margin: 0; }
+.ac-ligne .ac-actions a, .ac-ligne .ac-actions button { height: 2.5rem; padding: 0 1rem; border-radius: 0.625rem; font: 500 0.875rem var(--titres); display: inline-flex; align-items: center; text-decoration: none; }
+.ac-ligne .ac-actions .btn-secondaire { padding: 0 0.875rem; }
+.ac-bloc-parcours .ac-page-eleves { padding: 0.875rem 1rem; border: none; border-top: 1px solid var(--bord); border-radius: 0; background: var(--fond); overflow-wrap: anywhere; }
+.ac-bloc-parcours .ac-page-eleves a { font-weight: 700; }
+.ac-bloc-parcours .ac-page-eleves .ac-doux { color: var(--texte-2); }
+.ac-bloc-parcours .ac-page-eleves .ac-sep { color: var(--bord-fort); }
+.ac-bloc-parcours .ac-page-eleves .btn-secondaire { height: 2.125rem; padding: 0 0.75rem; border-radius: 0.5625rem; font: 500 0.8125rem var(--titres); }
+.ac-bloc-parcours .ed-erreur { margin: 0.875rem 1rem; }
+/* Messages d'état : ambre quand quelque chose manque (jamais rouge). */
+.ac-message.ecart { color: var(--ecart-texte); }
+:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+details.ac-aide summary { color: var(--texte); }
+.ed-bandeau { flex-wrap: nowrap; }
+.ed-bandeau-titre strong { overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 30rem) {
+  .ed-bandeau { gap: 0.5rem; }
+  .ed-bandeau .ac-lien-bandeau { padding: 0 0.5rem; }
+  .ac-ligne .ac-actions { display: flex; flex: 1 1 100%; }
+}

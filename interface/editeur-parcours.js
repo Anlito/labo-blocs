@@ -1047,7 +1047,7 @@
         (A.lireCleGithub()
           ? '<li><strong>mise en ligne</strong> sur le site de Labo Blocs (dossier <code>parcours</code> du dépôt GitHub) : les élèves l’auront dans 2 à 3 minutes.</li></ul>'
           : `<li>téléchargée : <code>${echapper(etat.paquet.id)}-${suivante}.labo-parcours.json</code>. Ce fichier sert pour le site de Labo Blocs et pour les projets (« Mettre à jour les exercices »).</li></ul>` +
-            '<p class="ed-aide">Pour mettre un parcours en ligne en un clic : enregistre ta clé GitHub dans l’accueil de Labo Blocs (« Mise en ligne des parcours »).</p>');
+            '<p class="ed-aide">Pour mettre un parcours en ligne en un clic : enregistre ta clé GitHub dans la page Réglages de Labo Blocs (« Mise en ligne des parcours »).</p>');
       actions.innerHTML = '<button type="button" class="btn-secondaire btn-fermer-publier">Annuler</button><button type="button" class="btn-principal btn-confirmer-publier">Publier</button>';
       $('.btn-confirmer-publier', actions).onclick = () => publier(local);
     }

@@ -73,7 +73,7 @@
   // Phrases en français pour les réponses de GitHub, avec la prochaine action.
   function expliquer(statut) {
     if (statut === 0) return 'GitHub ne répond pas : vérifie la connexion à internet, puis recommence.';
-    if (statut === 401) return 'GitHub ne reconnaît pas cette clé (mal copiée ou expirée). Crée une nouvelle clé et colle-la dans l’accueil de Labo Blocs.';
+    if (statut === 401) return 'GitHub ne reconnaît pas cette clé (mal copiée ou expirée). Crée une nouvelle clé et colle-la dans la page Réglages de Labo Blocs.';
     if (statut === 403) return 'Cette clé n’a pas le droit d’écrire dans le dépôt. Sur GitHub, donne-lui « Contents : Read and write » pour le dépôt labo-blocs.';
     if (statut === 404) return 'Cette clé ne voit pas le dépôt labo-blocs. Sur GitHub, choisis « Only select repositories › labo-blocs » pour cette clé.';
     return `GitHub a refusé l’envoi (code ${statut}). Recommence dans un instant ; sinon dépose le fichier à la main.`;

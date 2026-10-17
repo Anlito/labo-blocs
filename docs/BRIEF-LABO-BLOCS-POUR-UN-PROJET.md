@@ -33,7 +33,7 @@ Ces deux pages suffisent pour un projet qui n'a besoin que des exercices.
 
 La liste des classes et le chemin des dossiers de classe sont **communs à tous les outils** : un seul fichier,
 https://anlito.github.io/labo-blocs/site/college.js (`definirCollege({ classes, cheminClasse })`), modifié par Thomas
-dans l'accueil de Labo Blocs (« Réglages du collège »). Un projet :
+dans la page Réglages de Labo Blocs (« Réglages du collège », liée depuis l'accueil). Un projet :
 - garde une **copie de secours** (`site/college.js`, lue en premier : hors ligne, c'est elle qui sert), puis lit la
   version en ligne (`LaboBlocs.chargerCollegeEnLigne()` ; rien n'est envoyé) ;
 - dit seulement ses **niveaux** (`niveaux: ['4']`) et la **fin de son chemin** (`cheminProjet: ['CONCEPT STORE']`) ;

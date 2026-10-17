@@ -692,7 +692,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   await critere('Code professeur : accueil, éditeur, suivi et mode enseignant cachés sans le code ; page des élèves libre', async () => {
     const url = (f, q) => pathToFileURL(path.join(RACINE, 'site', f)).href + (q || '');
     const r = [];
-    for (const [f, q] of [['accueil.html'], ['editeur.html'], ['prof.html'], ['index.html', '?parcours=decouverte-mbot&enseignant=1'], ['index.html']]) {
+    for (const [f, q] of [['accueil.html'], ['reglages.html'], ['editeur.html'], ['prof.html'], ['index.html', '?parcours=decouverte-mbot&enseignant=1'], ['index.html']]) {
       const p = await page(url(f, q), { porte: true });
       const etat = await p.evaluate(() => {
         const porte = document.querySelector('.porte-professeur');
@@ -732,6 +732,9 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const outils = await p.$$eval('.ed-cartes:not(.ac-parcours) a', (l) => l.map((a) => a.getAttribute('href')));
     const parcours = await p.$$eval('.ac-carte', (l) => l.map((c) => [c.querySelector('.ac-essayer').getAttribute('href'), c.querySelector('strong').textContent]));
     verifier(outils.join() === 'editeur.html,prof.html' && parcours.length >= 3 && /mBot/.test(parcours[1][1]), JSON.stringify({ outils, parcours }));
+    // Réglages (classes, chemin, clé GitHub) : page à part, liée depuis le bandeau et le pied de l'accueil.
+    const versReglages = await p.$$eval('a[href="reglages.html"]', (l) => l.length);
+    verifier(versReglages === 2 && !(await p.$('.ac-college')) && !(await p.$('.ac-github')), `liens Réglages : ${versReglages}`);
     await p.click('.ac-carte:nth-child(2) .ac-essayer');
     await pause(1200);
     const equipe = await texte(p, '.equipe-texte');
@@ -741,7 +744,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const e = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href);
     verifier(await visible(e, '.ed-vers-accueil'), 'pas de lien Accueil dans l’éditeur');
     await e.close();
-    return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur`;
+    return `${parcours.map((x) => x[1]).join(', ')} ; « ${titre} » ouvert en mode enseignant ; lien Accueil dans l’éditeur ; Réglages sur une page à part`;
   });
 
   // ---------- Parcours ajouté par un fichier, classes et dossier réglés dans le parcours ----------
@@ -856,7 +859,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // ---------- Mise en ligne directe d'un parcours (GitHub simulé : rien ne part vraiment) ----------
 
-  await critere('Mise en ligne directe : clé enregistrée dans l’accueil, « Publier » envoie le parcours dans parcours/ du dépôt', async () => {
+  await critere('Mise en ligne directe : clé enregistrée dans les Réglages, « Publier » envoie le parcours dans parcours/ du dépôt', async () => {
     const fauxGithub = () => {
       window.__appelsGithub = [];
       const vrai = window.fetch;
@@ -868,7 +871,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
         return new Response(JSON.stringify({}), { status: statut, headers: { 'Content-Type': 'application/json' } });
       };
     };
-    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'reglages.html')).href);
     await a.evaluate(fauxGithub);
     await a.evaluate(() => localStorage.removeItem('labo-blocs-cle-github'));
     await a.click('.ac-enregistrer-cle');
@@ -1016,8 +1019,8 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
 
   // ---------- Réglages du collège (liste de classes commune à tous les outils) ----------
 
-  await critere('Réglages du collège : liste commune publiée depuis l’accueil ; la page des élèves suit (niveaux du projet, version en ligne)', async () => {
-    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'accueil.html')).href);
+  await critere('Réglages du collège : liste commune publiée depuis la page Réglages ; la page des élèves suit (niveaux du projet, version en ligne)', async () => {
+    const a = await page(pathToFileURL(path.join(RACINE, 'site', 'reglages.html')).href);
     // GitHub simulé : rien ne part vraiment.
     await a.evaluate(() => {
       window.__appels = [];

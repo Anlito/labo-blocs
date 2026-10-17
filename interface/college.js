@@ -1,6 +1,6 @@
 // Réglages du collège, communs à tous les outils de la classe (Labo Blocs, atelier du distributeur, projets…) :
 // la liste des classes et le chemin des dossiers de classe sur le réseau. Un seul fichier, modifié par le professeur
-// dans l'accueil de Labo Blocs (« Réglages du collège ») : https://anlito.github.io/labo-blocs/site/college.js
+// dans la page Réglages de Labo Blocs (« Réglages du collège », liée depuis l'accueil) : https://anlito.github.io/labo-blocs/site/college.js
 //
 //   definirCollege({ format: 'labo-blocs/college', version: 1, classes: ['5A', '4B', …],
 //                    cheminClasse: ['Bureau', 'Classe', '{classe}', 'COMMUN', 'TECHNOLOGIE'] })
@@ -100,7 +100,7 @@
     const donnees = { format: FORMAT, version: 1, classes: c.classes, cheminClasse: c.cheminClasse, modifieLe: c.modifieLe || new Date().toISOString().slice(0, 10) };
     return (
       '// Réglages du collège, communs à tous les outils : liste des classes et chemin des dossiers de classe.\n' +
-      '// Modifié dans l’accueil de Labo Blocs (« Réglages du collège »). Chaque outil en garde une copie de secours.\n' +
+      '// Modifié dans la page Réglages de Labo Blocs (« Réglages du collège »). Chaque outil en garde une copie de secours.\n' +
       `definirCollege(${JSON.stringify(donnees, null, 2)});\n`
     );
   }

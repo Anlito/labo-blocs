@@ -141,7 +141,7 @@ Chrome ou Edge conseillés (enregistrement automatique, envoi dans les cartes).
 
 ## Réglages choisis
 
-- Classes : ${o.classes ? o.classes.join(', ') : `celles du collège${o.niveaux ? ` (niveaux ${o.niveaux.join(', ')})` : ''}, modifiées dans « Réglages du collège » (accueil de Labo Blocs)`}
+- Classes : ${o.classes ? o.classes.join(', ') : `celles du collège${o.niveaux ? ` (niveaux ${o.niveaux.join(', ')})` : ''}, modifiées dans « Réglages du collège » (page Réglages de Labo Blocs)`}
 - Dossier d'une équipe : \`${o.chemin ? o.chemin.join(' › ') : `(chemin du collège jusqu’à la classe) › ${o.cheminProjet.join(' › ')} › Prénom_Prénom`}\`
 - Couleur : \`${o.accent}\`
 
