@@ -33,12 +33,15 @@ Ces deux pages suffisent pour un projet qui n'a besoin que des exercices.
 
 La liste des classes et le chemin des dossiers de classe sont **communs à tous les outils** : un seul fichier,
 https://anlito.github.io/labo-blocs/site/college.js (`definirCollege({ classes, cheminClasse })`), modifié par Thomas
-dans l'accueil de Labo Blocs (« Réglages du collège »). Un projet :
+dans la page Réglages de Labo Blocs (« Réglages du collège », liée depuis l'accueil). Un projet :
 - garde une **copie de secours** (`site/college.js`, lue en premier : hors ligne, c'est elle qui sert), puis lit la
   version en ligne (`LaboBlocs.chargerCollegeEnLigne()` ; rien n'est envoyé) ;
 - dit seulement ses **niveaux** (`niveaux: ['4']`) et la **fin de son chemin** (`cheminProjet: ['CONCEPT STORE']`) ;
 - propose à l'élève de choisir sa classe dans cette liste, puis de sélectionner le **dossier du projet** : l'outil y crée
   lui-même le dossier de l'équipe (`Prénom_Prénom`), comme Labo Blocs et l'atelier du distributeur.
+- **groupes** : une classe qui finit par un chiffre après la lettre (`3D1`, `3C2`) est un groupe de la classe `3D`,
+  `3C` ; son dossier est au bout du chemin de la classe, avant le dossier du projet :
+  `Bureau › Classe › 3D › COMMUN › TECHNOLOGIE › 3D1 › CONCEPT STORE › Lea_Malik` (`LaboBlocs.remplirChemin`).
 
 ## 3. Contraintes non négociables (les mêmes que Labo Blocs)
 

@@ -419,3 +419,11 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Distributeur : niveaux 5 ; autres parcours du site : toutes les classes, dossier = titre du parcours (sauf
      réglages du parcours dans l'éditeur) ; kit nouveau projet : `--niveaux`, copie de secours `site/college.js`.
    - Prochaines étapes (une validation à chaque fois) : atelier céréales, Théâtre d'ombre, Concept Store 3D, Vitrine.
+29. **Groupes de classe (17/10/2026)**, demande de Thomas : une classe qui finit par un chiffre après la lettre (3D1)
+   est un groupe de la classe 3D ; son dossier est au bout du chemin de la classe (`… › 3D › COMMUN › TECHNOLOGIE ›
+   3D1 › projet › équipe`). `{groupe}` dans le chemin, `remplirChemin` ; même règle dans les autres outils.
+30. **Refonte graphique de l'accueil professeur (17/10/2026)**, maquettes Claude Design de Thomas : bandeau clair,
+   cartes à liseré coloré, liste des parcours en lignes, `interface/css/accueil-refonte.css` ; nouvelle page
+   `site/reglages.html` (« Réglages du collège », « Mise en ligne des parcours »), liée depuis le bandeau et le pied de
+   l'accueil, protégée par le code professeur. Textes conservés.
+

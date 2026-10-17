@@ -268,7 +268,18 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 
 | # | Action | Attendu | OK ? |
 |---|---|---|---|
-| 19.1 | Accueil de Labo Blocs › « Réglages du collège » | Les classes actuelles (5A à 5F) et le chemin `Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE` | |
+| 19.1 | Accueil de Labo Blocs › « Réglages » (bandeau ou pied de page) › « Réglages du collège » | Les classes actuelles (5A à 5F) et le chemin `Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE` | |
 | 19.2 | Ajouter les classes des autres niveaux (ex. 4A… 3F), « Publier les réglages » | « Réglages publiés (n classes) » | |
 | 19.3 | 2 à 3 minutes plus tard, page des élèves › Distributeur | Seulement les classes de 5e ; chemin `Bureau › Classe › 5A › COMMUN › TECHNOLOGIE › DISTRIBUTEUR DE CEREALES` | |
 | 19.4 | Page des élèves › un autre parcours | Toutes les classes du collège | |
+| 19.5 | Classe d'un groupe (ex. 3D1) dans un projet de 3e | Chemin `Bureau › Classe › 3D › COMMUN › TECHNOLOGIE › 3D1 › …` | |
+
+## 20. Accueil du professeur et page Réglages (refonte graphique)
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 20.1 | Ouvrir l'accueil (code professeur) | Bandeau clair « Labo Blocs · Mode professeur », lien « Réglages », « Verrouiller » ; deux cartes (éditeur bleu, suivi vert) avec « Ouvrir l'éditeur → » / « Ouvrir le suivi → » ; liste des parcours (« Essayer », « Copier le lien élèves ») et « Page des élèves » | |
+| 20.2 | « Réglages » | Page Réglages : « Réglages du collège » et « Mise en ligne des parcours », « ← Accueil » | |
+| 20.3 | Téléphone (ou fenêtre étroite) | Une colonne, aucun défilement horizontal, boutons en pleine largeur | |
+| 20.4 | Ouvrir `reglages.html` sans code | Le code professeur est demandé | |
+

@@ -32,11 +32,13 @@
   .ac-aide summary { cursor: pointer; font-weight: 700; color: var(--action); }
   .ac-actions .btn-secondaire { height: 2.375rem; padding: 0 0.875rem; font-size: 0.875rem; display: inline-flex; align-items: center; text-decoration: none; }
 </style>
+<!-- Refonte graphique de l'accueil et de la page Réglages (après les styles ci-dessus) -->
+<link rel="stylesheet" href="../interface/css/accueil-refonte.css">
 <!-- Code professeur (porte : interface/porte-professeur.js) -->
 <script src="../interface/porte-professeur.js"></script>
 <script src="code-professeur.js"></script>
 </head>
-<body class="page-editeur">
+<body class="page-editeur page-accueil">
 
 <header class="ed-bandeau">
   <img class="logo" src="img/logo.svg" alt="" width="34" height="34">
@@ -44,7 +46,7 @@
     <strong>Labo Blocs <span>· Mode professeur</span></strong>
     <span class="ed-parcours-titre">Accueil</span>
   </div>
-  <span class="espace"></span>
+  <a class="ac-lien-bandeau" href="reglages.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"></path></svg>Réglages</a>
   <button type="button" class="ed-btn" onclick="window.LaboBlocsPorte && LaboBlocsPorte.verrouiller()" title="Redemander le code professeur sur cet ordinateur">Verrouiller</button>
 </header>
 
@@ -57,138 +59,26 @@
   <section class="ac-section" aria-labelledby="ac-outils">
     <h2 id="ac-outils">Que veux-tu faire ?</h2>
     <div class="ed-cartes">
-      <a class="ed-carte-choix" href="editeur.html"><strong>Créer ou modifier un parcours</strong>
+      <a class="ed-carte-choix" href="editeur.html" data-action="Ouvrir l’éditeur →"><span class="ac-carte-tete"><span class="ac-pastille"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></span><strong>Créer ou modifier un parcours</strong></span>
         <span>Exercices, blocs proposés, solution, scénarios de test, indices, carte, compétence évaluée. « Publier » donne le fichier à envoyer au projet.</span></a>
-      <a class="ed-carte-choix" href="prof.html"><strong>Suivre une classe</strong>
+      <a class="ed-carte-choix" href="prof.html" data-action="Ouvrir le suivi →"><span class="ac-carte-tete"><span class="ac-pastille"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="m7 14 4-4 3 3 5-6"></path></svg></span><strong>Suivre une classe</strong></span>
         <span>Ouvre le dossier d’une classe : progression des équipes, niveaux par compétence, note, export CSV et fichier pour le Carnet de classe.</span></a>
     </div>
-  </section>
-
-  <section class="ac-section ac-college" aria-labelledby="ac-college">
-    <h2 id="ac-college">Réglages du collège</h2>
-    <p class="ed-intro">Communs à tous tes outils (Labo Blocs, atelier du distributeur, autres projets) : chaque projet propose les classes de ses niveaux et ajoute son propre dossier au bout du chemin.</p>
-    <div class="ac-github-form ac-college-form">
-      <label>Classes (une par ligne, ou séparées par des virgules)<textarea class="ac-classes" rows="4" spellcheck="false"></textarea></label>
-      <label>Chemin jusqu’au dossier d’une classe, sur le réseau<input class="ac-chemin" spellcheck="false" placeholder="Bureau › Classe › {classe} › COMMUN › TECHNOLOGIE"></label>
-      <p class="ed-aide"><code>{classe}</code> est remplacé par la classe de l’élève. Ensuite vient le dossier du projet (ex. DISTRIBUTEUR DE CEREALES), puis celui de l’équipe, créé par l’outil.</p>
-      <div class="ac-actions"><button type="button" class="btn-principal ac-publier-college">Publier les réglages</button></div>
-      <p class="ac-message ac-message-college" role="status" hidden></p>
-    </div>
-  </section>
-
-  <section class="ac-section ac-github" aria-labelledby="ac-github">
-    <h2 id="ac-github">Mise en ligne des parcours</h2>
-    <p class="ed-intro ac-github-etat"></p>
-    <div class="ac-github-form">
-      <label>Clé d’accès GitHub<input type="password" class="ac-cle" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
-      <div class="ac-actions">
-        <button type="button" class="btn-principal ac-enregistrer-cle">Enregistrer la clé</button>
-        <button type="button" class="btn-secondaire ac-oublier-cle" hidden>Oublier la clé sur cet ordinateur</button>
-      </div>
-      <p class="ac-message" role="status" hidden></p>
-    </div>
-    <details class="ac-aide">
-      <summary>Créer la clé sur GitHub (une seule fois, 3 minutes)</summary>
-      <ol>
-        <li>Connecté à ton compte GitHub, ouvre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a> (page « New fine-grained personal access token »).</li>
-        <li><strong>Token name</strong> : « Labo Blocs éditeur ». <strong>Resource owner</strong> : ton compte. <strong>Expiration</strong> : 1 an (ou la durée la plus longue proposée).</li>
-        <li><strong>Repository access</strong> : <strong>Only select repositories</strong> › choisis <strong>labo-blocs</strong> (et rien d’autre).</li>
-        <li><strong>Permissions</strong> : « Add permissions » (ou « Repository permissions ») › <strong>Contents</strong> › <strong>Read and write</strong>. Ne touche pas aux autres (« Metadata : Read-only » s’ajoute tout seul).</li>
-        <li>En bas : <strong>Generate token</strong>, puis copie la clé (elle commence par <code>github_pat_</code>, GitHub ne la montre qu’une fois) et colle-la ci-dessus.</li>
-      </ol>
-      <p>La clé reste dans ce navigateur, sur cet ordinateur : enregistre-la seulement sur <strong>ton</strong> ordinateur. Pour l’annuler : même page sur GitHub › la clé › <strong>Delete</strong>.</p>
-    </details>
   </section>
 
   <section class="ac-section" aria-labelledby="ac-essayer">
     <h2 id="ac-essayer">Essayer un parcours comme un élève</h2>
     <p class="ed-intro">« Essayer » : tous les exercices sont ouverts et rien n’est enregistré. « Copier le lien élèves » : l’adresse à donner aux élèves (prénoms, classe, dossier de l’équipe).</p>
-    <p class="ac-page-eleves"><strong>Page des élèves</strong> (tous les parcours, sans code) : <a href="eleves.html" target="_blank" rel="noopener">ouvrir</a> · <button type="button" class="btn-secondaire ac-lien-page">Copier le lien</button></p>
-    <div class="ed-cartes ac-parcours"></div>
-    <p class="ed-erreur" role="alert" hidden></p>
+    <div class="ac-bloc-parcours">
+      <div class="ac-parcours"></div>
+      <p class="ed-erreur" role="alert" hidden></p>
+      <p class="ac-page-eleves"><strong>Page des élèves</strong> <span class="ac-doux">(tous les parcours, sans code) :</span> <a href="eleves.html" target="_blank" rel="noopener">ouvrir</a> <span class="ac-sep" aria-hidden="true">·</span> <button type="button" class="btn-secondaire ac-lien-page">Copier le lien</button></p>
+    </div>
   </section>
+
+  <p class="ac-pied">Classes, chemin réseau et clé GitHub : <a href="reglages.html">Réglages</a></p>
 </main>
 
-<!-- Clé GitHub pour la mise en ligne des parcours (interface/github-depot.js) -->
-<script src="../interface/github-depot.js"></script>
-<!-- Réglages du collège : le fichier du site (site/college.js), modifiable ici -->
-<script src="../interface/college.js"></script>
-<script src="college.js"></script>
-<script>
-  (function () {
-    'use strict';
-    const L = window.LaboBlocs;
-    const $ = (s) => document.querySelector(s);
-    const c = L.college || { classes: [], cheminClasse: ['{classe}'] };
-    $('.ac-classes').value = c.classes.join('\n');
-    $('.ac-chemin').value = (c.cheminClasse || []).join(' › ');
-    const message = (texte, ok) => {
-      const m = $('.ac-message-college');
-      m.textContent = texte;
-      m.className = 'ac-message ac-message-college ' + (ok ? 'ok' : 'ecart');
-      m.hidden = false;
-    };
-    $('.ac-publier-college').addEventListener('click', async () => {
-      const classes = L.lireListeClasses($('.ac-classes').value);
-      if (!classes.length) return message('Écris au moins une classe.', false);
-      const chemin = L.lireCheminClasse($('.ac-chemin').value);
-      if (!chemin.ok) return message(chemin.message, false);
-      const cle = L.lireCleGithub();
-      if (!cle) return message('Enregistre d’abord ta clé GitHub (« Mise en ligne des parcours », plus bas) : les réglages partent avec elle.', false);
-      const b = $('.ac-publier-college');
-      b.disabled = true;
-      b.textContent = 'Envoi…';
-      const r = await L.mettreFichierEnLigne('site/college.js', L.scriptCollege({ classes, cheminClasse: chemin.chemin }), `Réglages du collège : ${classes.length} classes (accueil de Labo Blocs)`, cle);
-      b.disabled = false;
-      b.textContent = 'Publier les réglages';
-      if (!r.ok) return message(r.message, false);
-      $('.ac-classes').value = classes.join('\n');
-      $('.ac-chemin').value = chemin.chemin.join(' › ');
-      message(`Réglages publiés (${classes.length} classes). Dans 2 à 3 minutes, tous les outils proposent cette liste.`, true);
-    });
-  })();
-</script>
-<script>
-  (function () {
-    'use strict';
-    const L = window.LaboBlocs;
-    const $ = (s) => document.querySelector(s);
-    function dessiner() {
-      const cle = L.lireCleGithub();
-      $('.ac-github-etat').textContent = cle
-        ? 'Clé GitHub enregistrée sur cet ordinateur : dans l’éditeur, « Publier » met le parcours en ligne (2 à 3 minutes plus tard, il est ici et chez les élèves).'
-        : 'Sans clé, « Publier » télécharge le fichier du parcours, à déposer à la main sur GitHub. Avec ta clé GitHub, il part en ligne directement.';
-      $('.ac-cle').value = '';
-      $('.ac-cle').placeholder = cle ? 'Clé enregistrée (colle une nouvelle clé pour la remplacer)' : 'github_pat_…';
-      $('.ac-oublier-cle').hidden = !cle;
-    }
-    function message(texte, ok) {
-      const m = $('.ac-message');
-      m.textContent = texte;
-      m.className = 'ac-message ' + (ok ? 'ok' : 'ecart');
-      m.hidden = false;
-    }
-    $('.ac-enregistrer-cle').addEventListener('click', async () => {
-      const cle = $('.ac-cle').value.trim();
-      const b = $('.ac-enregistrer-cle');
-      b.disabled = true;
-      b.textContent = 'Vérification…';
-      const r = await L.verifierCleGithub(cle);
-      b.disabled = false;
-      b.textContent = 'Enregistrer la clé';
-      if (!r.ok) return message(r.message, false);
-      L.ecrireCleGithub(cle);
-      dessiner();
-      message('Clé enregistrée : GitHub reconnaît le dépôt labo-blocs. « Publier » mettra tes parcours en ligne.', true);
-    });
-    $('.ac-oublier-cle').addEventListener('click', () => {
-      L.ecrireCleGithub('');
-      dessiner();
-      message('Clé oubliée sur cet ordinateur. Pour l’annuler complètement, supprime-la aussi sur GitHub.', true);
-    });
-    dessiner();
-  })();
-</script>
 <!-- Liste des parcours (parcours/index.js), puis chaque parcours pour son titre et son nombre d'exercices -->
 <script>
   (function () {
@@ -222,9 +112,9 @@
             const carte = NOMS_CARTES[p.carte] || NOMS_CARTES.uno;
             const n = (p.exercices || []).length;
             const classes = p.classes && p.classes.length ? ` · classes ${p.classes.join(', ')}` : '';
-            return `<div class="ed-carte-choix ac-carte"><strong>${echapper(p.titre)}</strong>` +
-              `<span>${n} exercice${n > 1 ? 's' : ''} · ${carte}${echapper(classes)}</span><span class="ac-detail">Version ${echapper(p.versionParcours || '')}</span>` +
-              `<span class="ac-actions"><a class="btn-secondaire ac-essayer" href="index.html?parcours=${encodeURIComponent(p.id)}&amp;enseignant=1">Essayer</a>` +
+            return `<div class="ac-ligne ac-carte"><div class="ac-ligne-texte"><strong>${echapper(p.titre)}</strong>` +
+              `<span>${n} exercice${n > 1 ? 's' : ''} · ${carte}${echapper(classes)} · version ${echapper(p.versionParcours || '')}</span></div>` +
+              `<span class="ac-actions"><a class="btn-principal ac-essayer" href="index.html?parcours=${encodeURIComponent(p.id)}&amp;enseignant=1">Essayer</a>` +
               `<button type="button" class="btn-secondaire ac-lien" data-id="${echapper(p.id)}">Copier le lien élèves</button></span></div>`;
           })
           .join('');
