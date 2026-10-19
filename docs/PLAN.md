@@ -482,4 +482,9 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    touche » ou « quand la caméra » reste dans l'ordinateur, il en a 16 (`noyau/code-octet.js`, `noyau/vm.js`). Un
    programme qui ne peut pas démarrer le dit sous le simulateur (« Ton programme ne peut pas démarrer : … ») au lieu
    de ne rien faire.
+38. **micro:bit : dessin 5 × 5 (19/10/2026)**, demande de Thomas. Décisions : points allumés / éteints (sans
+   luminosité) ; programme de la carte de la micro:bit en **0.3** (une mise à jour par micro:bit, fichier à glisser).
+   Bloc `mb_dessin` (catégorie Écran), champ `field_dessin_microbit` : même grille à cliquer que l'afficheur du mBot
+   (champ commun, `interface/blocs.js`). Extension 2, commande 15 : 2 valeurs (lignes 0 à 2, puis 3 et 4) ;
+   `main.py` les remet en `Image`. Exercice libre d'exemple `mb-04` « Mon dessin » (Découverte de la micro:bit 1.3.0).
 

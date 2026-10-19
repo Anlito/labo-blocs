@@ -1,11 +1,11 @@
-// Parcours « Découverte de la micro:bit », version 1.2.0 (Labo Blocs).
+// Parcours « Découverte de la micro:bit », version 1.3.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-microbit",
   "titre": "Découverte de la micro:bit",
-  "versionParcours": "1.2.0",
+  "versionParcours": "1.3.0",
   "date": "2026-10-20",
   "moteurMinimum": "0.3.0",
   "carte": "microbit",
@@ -287,6 +287,35 @@ definirParcours({
         ]
       },
       "competence": "C6"
+    },
+    {
+      "id": "mb-04",
+      "numero": "4",
+      "titre": "Mon dessin",
+      "defi": false,
+      "libre": true,
+      "consigne": "Invente tes propres dessins pour l’écran de la micro:bit : clique sur le petit dessin du bloc « afficher le dessin » pour allumer ou éteindre les points.\nQuand on appuie sur le bouton A, la micro:bit montre un premier dessin ; sur le bouton B, un deuxième. Quand ton programme marche, clique sur « J’ai terminé ».",
+      "composants": [],
+      "blocsAutorises": [
+        "mb_dessin",
+        "mb_effacer",
+        "mb_bouton",
+        "si_alors",
+        "si_sinon",
+        "attendre",
+        "mb_image"
+      ],
+      "blocsDepart": null,
+      "scenarios": [],
+      "indices": [
+        "Dans « Répéter indéfiniment » : « si le bouton A est appuyé alors afficher le dessin … », puis la même chose pour le bouton B.",
+        "Pour une petite animation : deux dessins l’un après l’autre, avec « attendre » entre les deux."
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "competence": "C9"
     }
   ]
 });

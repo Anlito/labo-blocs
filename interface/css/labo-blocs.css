@@ -496,13 +496,13 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .blocklyDessinMatrice .dessin-aide { margin: 0 0 0.625rem; font-size: 0.9375rem; color: #4A5670; }
 .blocklyDessinMatrice .dessin-grille {
   --case: min(1.5rem, calc((100vw - 8rem) / 16));
-  display: grid; grid-template-columns: repeat(16, var(--case)); gap: 0.1875rem; padding: 0.5rem;
+  display: grid; grid-template-columns: repeat(var(--colonnes, 16), var(--case)); gap: 0.1875rem; padding: 0.5rem;
   background: #1F2A30; border-radius: 0.5rem; touch-action: none; width: max-content;
 }
 .blocklyDessinMatrice .dessin-point {
   width: var(--case); height: var(--case); padding: 0; border: 1px solid #5A6B75; border-radius: 50%; background: #3B4A52; cursor: pointer;
 }
-.blocklyDessinMatrice .dessin-point[aria-pressed="true"] { background: #8EC5FF; border-color: #FFFFFF; box-shadow: 0 0 6px rgba(142, 197, 255, 0.9); }
+.blocklyDessinMatrice .dessin-point[aria-pressed="true"] { background: var(--allume, #8EC5FF); border-color: #FFFFFF; box-shadow: 0 0 6px var(--allume, #8EC5FF); }
 .blocklyDessinMatrice .dessin-point:focus-visible, .blocklyDessinMatrice button:focus-visible { outline: 3px solid #FFC400; outline-offset: 1px; }
 .blocklyDessinMatrice .dessin-actions { margin: 0.75rem 0 0; display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; font-size: 0.9375rem; }
 .blocklyDessinMatrice .dessin-compte { margin-right: auto; }

@@ -14,7 +14,8 @@
 //     13 heure (heures, minutes) · 14 lettres du texte à suivre (4 par commande) · 15 dernières lettres, puis affichage
 //   Extension 2 = micro:bit : 1 nombre · 2 image · 3 pixel (x, y, 0..9) · 4 effacer · 5 bouton A · 6 bouton B ·
 //     7 accélération (axe) · 8 température · 9 logo touché · 10 lumière · 11 texte (codes des lettres) ·
-//     12 note (Hz, s) · 13 geste · 14 lettres du texte à suivre (4 par commande)
+//     12 note (Hz, s) · 13 geste · 14 lettres du texte à suivre (4 par commande) · 15 dessin 5 × 5 (programme de la
+//     carte 0.3) : 2 valeurs, lignes 0 à 2 puis lignes 3 et 4, bit y×5 + x (rangé par moitié), 1 = allumé
 //   Extension 3 = caméra (toutes les cartes) : 1 la caméra reconnaît (étiquette n°, 0 = rien) → 0/1 ·
 //     2 certitude de l'IA pour l'étiquette → 0..100. La webcam et l'IA sont dans l'ordinateur : ces commandes ne
 //     partent jamais vers la carte (simulateur et mode « En direct » seulement, jamais « Dans la carte »).
@@ -58,6 +59,8 @@
       nom: 'micro:bit V2',
       firmware: 'microbitV2',
       reponse: 'microbit-v2',
+      // Programme de la carte propre à la micro:bit (dessin 5 × 5) : l'Uno reste en 0.2.
+      version: '0.3',
       installation: 'fichier',
       broches: { led: P, bouton: P, servo: P, buzzer: P },
       composants: ['led', 'bouton', 'servo'],
@@ -177,6 +180,17 @@
     colonnes.slice(0, 16).forEach((c, i) => (ecran[debut + i] = c));
     return ecran;
   };
+
+  // Dessin de l'écran de la micro:bit : 25 caractères « 0 » / « 1 », ligne par ligne, du haut à gauche. Dessin de
+  // départ du bloc : un cœur.
+  const DESSIN_MICROBIT_DEPART = '0101011111111110111000100';
+  const lireDessinMicrobit = (s) => (/^[01]{25}$/.test(String(s || '')) ? String(s) : '0'.repeat(25)).split('').map(Number);
+  // 25 points → 2 valeurs exactes en nombre à virgule (24 bits au plus) : lignes 0 à 2 (15 bits), lignes 3 et 4.
+  function valeursDessinMicrobit(s) {
+    const p = lireDessinMicrobit(s);
+    const somme = (debut, fin) => p.slice(debut, fin).reduce((v, b, i) => v + b * 2 ** i, 0);
+    return [somme(0, 15), somme(15, 25)];
+  }
 
   // Lettres d'un texte : 5 colonnes chacune, séparées par une colonne vide.
   function colonnesTexte(codes) {
@@ -437,6 +451,15 @@
         return morceaux.map((m, i) => ext(2, i === morceaux.length - 1 ? 11 : 14, m));
       },
     },
+    mb_dessin: {
+      carte: 'microbit',
+      categorie: 'mb_ecran',
+      sorte: 'instruction',
+      texte: 'afficher le dessin %DESSIN',
+      champs: { DESSIN: 'dessin5' },
+      defauts: { DESSIN: DESSIN_MICROBIT_DEPART },
+      derouler: (p) => ext(2, 15, valeursDessinMicrobit(p.dessin)),
+    },
     mb_pixel: {
       carte: 'microbit',
       categorie: 'mb_ecran',
@@ -643,6 +666,11 @@
           case 4:
             poser(new Array(25).fill(0));
             return 0;
+          case 15: {
+            const bits = (v, n) => Array.from({ length: n }, (_, i) => (Math.floor(borner(v, 0, 2 ** n - 1) / 2 ** i) % 2) * 9);
+            poser(bits(a[0], 15).concat(bits(a[1], 10)));
+            return 0;
+          }
           case 5:
             return sim.entrees.A ? 1 : 0;
           case 6:
@@ -835,7 +863,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER };
+  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);
