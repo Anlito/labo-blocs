@@ -1,0 +1,95 @@
+{
+  "format": "labo-blocs/parcours",
+  "version": 1,
+  "id": "test",
+  "titre": "TEst",
+  "versionParcours": "1.3.0",
+  "date": "2026-10-19",
+  "moteurMinimum": "0.3.0",
+  "carte": "mbot",
+  "modes": [
+    "simulateur",
+    "direct",
+    "carte"
+  ],
+  "boutonsVersMasse": true,
+  "parametres": {},
+  "exercices": [
+    {
+      "id": "test-01",
+      "numero": "1",
+      "titre": "Nouvel exercice",
+      "defi": false,
+      "consigne": "amuse toig ghj nghb",
+      "composants": [],
+      "blocsAutorises": [
+        "attendre",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre",
+        "quand_camera",
+        "camera_reconnait",
+        "camera_certitude",
+        "mbot_deplacer",
+        "mbot_deplacer_pendant",
+        "mbot_arreter",
+        "mbot_moteur",
+        "mbot_distance",
+        "mbot_ligne",
+        "mbot_ligne_voit",
+        "mbot_bouton",
+        "mbot_lumiere",
+        "mbot_led",
+        "mbot_note",
+        "mbot_matrice_dessin",
+        "mbot_matrice_texte",
+        "mbot_matrice_nombre",
+        "mbot_matrice_heure"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true,
+      "variablesLibres": true,
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      }
+    }
+  ],
+  "fiches": {},
+  "lexique": [],
+  "classes": [
+    "4A",
+    "4D",
+    "5R"
+  ],
+  "cheminSauvegarde": [
+    "{classe}",
+    "COMMUN",
+    "TECHNOLOGIE",
+    "TEST",
+    "{equipe}"
+  ]
+}
