@@ -303,6 +303,7 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 21.12 | Exercice 3 « À toi d'inventer » : créer « Loup », puis « loup » | « Loup » ajoutée (et dans le menu des blocs) ; « loup » : « L’étiquette « loup » existe déjà. » (ambre) | |
 | 21.13 | Renommer « Loup » en « Renard », fermer et rouvrir la sauvegarde | Le bloc affiche « Renard » ; étiquettes et photos retrouvées | |
 | 21.14 | Éditeur de parcours : cocher « Les élèves créent leurs propres étiquettes » | L'exercice propose « Nouvelle étiquette » aux élèves | |
+| 21.15 | Caméra allumée, descendre jusqu'à la dernière étiquette et prendre des photos | L'image de la caméra reste en haut de la colonne : on voit ce qu'on photographie | |
 
 ## 22. Afficheur LED Matrix 8×16 du mBot (port 4)
 

@@ -1040,6 +1040,17 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(reflexion.barres === 3 && reflexion.proche, JSON.stringify(reflexion));
     await p.click('.cam-etiquette[data-n="1"] .cam-photo');
     await p.waitForFunction(() => /^20 photos/.test(document.querySelector('.cam-etiquette[data-n="1"] .cam-nb').textContent), { timeout: 120000 });
+    // En bas de la colonne (dernière étiquette), l'image de la caméra reste visible en haut : on cadre en prenant les photos.
+    const cadrage = await p.evaluate(async () => {
+      const c = document.querySelector('.colonne-test');
+      c.scrollTop = c.scrollHeight;
+      await new Promise((r) => setTimeout(r, 300));
+      const zone = c.getBoundingClientRect();
+      const video = document.querySelector('.cam-video').getBoundingClientRect();
+      const bouton = [...document.querySelectorAll('.cam-photo')].pop().getBoundingClientRect();
+      return { video: video.top >= zone.top - 1 && video.bottom <= zone.bottom, bouton: bouton.top >= video.bottom && bouton.bottom <= zone.bottom };
+    });
+    verifier(cadrage.video && cadrage.bouton, 'en bas de la colonne, l’image de la caméra ou le bouton de la dernière étiquette est caché : ' + JSON.stringify(cadrage));
     const enLigne = await p.evaluate((adresse) => performance.getEntriesByType('resource').filter((r) => !r.name.startsWith('file:') && !r.name.startsWith(adresse)).map((r) => r.name), ADRESSE_COLLEGE);
     verifier(!enLigne.length, 'ressources en ligne : ' + enLigne.join(', '));
     await p.click('.cam-allumer');
@@ -1052,7 +1063,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await q.click('.cam-nouvelle button');
     const libres = await q.evaluate(() => ({ noms: [...document.querySelectorAll('.cam-nom')].map((x) => x.textContent), ecart: document.querySelector('.cam-ecart').textContent, menu: LaboBlocs.optionsEtiquettes().map((x) => x[0]) }));
     verifier(libres.noms.join() === 'Rien,Loup' && /existe déjà/.test(libres.ecart) && libres.menu.join() === 'rien,Loup', JSON.stringify(libres));
-    return `étiquettes ${etat.noms.join(', ')} ; modes ${etat.modes.join(', ')} ; solution réussie ; webcam simulée : « ${vu} » ; réflexion : ${reflexion.barres} barres, « ${reflexion.suite} » ; 10 + 10 photos ; étiquette créée par l’élève : ${libres.noms.slice(1).join(', ')}`;
+    return `étiquettes ${etat.noms.join(', ')} ; modes ${etat.modes.join(', ')} ; solution réussie ; webcam simulée : « ${vu} » ; réflexion : ${reflexion.barres} barres, « ${reflexion.suite} » ; 10 + 10 photos (image de la caméra visible avec la dernière étiquette) ; étiquette créée par l’élève : ${libres.noms.slice(1).join(', ')}`;
   });
 
   await critere('Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié', async () => {
