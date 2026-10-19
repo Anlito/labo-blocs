@@ -1,7 +1,8 @@
 // Construit les programmes de la carte Labo Blocs (installés une fois dans chaque carte) :  npm run firmwares
 //   Uno et mBot (mCore) : cartes/arduino/labo_blocs (C, avr-gcc ou arduino-cli) → cartes/labo_blocs_uno.hex, _mbot.hex
 //   micro:bit V2 : MicroPython officiel 2.1.2 + cartes/microbit/main.py allégé → cartes/labo_blocs_microbit_v2.hex
-//   → cartes/firmwares.js : les trois fichiers dans un script (lisible en file://), avec la version attendue.
+//   → cartes/firmwares.js : les trois fichiers dans un script (lisible en file://), avec la version de chacun (lue dans
+//     le programme construit : « PONG v2 <version> »). Le mBot a sa propre version (afficheur, 0.3).
 // Avr : arduino-cli (ARDUINO_CLI ou PATH), sinon avr-gcc avec ARDUINO_CORE (github.com/arduino/ArduinoCore-avr) et
 // SERVO (github.com/arduino-libraries/Servo).
 const { execFileSync } = require('node:child_process');
@@ -11,7 +12,15 @@ const path = require('node:path');
 
 const CARTES = path.join(__dirname, '..', 'cartes');
 const CROQUIS = path.join(CARTES, 'arduino', 'labo_blocs');
-const VERSION = /#define VERSION_FIRMWARE "([\d.]+)"/.exec(fs.readFileSync(path.join(CROQUIS, 'labo_blocs.ino'), 'utf8'))[1];
+
+// Version écrite dans un programme construit (Intel HEX ou script) : la réponse « PONG v2 <version> ».
+function versionDe(contenu) {
+  const octets = [];
+  for (const l of String(contenu).split(/\r?\n/)) if (/^:[0-9A-F]{6}00/i.test(l)) for (let i = 9; i < l.length - 2; i += 2) octets.push(parseInt(l.slice(i, i + 2), 16));
+  const texte = String.fromCharCode(...octets) + '\n' + contenu;
+  const m = /PONG v2 ([0-9.]+) /.exec(texte);
+  return m ? m[1] : null;
+}
 
 function trouver(c, args) {
   try {
@@ -90,14 +99,16 @@ if (require.main === module) {
     console.log(`${carte} : cartes/labo_blocs_${carte}.hex` + (r.flash ? ` — flash ${r.flash} o / 32256, RAM fixe ${r.ram} o / 2048` : ''));
   }
   fichiers.microbitV2 = construireMicrobit();
+  const versions = {};
+  for (const [carte, hex] of Object.entries(fichiers)) versions[carte] = carte === 'microbitV2' ? versionDe(fs.readFileSync(path.join(CARTES, 'microbit', 'main.py'), 'utf8')) : versionDe(hex);
   fs.writeFileSync(path.join(CARTES, 'labo_blocs_microbit_v2.hex'), fichiers.microbitV2);
   console.log('micro:bit V2 : cartes/labo_blocs_microbit_v2.hex');
   fs.writeFileSync(
     path.join(CARTES, 'firmwares.js'),
-    `// Programmes de la carte Labo Blocs ${VERSION} (Intel HEX), construits par « npm run firmwares » : ne pas modifier.\n` +
-      `definirFirmwares(${JSON.stringify({ version: VERSION, ...fichiers })});\n`,
+    `// Programmes de la carte Labo Blocs (Intel HEX), construits par « npm run firmwares » : ne pas modifier.\n` +
+      `definirFirmwares(${JSON.stringify({ versions, ...fichiers })});\n`,
   );
-  console.log(`cartes/firmwares.js (version ${VERSION})`);
+  console.log(`cartes/firmwares.js (versions ${Object.entries(versions).map(([c, v]) => c + ' ' + v).join(', ')})`);
 }
 
-module.exports = { VERSION, alleger };
+module.exports = { versionDe, alleger };

@@ -2,7 +2,7 @@
 // - Les blocs du mBot et de la micro:bit donnent le même déroulé dans le simulateur, dans le C de la Uno / du mBot et
 //   dans le MicroPython de la micro:bit (mêmes commandes, mêmes instants).
 // - La carte simulée : écran 5 × 5, boutons A/B, capteurs, moteurs et LED du mBot.
-// - Une seule version du programme de la carte partout (outil, .ino, main.py, fichiers construits).
+// - La même version du programme de chaque carte partout (outil, .ino, main.py, fichiers construits).
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -159,15 +159,21 @@ test('mBot simulé : moteurs, LED, ultrasons, suiveur de ligne, bouton', () => {
   assert.equal(sim.variables.l, 321);
 });
 
-test('une seule version du programme de la carte : outil, Uno/mBot, micro:bit, fichiers construits', () => {
+test('version du programme de chaque carte : outil, Uno/mBot, micro:bit, fichiers construits (mBot 0.3 : afficheur)', () => {
   const ino = fs.readFileSync(path.join(H.CARTES, 'arduino', 'labo_blocs', 'labo_blocs.ino'), 'utf8');
   const py = fs.readFileSync(path.join(H.CARTES, 'microbit', 'main.py'), 'utf8');
   let construits = null;
   vm.runInNewContext(fs.readFileSync(path.join(H.CARTES, 'firmwares.js'), 'utf8'), { definirFirmwares: (f) => (construits = f) });
-  assert.match(ino, new RegExp(`#define VERSION_FIRMWARE "${K.VERSION_FIRMWARE}"`));
-  assert.match(py, new RegExp(`PONG v2 ${K.VERSION_FIRMWARE.replace('.', '\\.')} `));
-  assert.equal(construits.version, K.VERSION_FIRMWARE);
-  for (const p of Object.values(K.PROFILS)) assert.match(construits[p.firmware], /^:[0-9A-F]{10}/, p.nom);
+  const attendue = (p) => p.version || K.VERSION_FIRMWARE;
+  assert.equal(attendue(K.PROFILS.mbot), '0.3');
+  assert.equal(attendue(K.PROFILS.uno), '0.2');
+  // Dans le .ino : la version du mBot dans « #if defined(CARTE_MCORE) », celle de l'Uno après « #else ».
+  assert.match(ino, new RegExp(`#if defined\\(CARTE_MCORE\\)\\n#define VERSION_FIRMWARE "${attendue(K.PROFILS.mbot)}"[\\s\\S]*?#else\\n#define VERSION_FIRMWARE "${attendue(K.PROFILS.uno)}"`));
+  assert.match(py, new RegExp(`PONG v2 ${attendue(K.PROFILS.microbit).replace('.', '\\.')} `));
+  for (const p of Object.values(K.PROFILS)) {
+    assert.match(construits[p.firmware], /^:[0-9A-F]{10}/, p.nom);
+    assert.equal(construits.versions[p.firmware], attendue(p), p.nom);
+  }
 });
 
 test('micro:bit : un long texte arrive en morceaux de 4 lettres et défile en entier sur la carte', { skip: !pythons.length && 'python absent' }, () => {

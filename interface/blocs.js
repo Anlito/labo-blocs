@@ -326,6 +326,7 @@
       if (d.champs && nom in d.champs) {
         const c = d.champs[nom];
         if (c === 'etiquette') args.push({ type: 'field_dropdown', name: nom, options: () => A.optionsEtiquettes() });
+        else if (c === 'dessin') args.push({ type: 'field_dessin_matrice', name: nom, value: (d.defauts || {})[nom] });
         else args.push(Array.isArray(c) ? { type: 'field_dropdown', name: nom, options: c } : { type: 'field_input', name: nom, text: (d.defauts || {})[nom] || '' });
       } else args.push({ type: 'input_value', name: nom, check: 'Number' });
       return '%' + n;
@@ -428,10 +429,128 @@
     return { kind: 'categoryToolbox', contents: contenu };
   }
 
+  // Champ « dessin » de l'afficheur du mBot : 16 × 8 points, vus en petit sur le bloc. Un clic ouvre la grille : on
+  // clique (ou on glisse) sur les points pour les allumer ou les éteindre. Valeur : 32 chiffres hexadécimaux, 2 par
+  // colonne de gauche à droite, bit 0 = point du haut (comme noyau/cartes.js).
+  function definirChampDessin(Blockly) {
+    const PAS = 3.4;
+    const vide = '0'.repeat(32);
+    const colonnes = (v) => (A.lireDessinMatrice ? A.lireDessinMatrice(v) : new Array(16).fill(0));
+    const versTexte = (cols) => cols.map((c) => c.toString(16).padStart(2, '0')).join('');
+    class ChampDessin extends Blockly.Field {
+      constructor(valeur, validateur, config) {
+        super(valeur || vide, validateur, config);
+        this.SERIALIZABLE = true;
+        this.CURSOR = 'pointer';
+        this.points = [];
+      }
+      static fromJson(o) {
+        return new ChampDessin(o.value, undefined, o);
+      }
+      doClassValidation_(v) {
+        return /^[0-9a-f]{32}$/i.test(String(v)) ? String(v).toLowerCase() : null;
+      }
+      initView() {
+        const svg = Blockly.utils.dom.createSvgElement;
+        // Couleurs en style (le thème de Blockly colore les rectangles des champs modifiables).
+        svg('rect', { x: 0, y: 0, width: 16 * PAS + 3, height: 8 * PAS + 3, rx: 3, style: 'fill: #1F2A30' }, this.fieldGroup_);
+        for (let y = 0; y < 8; y++)
+          for (let x = 0; x < 16; x++) this.points.push(svg('rect', { x: 2 + x * PAS, y: 2 + y * PAS, width: PAS - 1, height: PAS - 1, rx: 1 }, this.fieldGroup_));
+        this.size_ = new Blockly.utils.Size(16 * PAS + 3, 8 * PAS + 3);
+      }
+      updateSize_() {
+        this.size_ = new Blockly.utils.Size(16 * PAS + 3, 8 * PAS + 3);
+      }
+      render_() {
+        const cols = colonnes(this.getValue());
+        this.points.forEach((p, i) => (p.style.fill = (cols[i % 16] >> Math.floor(i / 16)) & 1 ? '#8EC5FF' : '#3B4A52'));
+        this.updateSize_();
+      }
+      getText_() {
+        const n = colonnes(this.getValue()).reduce((t, c) => t + c.toString(2).split('1').length - 1, 0);
+        return n ? `dessin de ${n} point${n > 1 ? 's' : ''}` : 'dessin vide';
+      }
+      // La grille s'ouvre dans une petite fenêtre au-dessus de la page (le menu de Blockly serait coupé par la zone
+      // des blocs). Échap, « Fermer » ou un clic à côté la ferme.
+      showEditor_() {
+        const fenetre = document.createElement('dialog');
+        fenetre.className = 'blocklyDessinMatrice';
+        fenetre.setAttribute('aria-label', 'Dessin de l’afficheur');
+        fenetre.innerHTML =
+          '<p class="dessin-titre">Dessin de l’afficheur</p>' +
+          '<p class="dessin-aide">Clique sur les points (ou glisse) pour dessiner.</p>' +
+          '<div class="dessin-grille" role="group" aria-label="16 colonnes et 8 lignes de points"></div>' +
+          '<p class="dessin-actions"><span class="dessin-compte" aria-live="polite"></span>' +
+          '<button type="button" class="dessin-effacer">Tout effacer</button><button type="button" class="dessin-fermer">Fermer</button></p>';
+        const grille = fenetre.querySelector('.dessin-grille');
+        const cases = [];
+        let cols = colonnes(this.getValue());
+        let peinture = null; // allumer (true) ou éteindre (false) pendant un glissé
+        const montrer = () => {
+          cases.forEach((b, i) => b.setAttribute('aria-pressed', (cols[i % 16] >> Math.floor(i / 16)) & 1 ? 'true' : 'false'));
+          const n = cols.reduce((t, c) => t + c.toString(2).split('1').length - 1, 0);
+          fenetre.querySelector('.dessin-compte').textContent = n ? `${n} point${n > 1 ? 's' : ''} allumé${n > 1 ? 's' : ''}` : 'Aucun point allumé';
+        };
+        const poser = (i, allume) => {
+          const x = i % 16;
+          const bit = 1 << Math.floor(i / 16);
+          cols = cols.slice();
+          cols[x] = allume ? cols[x] | bit : cols[x] & ~bit;
+          this.setValue(versTexte(cols));
+          montrer();
+        };
+        for (let y = 0; y < 8; y++)
+          for (let x = 0; x < 16; x++) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'dessin-point';
+            b.setAttribute('aria-label', `point colonne ${x + 1}, ligne ${y + 1}`);
+            const i = y * 16 + x;
+            b.addEventListener('pointerdown', (e) => {
+              e.preventDefault();
+              // Au doigt, le point touché garde le pointeur : on le lâche pour que le glissé passe aux autres points.
+              if (b.hasPointerCapture(e.pointerId)) b.releasePointerCapture(e.pointerId);
+              peinture = !((cols[x] >> y) & 1);
+              poser(i, peinture);
+            });
+            b.addEventListener('pointerenter', () => {
+              if (peinture !== null) poser(i, peinture);
+            });
+            // Clavier (Entrée, Espace) : un clic sans pointeur.
+            b.addEventListener('click', (e) => {
+              if (e.detail === 0) poser(i, !((cols[x] >> y) & 1));
+            });
+            cases.push(b);
+            grille.appendChild(b);
+          }
+        const finir = () => (peinture = null);
+        fenetre.addEventListener('pointerup', finir);
+        grille.addEventListener('pointerleave', finir);
+        fenetre.querySelector('.dessin-effacer').addEventListener('click', () => {
+          cols = new Array(16).fill(0);
+          this.setValue(vide);
+          montrer();
+        });
+        fenetre.querySelector('.dessin-fermer').addEventListener('click', () => fenetre.close());
+        // Clic sur le fond (hors de la fenêtre) : fermer.
+        fenetre.addEventListener('click', (e) => {
+          if (e.target === fenetre) fenetre.close();
+        });
+        fenetre.addEventListener('close', () => fenetre.remove());
+        montrer();
+        document.body.appendChild(fenetre);
+        fenetre.showModal();
+        cases[0].focus();
+      }
+    }
+    Blockly.fieldRegistry.register('field_dessin_matrice', ChampDessin);
+  }
+
   let defini = false;
   function definirBlocs(Blockly) {
     if (defini) return;
     defini = true;
+    definirChampDessin(Blockly);
     Blockly.common.defineBlocksWithJsonArray(DEFINITIONS);
     // Menu HAUT/BAS du bloc LED : « : allumée / : éteinte » pendant les premiers exercices seulement
     // (A.aideLed est réglé à l'ouverture de chaque exercice, voir parametres.js).

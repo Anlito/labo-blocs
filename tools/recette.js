@@ -48,7 +48,9 @@ function collegeDEssai(essai) {
 }
 
 const resultats = [];
+// RECETTE_SEULEMENT=<mot> : seulement les critères dont le nom contient ce mot (pour mettre au point un critère).
 async function critere(nom, f) {
+  if (process.env.RECETTE_SEULEMENT && !nom.includes(process.env.RECETTE_SEULEMENT)) return;
   try {
     const detail = await f();
     resultats.push({ nom, ok: true, detail: detail || '' });
@@ -435,7 +437,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   });
 
   await critere('Dans la carte · mBot : envoi du programme et « Vider la carte »', async () => {
-    const p = await ouvrirDansLaCarte('decouverte-mbot', 'mbot-03', { modele: 'mcore', firmware: '0.2' });
+    const p = await ouvrirDansLaCarte('decouverte-mbot', 'mbot-03', { modele: 'mcore', firmware: '0.3' });
     await p.click('.panneau-carte [data-action="connecter"]');
     let e = await attendreCarte(p, ATTENTE);
     verifier(e.cle === 'connectee', `connexion : ${e.cle} ${e.message}`);
@@ -478,6 +480,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const cas = [
       ['carte déjà utilisée', null, 'dist-02', { modele: 'uno', firmware: '0.2', occupee: true }, 'occupee', /Ferme-le, puis réessaie/],
       ['carte pas à jour', null, 'dist-02', { modele: 'uno', firmware: '0.1' }, 'pas-a-jour', /Installer le programme de la carte/],
+      ['mBot sans l’afficheur (0.2)', 'decouverte-mbot', 'mbot-03', { modele: 'mcore', firmware: '0.2' }, 'pas-a-jour', /Installer le programme de la carte/],
       ['mauvaise carte', 'decouverte-microbit', 'mb-01', { modele: 'uno', firmware: '0.2' }, 'mauvaise-carte', /Branche la bonne carte/],
     ];
     for (const [nom, parcours, ex, carte, cle, attendu] of cas) {
@@ -528,6 +531,54 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « ${roule} », obstacle à 10 cm → « ${arrete} », vérification réussie`;
   });
 
+  await critere('Afficheur LED du mBot (port 4) : dessin à cliquer, simulateur, nombre ; envoyé en direct au robot (0.3)', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-04', { carte: { modele: 'mcore', firmware: '0.3' } });
+    const categories = await p.$$eval('.cat-libelle', (l) => l.map((x) => x.textContent.trim()));
+    verifier(categories.includes('Afficheur'), 'catégorie Afficheur absente : ' + categories.join(', '));
+    await p.evaluate(() => {
+      const L = LaboBlocs;
+      const ex = L.app.paquet.exercices.find((e) => e.id === 'mbot-04');
+      const vide = '0'.repeat(32);
+      L.app.ecranExercice.editeur.charger(ex, L.versBlockly({ demarrage: [{ bloc: 'mbot_matrice_dessin', dessin: vide }, { bloc: 'attendre', duree: 1.5 }, { bloc: 'mbot_matrice_nombre', valeur: 3.14 }], boucle: [] }));
+    });
+    // Un clic sur le petit dessin du bloc ouvre la grille ; on allume le point en haut à gauche et celui en bas à droite.
+    const champ = await p.evaluate(() => {
+      const b = Blockly.getMainWorkspace().getAllBlocks(false).find((x) => x.type === 'mbot_matrice_dessin');
+      const r = b.getField('DESSIN').getSvgRoot().getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    });
+    await p.mouse.click(champ.x, champ.y);
+    await p.waitForSelector('.dessin-point', { visible: true, timeout: 3000 });
+    await pause(200);
+    await p.click('.dessin-point[aria-label="point colonne 1, ligne 1"]');
+    await p.click('.dessin-point[aria-label="point colonne 16, ligne 8"]');
+    const compte = await p.$eval('.dessin-compte', (x) => x.textContent);
+    const valeur = await p.evaluate(() => Blockly.getMainWorkspace().getAllBlocks(false).find((x) => x.type === 'mbot_matrice_dessin').getFieldValue('DESSIN'));
+    verifier(valeur === '01' + '0'.repeat(28) + '80' && compte === '2 points allumés', `dessin : ${valeur} (${compte})`);
+    await p.click('.dessin-fermer');
+    verifier(!(await p.$('.blocklyDessinMatrice')), 'la fenêtre du dessin ne se ferme pas');
+    const largeur = await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth);
+    await p.click('.btn-lancer');
+    await pause(400);
+    const dessin = await p.$eval('.matrice-points', (x) => x.getAttribute('aria-label'));
+    const coins = await p.$$eval('.matrice-point', (l) => [l[0].classList.contains('allume'), l[127].classList.contains('allume')]);
+    await pause(1500);
+    const nombre = await p.$eval('.matrice-points', (x) => x.getAttribute('aria-label'));
+    verifier(dessin === 'Afficheur : 2 points allumés' && coins.every(Boolean) && /Afficheur : \d+ points allumés/.test(nombre) && nombre !== dessin, `${dessin} / ${coins} / ${nombre}`);
+    verifier(largeur, 'la page déborde en largeur');
+    // En direct par le câble : le dessin part en deux commandes, le nombre en centièmes.
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    const e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle + ' ' + e.message);
+    await p.click('.btn-lancer');
+    await pause(1900);
+    const envoyes = await p.evaluate(() => carteVirtuelle.extensions.filter((x) => /^X 1 1[0-5] /.test(x)));
+    verifier(envoyes.join(' | ') === 'X 1 10 1 0 0 0 | X 1 11 0 0 0 32768 | X 1 12 314', 'envoyé : ' + envoyes.join(' | '));
+    await p.close();
+    return `palette : catégorie Afficheur ; grille : ${compte} → « ${valeur} » ; simulateur : « ${dessin} », puis « ${nombre} » (3,14) ; en direct : ${envoyes.join(' · ')}`;
+  });
+
   // ---------- Jalon 4 : En direct (carte virtuelle) ----------
 
   const sorties = (p) => p.evaluate(() => JSON.stringify(carteVirtuelle.sorties));
@@ -575,7 +626,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   });
 
   await critere('En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble', async () => {
-    const p = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-03', { carte: { modele: 'mcore', firmware: '0.2', cle: true } });
+    const p = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-03', { carte: { modele: 'mcore', firmware: '0.3', cle: true } });
     await charger(p, 'mbot-03', 'solution');
     await p.evaluate(() => (carteVirtuelle.capteurs['X 1 2 3'] = 100));
     await p.click('.btn-mode[data-mode="direct"]');

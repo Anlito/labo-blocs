@@ -27,7 +27,7 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 |---|---|
 | `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : cartes (`cartes.js` : profils Uno / mBot / micro:bit, blocs de carte, carte simulée), programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression, édition d'un parcours (`edition.js`) |
 | `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur (micro:bit, tableau du mBot), aides, mode « Dans la carte » (`carte.js`, `televersement.js`), fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
-| `cartes/` | programmes des cartes 0.2 (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
+| `cartes/` | programmes des cartes 0.2 (mBot : 0.3) (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
 | `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `decouverte-mbot/`, `decouverte-microbit/` : `site/index.html?parcours=…` ; `index.js` : la liste ouverte par l'éditeur) |
 | `site/` | application Labo Blocs : `prof.html` (professeur : suivi de classe, niveaux par compétence, exports), `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
@@ -98,3 +98,8 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   micro:bit et mBot, en simulateur et « En direct » (la caméra est dans l'ordinateur). IA : TensorFlow.js et MobileNet
   copiés dans `site/vendor/vision/` (aucun CDN, marche en `file://`). Parcours d'exemple « Découverte de la caméra
   (IA) » — [RECETTE.md](RECETTE.md) §21.
+- **Afficheur LED Matrix 8×16 du mBot, en recette (19/10/2026)** : branché sur le **port 4** ; blocs « afficher le
+  dessin » (grille de 16 × 8 points à cliquer), « afficher le texte » (défile s'il est trop long), « afficher le
+  nombre », « afficher l'heure ». Simulateur (l'afficheur sous le robot), « En direct » et « Dans la carte » : le
+  programme de la carte du mBot passe en **0.3** (l'Uno et la micro:bit restent en 0.2). Exercice d'exemple
+  « L'afficheur » (Découverte du mBot) — [RECETTE.md](RECETTE.md) §22.

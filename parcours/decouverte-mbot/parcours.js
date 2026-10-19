@@ -1,11 +1,11 @@
-// Parcours « Découverte du mBot », version 1.2.0 (Labo Blocs).
+// Parcours « Découverte du mBot », version 1.3.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-mbot",
   "titre": "Découverte du mBot",
-  "versionParcours": "1.2.0",
+  "versionParcours": "1.3.0",
   "date": "2026-10-20",
   "moteurMinimum": "0.3.0",
   "carte": "mbot",
@@ -256,6 +256,35 @@ definirParcours({
         ]
       },
       "competence": "C6"
+    },
+    {
+      "id": "mbot-04",
+      "numero": "4",
+      "titre": "L’afficheur",
+      "defi": false,
+      "libre": true,
+      "consigne": "Branche l’afficheur LED sur le port 4 du robot.\nAu démarrage, le robot montre un dessin de ton choix, puis fait un compte à rebours : il affiche 3, puis 2, puis 1 (une seconde chacun) et fait défiler un message de départ.\nQuand ton programme marche, clique sur « J’ai terminé ».",
+      "composants": [],
+      "blocsAutorises": [
+        "mbot_matrice_dessin",
+        "mbot_matrice_texte",
+        "mbot_matrice_nombre",
+        "mbot_matrice_heure",
+        "attendre",
+        "mbot_deplacer_pendant",
+        "mbot_arreter"
+      ],
+      "blocsDepart": null,
+      "scenarios": [],
+      "indices": [
+        "Le dessin se fait en cliquant sur les points du bloc « afficher le dessin ». Le compte à rebours : un nombre, on attend 1 seconde, le nombre suivant…",
+        "Un texte trop long pour l’afficheur défile tout seul : pas besoin de le découper."
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "competence": "C9"
     }
   ]
 });

@@ -446,3 +446,18 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    les programmes utilisent les numéros ; enregistrées dans `programmation.camera.etiquettes` ; exercice d'exemple
    `cam-03`) ; « + 10 photos » cumule (et « Effacer les photos ») ; « Ce que pense l'IA, en direct » : barres par
    étiquette avec le seuil, images de suite, photo apprise la plus proche (`reconnaitre` renvoie `proche`).
+33. **Afficheur LED Matrix 8×16 du mBot (19/10/2026)**, demande de Thomas. Décisions : branché sur le **port 4**
+   (imposé, comme les ultrasons et le suiveur de ligne) ; blocs dessin à cliquer, texte, nombre, heure (pas de points
+   ni « effacer » : un dessin vide efface).
+   - Extension 1, commandes 10 à 15 : dessin en deux moitiés (4 valeurs de 2 colonnes chacune), nombre en centièmes
+     (le mode direct n'envoie que des entiers), heure, texte en morceaux de 4 lettres. Colonne = octet, bit 0 = haut.
+   - Texte : police 5 × 7 ; immobile et centré s'il tient (2 lettres), sinon il défile une fois (100 ms par colonne),
+     sans bloquer le programme ; le même texte redonné pendant qu'il défile continue de défiler. Nombre : chiffres
+     étroits 3 × 7, 2, 1 ou 0 décimales selon la place ; trop grand, il défile. Heure « hh:mm » sur 16 colonnes.
+   - Programme de la carte du mBot **0.3** (version propre à chaque carte : `profil.version`, `firmwares.js` →
+     `versions`) ; l'Uno et la micro:bit restent en 0.2 (rien à réinstaller). Pilote de l'afficheur comme MeLEDMatrix
+     (horloge S1 = A0, données S2 = A1) ; sens de l'afficheur à vérifier sur le robot (`MATRICE_HAUT_BAS`,
+     `MATRICE_GAUCHE_DROITE`). Test : la partie mBot du `.ino` tourne sur l'ordinateur et ses fils sont décodés.
+   - « En direct » : les morceaux d'un ordre (texte, dessin) partent avec sa dernière commande ; corrige aussi un
+     texte répété de la micro:bit qui laissait des lettres en trop.
+

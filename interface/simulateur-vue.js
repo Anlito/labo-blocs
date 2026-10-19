@@ -256,7 +256,14 @@
     );
   }
 
-  function htmlMbot() {
+  // Afficheur LED Matrix 8×16 (port 4) : seulement dans les exercices qui ont ses blocs.
+  function htmlMatrice() {
+    let points = '';
+    for (let y = 0; y < 8; y++) for (let x = 0; x < 16; x++) points += '<span class="matrice-point"></span>';
+    return `<figure class="mbot-matrice"><div class="matrice-points" role="img" aria-label="Afficheur : éteint">${points}</div><figcaption>Afficheur (port 4)</figcaption></figure>`;
+  }
+
+  function htmlMbot(avecMatrice) {
     const roue = (x, cote) =>
       `<g class="mbot-roue" data-roue="${cote}"><rect x="${x}" y="30" width="22" height="60" rx="6" fill="#2B3338"/>` +
       `<text x="${x + 11}" y="66" text-anchor="middle" class="mbot-fleche"></text></g>`;
@@ -283,6 +290,7 @@
       '<li class="mbot-son" aria-live="polite"></li>' +
       '</ul>' +
       '<button type="button" class="mbot-bouton poussoir-carte" data-entree="bouton" aria-pressed="false" aria-label="Bouton de la carte mCore : maintenir pour appuyer">Bouton de la carte</button>' +
+      (avecMatrice ? htmlMatrice() : '') +
       '</div>'
     );
   }
@@ -318,9 +326,9 @@
   const sensMoteur = (v) => (!v ? 'arrêté' : `${Math.abs(v)} % ${v > 0 ? 'en avant' : 'en arrière'}`);
 
   // Partie « carte » de la vue : micro:bit (écran, boutons, logo) ou mBot (moteurs, LED, bouton), et ses capteurs.
-  function vueCarte(racine, carte, rappels) {
+  function vueCarte(racine, carte, rappels, avecMatrice) {
     const zone = racine.querySelector('.simu-carte');
-    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : htmlMbot()}</div>`;
+    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : htmlMbot(avecMatrice)}</div>`;
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
     const capteurs = A.capteursDepart ? A.capteursDepart(carte) : {};
     const panneau = document.createElement('details');
@@ -345,6 +353,7 @@
     }
 
     const points = [...zone.querySelectorAll('.mb-point')];
+    const pointsMatrice = [...zone.querySelectorAll('.matrice-point')];
     let ecranAvant = '';
     function son(sim, nom) {
       const note = sim && sim.journal.filter((e) => e.type === 'son' && e.broche === nom).pop();
@@ -373,6 +382,20 @@
           zone.querySelector(`[data-led="${cote}"]`).setAttribute('fill', rgb ? '#' + rgb.toString(16).padStart(6, '0') : '#EEF3F6');
         }
         zone.querySelector('.mbot-son').textContent = son(sim, 'D8');
+        if (pointsMatrice.length) {
+          const colonnes = sim && sim.carte && A.matriceA ? A.matriceA(sim.carte, sim.t) : new Array(16).fill(0);
+          const cle = colonnes.join(',');
+          if (cle !== ecranAvant) {
+            ecranAvant = cle;
+            let n = 0;
+            pointsMatrice.forEach((p, i) => {
+              const allume = (colonnes[i % 16] >> Math.floor(i / 16)) & 1;
+              n += allume;
+              p.classList.toggle('allume', !!allume);
+            });
+            zone.querySelector('.matrice-points').setAttribute('aria-label', n ? `Afficheur : ${n} point${n > 1 ? 's' : ''} allumé${n > 1 ? 's' : ''}` : 'Afficheur : éteint');
+          }
+        }
       }
       // Curseurs des capteurs : suivent les valeurs changées par un test rejoué.
       for (const champ of panneau.querySelectorAll('[data-capteur]')) {
@@ -439,7 +462,8 @@
     const carte = exercice.carte === 'microbit' || exercice.carte === 'mbot' ? exercice.carte : 'uno';
     racine.classList.toggle('avec-carte', carte !== 'uno');
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
-    const vueDeCarte = carte === 'uno' ? null : vueCarte(racine, carte, rappels);
+    const avecMatrice = carte === 'mbot' && (exercice.blocsAutorises || []).some((t) => /^mbot_matrice_/.test(t));
+    const vueDeCarte = carte === 'uno' ? null : vueCarte(racine, carte, rappels, avecMatrice);
     if (!vueDeCarte) racine.querySelector('.simu-carte').innerHTML = `<div class="simu-carte-dessin">${dessinCarte(composants, recadrer)}</div>`;
     // Illustration du projet (distributeur : exercices 8 et 13) : à droite des cartes des composants.
     const distributeur = exercice.illustration === 'distributeur';
