@@ -512,3 +512,5 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 }
 .blocklyDessinMatrice .dessin-actions .dessin-fermer { background: #2547D0; border-color: #2547D0; color: #FFFFFF; }
 .blocklyDessinMatrice .dessin-actions button:hover { filter: brightness(0.96); }
+/* Joystick : ses trois broches, qui passent à la ligne dans la colonne étroite */
+.broches-joystick { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; font-weight: 400; }

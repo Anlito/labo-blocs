@@ -167,6 +167,7 @@
     { type: 'bouton', nom: 'Bouton', sortie: false },
     { type: 'servo', nom: 'Servomoteur', sortie: true },
     { type: 'buzzer', nom: 'Buzzer', sortie: true },
+    { type: 'joystick', nom: 'Joystick', sortie: false },
   ];
 
   // Broche d'un composant changée : la solution et les scénarios suivent. Renvoie ce qui a changé.
@@ -225,7 +226,7 @@
     { cle: 'maintenir', nom: 'Maintenir un bouton appuyé', champs: [{ nom: 'maintenir', type: 'bouton', libelle: 'bouton' }] },
     { cle: 'relacher', nom: 'Relâcher un bouton', champs: [{ nom: 'relacher', type: 'bouton', libelle: 'bouton' }] },
     // Seulement pour une carte qui a des capteurs (mBot, micro:bit).
-    { cle: 'regler', nom: 'Régler un capteur (ou la caméra)', avecCapteurs: true, champs: [{ nom: 'regler', type: 'capteur', libelle: 'capteur' }] },
+    { cle: 'regler', nom: 'Régler un capteur (ou la caméra, le joystick)', avecCapteurs: true, champs: [{ nom: 'regler', type: 'capteur', libelle: 'capteur' }] },
     {
       cle: 'verifier',
       nom: 'Vérifier l’état',
@@ -283,6 +284,10 @@
   function capteursExercice(exercice, carte) {
     const liste = K().capteursCarte(carte).slice();
     const cam = exercice && exercice.camera;
+    // Joystick : réglé comme un capteur (une direction), dans les exercices qui en ont un.
+    if (exercice && K().joystickDe(exercice.composants)) {
+      liste.unshift({ nom: 'joystick', libelle: 'joystick', options: K().CODES_JOYSTICK.map((d, n) => [d === 'centre' ? 'au centre' : K().DIRECTIONS_JOYSTICK.find((x) => x[1] === d)[0], n]) });
+    }
     if (cam) liste.unshift({ nom: 'camera', libelle: 'caméra (ce que l’IA reconnaît)', options: [['rien', 0]].concat((cam.etiquettes || []).map((nom, i) => [nom, i + 1])) });
     return liste;
   }
@@ -302,7 +307,7 @@
 
   // carte : celle du parcours (ses boutons et moteurs servent aussi dans les étapes).
   function nouvelleEtape(cle, exercice, carte) {
-    const composants = ((exercice && exercice.composants) || []).concat(carte && carte !== 'uno' ? K().composantsCarte(carte) : [], K().composantsClavier(exercice));
+    const composants = ((exercice && exercice.composants) || []).concat(carte && carte !== 'uno' ? K().composantsCarte(carte) : [], K().composantsClavier(exercice), K().composantsJoystick(exercice && exercice.composants));
     const bouton = (composants.find((c) => c.type === 'bouton') || {}).broche || 'D2';
     const sortie = composants.find((c) => c.type !== 'bouton') || { type: 'led', broche: 'D2' };
     const autre = composants.filter((c) => c.type !== 'bouton')[1] || { broche: 'D3' };
@@ -336,7 +341,7 @@
 
   // Phrase d'une étape, pour le professeur : « Vérifier que la LED D9 est allumée ».
   function decrireEtape(etape, exercice, carte) {
-    const liste = (exercice.composants || []).concat(K().composantsCarte(carte || exercice.carte), K().composantsClavier(exercice));
+    const liste = (exercice.composants || []).concat(K().composantsCarte(carte || exercice.carte), K().composantsClavier(exercice), K().composantsJoystick(exercice.composants));
     const trouver = (b) => liste.find((x) => x.broche === b);
     const c = (b) => V.nomComposant(trouver(b) || { type: /^D[56]$/.test(b) ? 'servo' : 'led', broche: b });
     const etat = (b, v) => {
@@ -358,7 +363,7 @@
       case 'relacher':
         return `Relâcher ${c(etape.relacher)}`;
       case 'regler':
-        return (Object.keys(etape.regler || {}).includes('camera') ? 'Régler : ' : 'Régler le capteur : ') + Object.entries(etape.regler || {}).map(([n, v]) => decrireReglage(n, v, exercice)).join(' et ');
+        return (Object.keys(etape.regler || {}).some((n) => n === 'camera' || n === 'joystick') ? 'Régler : ' : 'Régler le capteur : ') + Object.entries(etape.regler || {}).map(([n, v]) => decrireReglage(n, v, exercice)).join(' et ');
       case 'verifier':
         return `${debut}érifier que ${etats(etape.verifier)}`;
       case 'stable':
@@ -390,7 +395,7 @@
   function exercicePrepare(paquet, exercice) {
     const x = PA.preparer(Object.assign({}, paquet, { exercices: [exercice] })).exercices[0];
     // Exercice libre sur Arduino Uno : l'aperçu montre les composants de l'exemple (la « solution » facultative).
-    if (x.libre && (!x.carte || x.carte === 'uno')) x.composants = P.composantsDuProgramme(x.solutionReference).composants;
+    if (x.libre && (!x.carte || x.carte === 'uno')) x.composants = P.composantsDuProgramme(x.solutionReference, 'uno').composants;
     return x;
   }
 

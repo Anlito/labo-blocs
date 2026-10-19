@@ -14,6 +14,7 @@
   'use strict';
 
   const P = typeof module === 'object' && module.exports ? require('./programme.js') : global.LaboBlocs;
+  const K = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
 
   const numero = (broche) => {
     const s = String(broche).toUpperCase();
@@ -38,6 +39,9 @@
     const variables = new Set();
     let hasard = false;
     let modulo = false;
+    let joystickUtilise = false;
+    // Joystick : le composant de l'exercice (broches X, Y, bouton).
+    const J = K().joystickDe(o.composants);
 
     (function parcourir(x) {
       if (!x || typeof x !== 'object') return;
@@ -49,6 +53,7 @@
       if (x.bloc === 'variable' || x.bloc === 'affecter' || x.bloc === 'ajouter_a') variables.add(nomC(x.variable));
       if (x.bloc === 'hasard') hasard = true;
       if (x.bloc === 'operation' && x.op === 'mod') modulo = true;
+      if (x.quand === 'joystick' || K().BLOCS_JOYSTICK.includes(x.bloc)) joystickUtilise = true;
       for (const v of Object.values(x)) if (v && typeof v === 'object') parcourir(v);
     })(v1.fils);
 
@@ -79,10 +84,29 @@
           return `!(${expression(e.a)})`;
         case 'hasard':
           return `random(${expression(e.min)}, ${expression(e.max)} + 1)`;
+        case 'joystick_position':
+          return J ? `${(e.axe === 'y' ? J.inverserY : J.inverserX) ? '-' : ''}positionJoystick(${numero(e.axe === 'y' ? J.y : J.broche)})` : '0';
+        case 'joystick_direction':
+          return J ? directionC(e.direction) : 'false';
+        case 'joystick_bouton':
+          return J ? `(digitalRead(${numero(J.bouton)}) == LOW)` : 'false';
         default:
           return '0';
       }
     }
+
+    // « le joystick est poussé vers … » : au-delà de la moitié de la course (comme dans Labo Blocs).
+    function directionC(direction) {
+      const p = (axe) => expression({ bloc: 'joystick_position', axe });
+      const s = K().SEUIL_JOYSTICK;
+      return {
+        haut: `(${p('y')} > ${s})`,
+        bas: `(${p('y')} < -${s})`,
+        gauche: `(${p('x')} < -${s})`,
+        droite: `(${p('x')} > ${s})`,
+      }[direction] || `(abs(${p('x')}) <= ${s} && abs(${p('y')}) <= ${s})`;
+    }
+    const evenementsJoystick = J ? v1.fils.filter((f) => f.quand === 'joystick') : [];
 
     let profondeur = 0; // compteurs des boucles « répéter n fois » : i, j, k…
     // Commentaire d'un bloc (écrit par l'élève ou le professeur) : une ligne « // … » par ligne du commentaire.
@@ -200,6 +224,22 @@
       ajouter('}');
       ajouter('');
     });
+    if (J && joystickUtilise) {
+      ajouter('// Position du joystick : de -100 à 100, 0 au centre.');
+      ajouter('int positionJoystick(int broche) {');
+      ajouter('  return round((analogRead(broche) - 512) * 100.0 / 512);');
+      ajouter('}');
+      ajouter('');
+    }
+    evenementsJoystick.forEach((f, k) => {
+      ajouter(`// Quand le joystick est ${f.direction === 'centre' ? 'au centre' : 'poussé ' + K().DIRECTIONS_JOYSTICK.find((d) => d[1] === f.direction)[0]}.`);
+      ajouter(`bool avantJoystick${k + 1} = false;`);
+      ajouter(`void quandJoystick${k + 1}() {`);
+      commentaire(f, '  ');
+      instructions(f.corps, 2);
+      ajouter('}');
+      ajouter('');
+    });
     ajouter('void setup() {');
     for (const n of trier(leds)) {
       ajouter(`  pinMode(${n}, OUTPUT);`);
@@ -207,6 +247,8 @@
     }
     for (const n of trier(boutons)) ajouter(`  pinMode(${n}, ${versMasse ? 'INPUT_PULLUP' : 'INPUT'});`);
     for (const n of trier(sons)) ajouter(`  pinMode(${n}, OUTPUT);`);
+    // Bouton du joystick : il relie la broche à la masse quand on enfonce le manche.
+    if (J && joystickUtilise) ajouter(`  pinMode(${numero(J.bouton)}, INPUT_PULLUP);`);
     if (hasard) ajouter('  randomSeed(analogRead(A5));');
     // Angle de départ : le premier angle fixe donné dans « Au démarrage », réglé AVANT d'activer le servo
     // (sinon le bras saute d'abord à 0°) ; 0° sinon, comme le simulateur.
@@ -226,6 +268,12 @@
       ajouter(`  if (bouton(${n}) != avant${k + 1}) {`);
       ajouter(`    avant${k + 1} = bouton(${n});`);
       ajouter(`    if (avant${k + 1} == ${f.quand === 'appui' ? 'HIGH' : 'LOW'}) quand${k + 1}();`);
+      ajouter('  }');
+    });
+    evenementsJoystick.forEach((f, k) => {
+      ajouter(`  if (${directionC(f.direction)} != avantJoystick${k + 1}) {`);
+      ajouter(`    avantJoystick${k + 1} = !avantJoystick${k + 1};`);
+      ajouter(`    if (avantJoystick${k + 1}) quandJoystick${k + 1}();`);
       ajouter('  }');
     });
     commentaire(fil('boucle'), '  ');

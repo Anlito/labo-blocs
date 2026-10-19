@@ -506,16 +506,33 @@
         etat.editeur.changerPalette(e.blocsAutorises);
         modifie();
       } else if (t.matches('.champ-type-composant')) {
-        const c = e.composants[Number(t.dataset.k)];
-        c.type = t.value;
-        const broches = brochesDe(c.type);
-        if (!broches.includes(c.broche)) changerBroche(Number(t.dataset.k), broches[0]);
+        const k = Number(t.dataset.k);
+        const c = e.composants[k];
+        if (t.value === 'joystick' || c.type === 'joystick') {
+          // Le joystick a trois broches : il repart de ses broches habituelles (et un composant qui le remplace,
+          // de la première broche libre).
+          if (t.value === 'joystick') e.composants[k] = Object.assign({ nom: c.nom }, A.nouveauJoystick(carteDuParcours()));
+          else e.composants[k] = { type: t.value, broche: premiereLibre(t.value, k) };
+          if (!e.composants[k].nom) delete e.composants[k].nom;
+        } else {
+          c.type = t.value;
+          const broches = brochesDe(c.type);
+          if (!broches.includes(c.broche)) changerBroche(k, broches[0]);
+        }
         modifie();
         dessinerComposants();
         dessinerScenarios();
         dessinerApercu();
       } else if (t.matches('.champ-broche-composant')) {
         changerBroche(Number(t.dataset.k), t.value);
+      } else if (t.matches('.champ-broche-joystick')) {
+        changerBrocheJoystick(Number(t.dataset.k), t.dataset.champ, t.value);
+      } else if (t.matches('.champ-inverser-joystick')) {
+        const c = e.composants[Number(t.dataset.k)];
+        if (t.checked) c[t.dataset.champ] = true;
+        else delete c[t.dataset.champ];
+        modifie();
+        dessinerApercu();
       }
     };
     zone.onclick = (evt) => {
@@ -523,9 +540,8 @@
       if (!t) return;
       const e = ex();
       if (t.matches('.btn-ajouter-composant')) {
-        const prises = new Set(e.composants.map((c) => c.broche));
-        const broche = (brochesDe(typesComposants()[0].type).find((b) => !prises.has(b)) || brochesDe(typesComposants()[0].type)[0]);
-        e.composants.push({ type: typesComposants()[0].type, broche });
+        const type = typesComposants()[0].type;
+        e.composants.push(type === 'joystick' ? A.nouveauJoystick(carteDuParcours()) : { type, broche: premiereLibre(type) });
         modifie();
         dessinerComposants();
         dessinerApercu();
@@ -551,6 +567,51 @@
   const brochesDe = (type) => A.brochesDe(carteDuParcours(), type) || [];
   const typesComposants = () => A.TYPES_COMPOSANTS.filter((t) => A.profil(carteDuParcours()).composants.includes(t.type));
 
+  // Broches prises par les composants de l'exercice (le joystick en prend trois), sauf le composant « sauf ».
+  const brochesPrises = (e, sauf) =>
+    new Set(e.composants.flatMap((c, j) => (j === sauf ? [] : c.type === 'joystick' ? [c.broche, c.y, c.bouton] : [c.broche])));
+  const premiereLibre = (type, sauf) => {
+    const prises = brochesPrises(ex(), sauf);
+    return brochesDe(type).find((b) => !prises.has(b)) || brochesDe(type)[0];
+  };
+  const selectBroches = (classe, k, champ, broches, choisie) =>
+    `<select class="${classe}" data-k="${k}" data-champ="${champ}">${broches.map((b) => `<option${b === choisie ? ' selected' : ''}>${b}</option>`).join('')}</select>`;
+
+  // Joystick : X et Y sur des entrées analogiques, le bouton (SW) sur une broche numérique, vers la masse.
+  function ligneJoystick(c, k) {
+    const analogiques = brochesDe('joystick');
+    const numeriques = brochesDe('bouton').length ? brochesDe('bouton') : analogiques;
+    const caseInverser = (champ, texte) =>
+      `<label class="ed-case"><input type="checkbox" class="champ-inverser-joystick" data-k="${k}" data-champ="${champ}"${c[champ] ? ' checked' : ''}> ${texte}</label>`;
+    return (
+      `<label>X${selectBroches('champ-broche-joystick', k, 'broche', analogiques, c.broche)}</label>` +
+      `<label>Y${selectBroches('champ-broche-joystick', k, 'y', analogiques, c.y)}</label>` +
+      `<label>Bouton${selectBroches('champ-broche-joystick', k, 'bouton', numeriques, c.bouton)}</label>` +
+      caseInverser('inverserY', 'Inverser haut / bas') +
+      caseInverser('inverserX', 'Inverser gauche / droite')
+    );
+  }
+
+  // Une broche du joystick changée. Le bouton peut servir dans les scénarios (« Appuyer sur le bouton D2 ») : ils suivent.
+  function changerBrocheJoystick(k, champ, nouvelle) {
+    const e = ex();
+    const c = e.composants[k];
+    const ancienne = c[champ];
+    if (ancienne === nouvelle) return;
+    const autres = ['broche', 'y', 'bouton'].filter((x) => x !== champ).map((x) => c[x]);
+    if (brochesPrises(e, k).has(nouvelle) || autres.includes(nouvelle)) {
+      message(`La broche ${nouvelle} est déjà prise par un autre composant de l’exercice.`);
+      return dessinerComposants();
+    }
+    c[champ] = nouvelle;
+    if (champ === 'bouton') A.changerBroche(e, ancienne, nouvelle);
+    modifie();
+    dessinerComposants();
+    chargerSolution();
+    dessinerScenarios();
+    dessinerApercu();
+  }
+
   function dessinerComposants() {
     const e = ex();
     e.composants = e.composants || [];
@@ -563,14 +624,16 @@
               `<div class="ed-composant">` +
               `<label>Sorte<select class="champ-type-composant" data-k="${k}">${typesComposants().map((t) => `<option value="${t.type}"${t.type === c.type ? ' selected' : ''}>${t.nom}</option>`).join('')}</select></label>` +
               `<label>Nom (facultatif)<input class="champ-nom-composant" data-k="${k}" value="${echapper(c.nom || '')}" placeholder="ex. Trappe" maxlength="20"></label>` +
-              `<label>Broche<select class="champ-broche-composant" data-k="${k}">${broches.map((b) => `<option${b === c.broche ? ' selected' : ''}>${b}</option>`).join('')}</select></label>` +
+              (c.type === 'joystick'
+                ? ligneJoystick(c, k)
+                : `<label>Broche<select class="champ-broche-composant" data-k="${k}">${broches.map((b) => `<option${b === c.broche ? ' selected' : ''}>${b}</option>`).join('')}</select></label>`) +
               `<button type="button" class="btn-aide btn-retirer-composant" data-k="${k}" aria-label="Retirer ce composant" title="Retirer ce composant">${A.icone('corbeille', { epaisseur: 2.4 })}</button>` +
               '</div>'
             );
           })
           .join('')
       : typesComposants().length
-        ? '<p class="ed-aide">Aucun composant : ajoute ceux que l’élève branche (LED, bouton, servomoteur…).</p>'
+        ? `<p class="ed-aide">Aucun composant : ajoute ceux que l’élève branche (${echapper(typesComposants().map((t) => t.nom).join(', '))}).</p>`
         : `<p class="ed-aide">Rien à brancher sur ${echapper(A.profil(carteDuParcours()).nom)} : ses moteurs, capteurs et LED sont dans les blocs (ultrasons sur le port ${A.profil(carteDuParcours()).ports.ultrasons}, suiveur de ligne sur le port ${A.profil(carteDuParcours()).ports.ligne}).</p>`;
     const ajouter = $('.btn-ajouter-composant');
     if (ajouter) ajouter.hidden = !typesComposants().length;
@@ -580,7 +643,7 @@
     const e = ex();
     const ancienne = e.composants[k].broche;
     if (ancienne === nouvelle) return;
-    if (e.composants.some((c, j) => j !== k && c.broche === nouvelle)) {
+    if (brochesPrises(e, k).has(nouvelle)) {
       message(`La broche ${nouvelle} est déjà prise par un autre composant de l’exercice.`);
       return dessinerComposants();
     }
@@ -685,14 +748,15 @@
   // ----- Scénarios de test -----
 
   // Composants branchés + ce qui est sur la carte (boutons A et B, logo, moteurs du mBot).
-  const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()), A.composantsClavier(e));
+  const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()), A.composantsClavier(e), A.composantsJoystick(e.composants));
   function sorties(e) {
-    return tousComposants(e).filter((c) => c.type !== 'bouton');
+    return tousComposants(e).filter((c) => c.type !== 'bouton' && c.type !== 'joystick');
   }
   function boutons(e) {
     return tousComposants(e).filter((c) => c.type === 'bouton');
   }
   function nomCourt(c) {
+    if (c.joystick) return `bouton du joystick ${c.broche}`;
     if (c.integre) return c.libelle.replace(/^(le|la|les) /, '') + ' (sur la carte)';
     const t = { led: 'LED', bouton: 'bouton', servo: 'servomoteur', buzzer: 'buzzer' }[c.type] || c.type;
     return `${t}${c.nom ? ' ' + c.nom : ''} ${c.broche}`;

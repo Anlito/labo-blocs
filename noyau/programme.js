@@ -6,7 +6,8 @@
 //   { format: 'labo-blocs/programme', version: 1,
 //     fils: [ { quand: 'demarrage' | 'boucle' | 'appui' | 'relache', broche?, corps: [instruction…] }
 //             { quand: 'camera', etiquette: n° (0 = rien), front: 'voit' | 'plus', corps }  (caméra : jalon 6)
-//             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps } ],
+//             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps }
+//             { quand: 'joystick', direction: 'haut' | 'bas' | 'gauche' | 'droite' | 'centre', corps } ],
 //     notes?: [ { texte, x, y, largeur?, hauteur? } ] }  (clavier ; notes : commentaires posés dans l'espace des blocs)
 // Tout bloc (instruction, expression, fil) peut porter « commentaire » : le texte de son commentaire Blockly.
 // Instructions : led_etat, attendre, servo_angle, affecter, ajouter_a, si_alors, si_sinon, repeter_n, tant_que,
@@ -136,6 +137,12 @@
           return Object.assign(e, { bloc: 'non', a: expression(entree(bloc, 'A'), bloc) });
         case 'hasard':
           return Object.assign(e, { bloc: 'hasard', min: expression(entree(bloc, 'MIN'), bloc), max: expression(entree(bloc, 'MAX'), bloc) });
+        case 'joystick_position':
+          return Object.assign(e, { bloc: 'joystick_position', axe: champ(bloc, 'AXE') === 'y' ? 'y' : 'x' });
+        case 'joystick_direction':
+          return Object.assign(e, { bloc: 'joystick_direction', direction: champ(bloc, 'DIRECTION') || 'haut' });
+        case 'joystick_bouton':
+          return Object.assign(e, { bloc: 'joystick_bouton' });
         default:
           return blocCarte(bloc, e, ['valeur', 'condition']);
       }
@@ -192,6 +199,8 @@
         fils.push({ quand: 'boucle', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_bouton') {
         fils.push({ quand: champ(b, 'FRONT') === 'relache' ? 'relache' : 'appui', broche: champ(b, 'BROCHE'), id: b.id, corps: pile(entree(b, 'DO')) });
+      } else if (b.type === 'quand_joystick') {
+        fils.push({ quand: 'joystick', direction: champ(b, 'DIRECTION') || 'haut', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_touche') {
         fils.push({ quand: 'touche', touche: champ(b, 'TOUCHE') || 'espace', front: champ(b, 'FRONT') === 'relache' ? 'relache' : 'appui', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_camera') {
@@ -259,6 +268,12 @@
           entreeValeur(bloc, 'A', e.a);
           return bloc;
         }
+        case 'joystick_position':
+          return { type: 'joystick_position', id, fields: { AXE: e.axe === 'y' ? 'y' : 'x' } };
+        case 'joystick_direction':
+          return { type: 'joystick_direction', id, fields: { DIRECTION: e.direction || 'haut' } };
+        case 'joystick_bouton':
+          return { type: 'joystick_bouton', id };
         case 'hasard': {
           const bloc = { type: 'hasard', id, inputs: {} };
           entreeNombre(bloc, 'MIN', e.min);
@@ -370,10 +385,12 @@
     let y = 24;
     const trouver = (q) => v1.fils.find((f) => f.quand === q);
     // « Au démarrage » et « Répéter indéfiniment » sont toujours là (on ne peut pas les supprimer).
-    const ordre = [trouver('demarrage') || { quand: 'demarrage', corps: [] }, trouver('boucle') || { quand: 'boucle', corps: [] }, ...v1.fils.filter((f) => f.quand === 'appui' || f.quand === 'relache' || f.quand === 'camera' || f.quand === 'touche')];
+    const ordre = [trouver('demarrage') || { quand: 'demarrage', corps: [] }, trouver('boucle') || { quand: 'boucle', corps: [] }, ...v1.fils.filter((f) => f.quand === 'appui' || f.quand === 'relache' || f.quand === 'camera' || f.quand === 'touche' || f.quand === 'joystick')];
     for (const f of ordre) {
       const evenement = f.quand === 'appui' || f.quand === 'relache';
-      const b = f.quand === 'touche'
+      const b = f.quand === 'joystick'
+        ? { type: 'quand_joystick', id: f.id || nouvelId(), x: 24, y, fields: { DIRECTION: f.direction || 'haut' } }
+        : f.quand === 'touche'
         ? { type: 'quand_touche', id: f.id || nouvelId(), x: 24, y, fields: { TOUCHE: f.touche || 'espace', FRONT: f.front === 'relache' ? 'relache' : 'appui' } }
         : f.quand === 'camera'
         ? { type: 'quand_camera', id: f.id || nouvelId(), x: 24, y, fields: { ETIQUETTE: String(f.etiquette || 0), FRONT: f.front === 'plus' ? 'plus' : 'voit' } }
@@ -425,7 +442,7 @@
       if (!x || typeof x !== 'object') return;
       if (Array.isArray(x)) return x.forEach(voir);
       if (x.bloc) types.push(x.bloc);
-      if (x.quand) types.push(x.quand === 'appui' || x.quand === 'relache' ? 'quand_bouton' : x.quand === 'camera' ? 'quand_camera' : x.quand === 'touche' ? 'quand_touche' : x.quand);
+      if (x.quand) types.push(x.quand === 'appui' || x.quand === 'relache' ? 'quand_bouton' : x.quand === 'camera' ? 'quand_camera' : x.quand === 'touche' ? 'quand_touche' : x.quand === 'joystick' ? 'quand_joystick' : x.quand);
       for (const v of Object.values(x)) if (v && typeof v === 'object') voir(v);
     };
     voir(versV1(programme).fils);
@@ -437,8 +454,10 @@
   // Une broche employée pour deux sortes de composants est un conflit : les deux composants restent (l'élève les voit
   // dans le simulateur), marqués « conflit », et le conflit est signalé.
   const SORTE_DU_BLOC = { led_etat: 'led', servo_angle: 'servo', son: 'buzzer', bouton_etat: 'bouton' };
-  function composantsDuProgramme(programme) {
+  // carte : celle de l'exercice (le joystick se branche sur A0, A1, D2 sur l'Uno ; P0, P1, P2 sur la micro:bit).
+  function composantsDuProgramme(programme, carte) {
     const composants = [];
+    let joystick = false;
     const voir = (type, broche) => {
       if (!broche || composants.some((c) => c.type === type && c.broche === broche)) return;
       composants.push({ type, broche });
@@ -448,8 +467,10 @@
       if (!x || typeof x !== 'object') return;
       if (x.quand === 'appui' || x.quand === 'relache') voir('bouton', x.broche);
       if (SORTE_DU_BLOC[x.bloc]) voir(SORTE_DU_BLOC[x.bloc], x.broche);
+      if (x.quand === 'joystick' || CARTES().BLOCS_JOYSTICK.includes(x.bloc)) joystick = true;
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
     })(programme ? versV1(programme).fils : []);
+    if (joystick) composants.push(CARTES().nouveauJoystick(carte));
     const conflits = [];
     for (const c of composants) {
       const memes = composants.filter((x) => x.broche === c.broche);

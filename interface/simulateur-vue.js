@@ -11,7 +11,7 @@
   const XS = { GND: 144.5, D13: 154.5, D12: 164, D11: 174, D10: 183.5, D9: 193.5, D8: 203, D7: 219.5, D6: 229, D5: 239, D4: 248.5, D3: 258.5, D2: 268 };
   const PY = 57;
   const FILS = { D3: '#D32F2F', D4: '#1976D2', D5: '#F9A825', D6: '#7B1FA2', D8: '#2E7D32', D9: '#00838F', D10: '#455A64', D7: '#6D4C41', D11: '#AD1457', GND: '#7B4A2A' };
-  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41' };
+  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41', joystick: '#00838F' };
   const COULEURS_LED = { PetiteDose: '#F5B800', GrandeDose: '#2F80ED', Trappe: '#E53935' };
 
   const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -23,7 +23,7 @@
     return c.couleur || COULEURS_LED[c.nom] || '#E53935';
   }
   function libelle(c) {
-    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer' }[c.type] || c.type;
+    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick' }[c.type] || c.type;
     return c.nom ? `${type} ${c.nom}` : type;
   }
 
@@ -39,7 +39,8 @@
       trous += `<text x="${x}" y="74" class="carte-etiquette" text-anchor="middle">${etiquettes[i]}</text>`;
     });
     // Fils : de chaque broche utilisée vers le haut, le long du bord droit, puis vers les cartes.
-    const utilises = [{ broche: 'GND' }].concat(composants).filter((c) => XS[c.broche] !== undefined);
+    // Le joystick : seul son bouton (SW) est sur la rangée DIGITAL ; ses axes vont aux entrées analogiques.
+    const utilises = [{ broche: 'GND' }].concat(composants.map((c) => (c.type === 'joystick' ? { broche: c.bouton } : c))).filter((c) => XS[c.broche] !== undefined);
     const vus = new Set();
     const fils = utilises
       .filter((c) => (vus.has(c.broche) ? false : vus.add(c.broche)))
@@ -159,9 +160,37 @@
     );
   }
 
+  // Joystick : le manche (à tirer à la souris, au doigt ou aux flèches) et son bouton (SW, en appuyant dessus).
+  function dessinJoystick() {
+    return (
+      '<svg viewBox="0 0 48 48" aria-hidden="true">' +
+      '<rect x="3" y="3" width="42" height="42" rx="8" fill="#3B4A52"/>' +
+      '<circle cx="24" cy="24" r="17" fill="#26323A" stroke="#7C8B94" stroke-width="1.5"/>' +
+      '<path d="M24 9v30M9 24h30" stroke="#4F5D66" stroke-width="1.2"/>' +
+      '<circle class="joystick-manche" cx="24" cy="24" r="8" fill="#00838F" stroke="#FFFFFF" stroke-width="2"/>' +
+      '</svg>'
+    );
+  }
+
   function carteComposant(c, compact) {
     const fam = FAMILLES[c.type];
     let dessin;
+    if (c.type === 'joystick') {
+      const nom = echapper(libelle(c));
+      return (
+        `<div class="composant composant-joystick${compact ? ' compact' : ''}" data-broche="${c.broche}" data-type="joystick" style="--famille:${fam}">` +
+        `<div class="composant-dessin joystick-plateau" tabindex="0" role="slider" aria-valuemin="-100" aria-valuemax="100" aria-valuenow="0" ` +
+        `aria-label="${nom} : tire le manche (ou flèches du clavier)">${dessinJoystick()}</div>` +
+        `<button type="button" class="composant-dessin bouton-poussoir" aria-pressed="false" ` +
+        `aria-label="Bouton du joystick ${c.bouton} : maintenir pour appuyer">${dessinBouton()}</button>` +
+        '<div class="composant-texte">' +
+        `<div class="composant-nom"><span class="composant-fil" style="background:${couleurFil(c.bouton)}"></span>` +
+        `<span>${nom} · X ${c.broche} · Y ${c.y} · bouton ${c.bouton}</span></div>` +
+        `<div class="composant-etat"><span class="pastille-etat" aria-live="polite"></span>` +
+        (compact ? '' : '<span class="composant-aide">Tire le manche ; maintiens le bouton pour appuyer</span>') +
+        '</div></div></div>'
+      );
+    }
     if (c.type === 'led') dessin = `<div class="composant-dessin">${dessinLed(couleurLed(c))}</div>`;
     else if (c.type === 'bouton')
       dessin =
@@ -455,6 +484,69 @@
     el.addEventListener('blur', lacher);
   }
 
+  // Position (-100 à 100) d'un axe lu sur sa broche (0 à 1023), comme le bloc « position du joystick ».
+  function positionAffichee(brut, inverse) {
+    const p = Math.round(((Number(brut) - 512) * 100) / 512);
+    return Math.max(-100, Math.min(100, inverse ? -p : p));
+  }
+  // Valeur brute d'une position (-100 à 100) : le contraire.
+  const brutDe = (position, inverse) => Math.max(0, Math.min(1023, Math.round(512 + (inverse ? -position : position) * 5.11)));
+
+  // Manche du joystick : tiré à la souris ou au doigt (lâché, il revient au centre, comme un vrai), ou aux flèches.
+  function manche(el, c, rappels) {
+    let tenu = false;
+    let clavier = { x: 0, y: 0 };
+    const regler = (x, y) => rappels.reglerJoystick && rappels.reglerJoystick(brutDe(x, c.inverserX), brutDe(y, c.inverserY));
+    const suivre = (e) => {
+      const r = el.getBoundingClientRect();
+      const borne = (v) => Math.max(-100, Math.min(100, Math.round(v)));
+      // Le cercle du plateau fait 34/48 de la case : son bord = 100.
+      const rayon = (r.width * 17) / 48;
+      regler(borne(((e.clientX - r.left - r.width / 2) / rayon) * 100), borne((-(e.clientY - r.top - r.height / 2) / rayon) * 100));
+    };
+    const lacher = () => {
+      if (!tenu) return;
+      tenu = false;
+      regler(0, 0);
+    };
+    el.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+      el.focus();
+      el.setPointerCapture(e.pointerId);
+      tenu = true;
+      suivre(e);
+    });
+    el.addEventListener('pointermove', (e) => tenu && suivre(e));
+    el.addEventListener('pointerup', lacher);
+    el.addEventListener('pointercancel', lacher);
+    el.addEventListener('lostpointercapture', lacher);
+    // Flèches : le manche est poussé à fond tant que la flèche est tenue (sans gêner les blocs « quand la touche »,
+    // qui écoutent le clavier seulement quand le plateau n'a pas le focus).
+    const FLECHES = { ArrowUp: ['y', 100], ArrowDown: ['y', -100], ArrowLeft: ['x', -100], ArrowRight: ['x', 100] };
+    el.addEventListener('keydown', (e) => {
+      const f = FLECHES[e.key];
+      if (!f) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.repeat) return;
+      clavier = Object.assign({}, clavier, { [f[0]]: f[1] });
+      regler(clavier.x, clavier.y);
+    });
+    el.addEventListener('keyup', (e) => {
+      const f = FLECHES[e.key];
+      if (!f) return;
+      e.preventDefault();
+      e.stopPropagation();
+      clavier = Object.assign({}, clavier, { [f[0]]: 0 });
+      regler(clavier.x, clavier.y);
+    });
+    el.addEventListener('blur', () => {
+      if (clavier.x || clavier.y) regler(0, 0);
+      clavier = { x: 0, y: 0 };
+    });
+  }
+
   function creerVue(racine, exercice, rappels) {
     const composants = exercice.composants || [];
     const compact = composants.length > 4;
@@ -491,7 +583,11 @@
         el.classList.remove('survol');
       });
       const b = el.querySelector('.bouton-poussoir');
-      if (b) poussoir(b, (valeur) => rappels.appuyerBouton(broche, valeur));
+      const c = composants[k];
+      if (b && c && c.type === 'joystick') {
+        poussoir(b, (valeur) => rappels.appuyerBouton(c.bouton, valeur));
+        manche(el.querySelector('.joystick-plateau'), c, rappels);
+      } else if (b) poussoir(b, (valeur) => rappels.appuyerBouton(broche, valeur));
     }
 
     const memoire = [];
@@ -512,6 +608,16 @@
         } else if (c.type === 'buzzer') {
           el.classList.toggle('actif', !!valeur);
           pastille.textContent = valeur ? `♪ ${Math.round(valeur)} Hz` : 'Silence';
+        } else if (c.type === 'joystick') {
+          // « x,y,bouton » : valeurs brutes (0 à 1023) des deux axes, bouton 0/1.
+          const [bx, by, bouton] = String(valeur || '512,512,0').split(',').map(Number);
+          const x = positionAffichee(bx, c.inverserX);
+          const y = positionAffichee(by, c.inverserY);
+          el.querySelector('.joystick-manche').setAttribute('transform', `translate(${(x * 0.09).toFixed(1)} ${(-y * 0.09).toFixed(1)})`);
+          el.querySelector('.joystick-plateau').setAttribute('aria-valuetext', `X ${x}, Y ${y}`);
+          el.querySelector('.bouton-poussoir').setAttribute('aria-pressed', bouton ? 'true' : 'false');
+          el.classList.toggle('actif', !!bouton);
+          pastille.textContent = `X : ${x} · Y : ${y} · bouton ${bouton ? 'appuyé' : 'relâché'}`;
         } else if (c.type === 'servo') {
           el.querySelector('.servo-bras').style.transform = `rotate(${-valeur}deg)`;
           pastille.textContent = Math.round(valeur) + '°';

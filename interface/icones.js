@@ -27,6 +27,7 @@
     camera: 'M3 8h3l2-3h8l2 3h3v11H3zM12 10a3.5 3.5 0 1 0 0.01 0z',
     clavier: 'M2 6h20v12H2zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
     commentaire: 'M4 5h16v11H9l-5 4zM8 9h8M8 12h5',
+    joystick: 'M5 21h14v-4H5zM12 17V10M12 4a3 3 0 1 0 0.01 0z',
     suivant: 'M9 5l7 7-7 7',
     // Catégories de blocs
     lumiere: 'M8 15V10a4 4 0 0 1 8 0v5zM6 15h12M10 15v5M14 15v4',

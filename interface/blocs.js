@@ -6,6 +6,9 @@
 
   const A = global.LaboBlocs;
 
+  // Directions du joystick dans les menus (« le joystick est poussé vers le haut », « … est au centre »).
+  const DIRECTIONS_JOYSTICK = [['poussé vers le haut', 'haut'], ['poussé vers le bas', 'bas'], ['poussé vers la gauche', 'gauche'], ['poussé vers la droite', 'droite'], ['au centre', 'centre']];
+
   // Familles de blocs : couleur pastel soutenu en aplat, texte foncé (maquette 3b).
   const COULEURS = {
     debut: '#86C595',
@@ -90,6 +93,38 @@
       output: 'Boolean',
       style: 'valeur',
       tooltip: 'Donne HAUT (1) si le bouton est appuyé, BAS (0) sinon.',
+    },
+    // Joystick (composant de l'exercice : ses broches X, Y et bouton sont dans « Composants »).
+    {
+      type: 'joystick_position',
+      message0: '%1 position du joystick sur %2',
+      args0: [image('joystick', 'Joystick'), { type: 'field_dropdown', name: 'AXE', options: [['X (gauche – droite)', 'x'], ['Y (bas – haut)', 'y']] }],
+      output: 'Number',
+      style: 'valeur',
+      tooltip: 'De -100 (tout à gauche, tout en bas) à 100 (tout à droite, tout en haut) ; 0 au centre.',
+    },
+    {
+      type: 'joystick_direction',
+      message0: '%1 le joystick est %2',
+      args0: [image('joystick', 'Joystick'), { type: 'field_dropdown', name: 'DIRECTION', options: DIRECTIONS_JOYSTICK }],
+      output: 'Boolean',
+      style: 'valeur',
+      tooltip: 'Vrai quand le joystick est poussé dans cette direction (au-delà de la moitié de sa course).',
+    },
+    {
+      type: 'joystick_bouton',
+      message0: '%1 le bouton du joystick est appuyé',
+      args0: [image('joystick', 'Joystick')],
+      output: 'Boolean',
+      style: 'valeur',
+      tooltip: 'Vrai quand on enfonce le manche du joystick.',
+    },
+    {
+      type: 'quand_joystick',
+      message0: '%1 quand le joystick est %2 %3 %4',
+      args0: [image('joystick', 'Joystick'), { type: 'field_dropdown', name: 'DIRECTION', options: DIRECTIONS_JOYSTICK }, { type: 'input_dummy' }, { type: 'input_statement', name: 'DO' }],
+      style: 'debut',
+      tooltip: 'Les blocs placés ici s’exécutent une fois chaque fois que le joystick arrive dans cette direction, en même temps que « Répéter indéfiniment ».',
     },
     {
       type: 'valeur_haut_bas',
@@ -358,6 +393,7 @@
     { nom: 'Son', cle: 'son', couleur: COULEURS.lumiere, blocs: ['son'] },
     { nom: 'Temps', cle: 'temps', couleur: COULEURS.bleu, blocs: ['attendre'] },
     { nom: 'Bouton', cle: 'bouton', couleur: COULEURS.bleu, blocs: ['bouton_etat', 'valeur_haut_bas'] },
+    { nom: 'Joystick', cle: 'joystick', couleur: COULEURS.bleu, blocs: ['quand_joystick', 'joystick_direction', 'joystick_position', 'joystick_bouton'] },
     { nom: 'Moteur', cle: 'moteur', couleur: COULEURS.servo, blocs: ['servo_angle'] },
     { nom: 'Décisions', cle: 'decisions', couleur: COULEURS.decision, blocs: ['si_alors', 'si_sinon', 'comparaison', 'logique', 'non'] },
     { nom: 'Boucles', cle: 'boucles', couleur: COULEURS.decision, blocs: ['repeter_n', 'tant_que', 'repeter_jusqua'] },
@@ -696,6 +732,10 @@
     quand_bouton: 'quand le bouton est appuyé',
     quand_camera: 'quand la caméra reconnaît…',
     quand_touche: 'quand la touche … est appuyée',
+    quand_joystick: 'quand le joystick est poussé vers …',
+    joystick_direction: 'le joystick est poussé vers …',
+    joystick_position: 'position du joystick (X ou Y)',
+    joystick_bouton: 'le bouton du joystick est appuyé',
     led_etat: 'contrôler la LED',
     son: 'jouer une note',
     attendre: 'attendre … seconde(s)',
