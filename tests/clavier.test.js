@@ -111,3 +111,31 @@ test('code Arduino : le clavier est signalé (mode « En direct » seulement)', 
   const code = versArduino({ format: 'labo-blocs/programme', version: 1, fils: [{ quand: 'demarrage', corps: [] }, { quand: 'boucle', corps: [{ bloc: 'si_alors', condition: { bloc: 'touche_appuyee', touche: 'a' }, alors: [{ bloc: 'led_etat', broche: 'D9', etat: 1 }] }] }] }, { composants: [{ type: 'led', broche: 'D9' }] }).code;
   assert.match(code, /clavier est celui de l’ordinateur/);
 });
+
+test('les 4 flèches, appuyées et relâchées (8 blocs « quand la touche ») : le programme tourne dans l’ordinateur', () => {
+  // Programme de Thomas (19/10/2026) : refusé avant (6 blocs « quand… » au plus, la limite de la carte), sans message.
+  const ev = (touche, front, bloc) => ({ quand: 'touche', touche, front, corps: [bloc] });
+  const roule = (direction) => ({ bloc: 'mbot_deplacer', direction, vitesse: 50 });
+  const stop = { bloc: 'mbot_arreter' };
+  const p = {
+    format: 'labo-blocs/programme',
+    version: 1,
+    fils: [{ quand: 'demarrage', corps: [] }, { quand: 'boucle', corps: [] }].concat(
+      ...[['haut', 'avancer'], ['bas', 'reculer'], ['gauche', 'gauche'], ['droite', 'droite']].map(([t, d]) => [ev(t, 'appui', roule(d)), ev(t, 'relache', stop)]),
+    ),
+  };
+  assert.deepEqual(compiler(p).erreurs, []);
+  const sim = creerSimulation(p, { carte: 'mbot' });
+  sim.avancerJusqua(100);
+  for (const [t, gauche] of [['haut', 50], ['bas', -50], ['gauche', -50], ['droite', 50]]) {
+    sim.changerEntree('touche:' + t, 1);
+    sim.avancerJusqua(sim.t + 200);
+    assert.equal(sim.sorties['moteur gauche'], gauche, t);
+    sim.changerEntree('touche:' + t, 0);
+    sim.avancerJusqua(sim.t + 200);
+    assert.equal(sim.sorties['moteur gauche'], 0, t + ' relâchée');
+  }
+  // Un programme qui va dans la carte garde la limite de la carte (6 fils).
+  const boutons = { format: 'labo-blocs/programme', version: 1, fils: [{ quand: 'demarrage', corps: [] }, { quand: 'boucle', corps: [] }].concat(['D2', 'D3', 'D4', 'D5', 'D6'].map((b) => ({ quand: 'appui', broche: b, corps: [] }))) };
+  assert.match(compiler(boutons).erreurs.join(), /Trop de blocs « quand… » : 6 au plus/);
+});

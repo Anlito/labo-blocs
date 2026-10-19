@@ -477,4 +477,9 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      de bouton), jamais dans un champ de texte ni avec Ctrl / Alt ; touches lâchées si la fenêtre perd la main ; ligne
      « touche appuyée : … » sous le simulateur. « Dans la carte » refuse un programme qui utilise le clavier.
    - Exercice d'exemple `mbot-05` « Télécommande au clavier » (simulateur et direct), Découverte du mBot 1.4.0.
+37. **Clavier : 16 blocs « quand… » (19/10/2026)**, retour de Thomas (les 4 flèches appuyées et relâchées, soit 8 blocs
+   « quand la touche », ne marchaient pas) : la carte garde 6 fils au plus, mais un programme avec « quand la
+   touche » ou « quand la caméra » reste dans l'ordinateur, il en a 16 (`noyau/code-octet.js`, `noyau/vm.js`). Un
+   programme qui ne peut pas démarrer le dit sous le simulateur (« Ton programme ne peut pas démarrer : … ») au lieu
+   de ne rien faire.
 

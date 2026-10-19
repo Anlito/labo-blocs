@@ -483,6 +483,7 @@
       const ex = etat.exercice;
       if (vue && vue.capteurs && A.capteursDepart) Object.assign(vue.capteurs, A.capteursDepart(ex.carte));
       const direct = A.creerDirect(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse, carte: ex.carte, capteurs: vue && vue.capteurs });
+      if (refuserProgramme(direct.sim)) return;
       etat.sim = direct.sim;
       touches.clear();
       verifierClavier();
@@ -494,11 +495,21 @@
       const ok = await connexion.demarrerDirect(direct, { surErreur: () => etat.mode === 'direct' && arreter() });
       if (!ok && etat.mode === 'direct') arreter();
     }
+    // Un programme qui ne peut pas tourner (trop de blocs « quand… », bloc inconnu) : on le dit au lieu de ne rien faire.
+    function refuserProgramme(sim) {
+      if (!sim || !sim.erreurs || !sim.erreurs.length) return false;
+      $('.simu-note', ecran).textContent = 'Ton programme ne peut pas démarrer : ' + sim.erreurs[0];
+      return true;
+    }
     function lancer() {
       if (etat.modeTest === 'direct') return lancerDirect();
       if (etat.mode === 'pause') etat.mode = 'marche';
       else if (etat.mode === 'arrete') {
         nouvelleSimulation();
+        if (refuserProgramme(etat.sim)) {
+          etat.sim = null;
+          return;
+        }
         etat.mode = 'marche';
       }
       majCommandes();

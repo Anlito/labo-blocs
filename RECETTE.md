@@ -337,4 +337,5 @@ espace, lettres, chiffres. Comme la caméra, le clavier est dans l'ordinateur : 
 | 23.5 | Même chose avec une Uno (LED D9 : « quand la touche espace est appuyée → allumer ») et une micro:bit | La vraie LED s'allume à l'appui sur espace | |
 | 23.6 | Un exercice libre avec les blocs du clavier, mode « Dans la carte » › « Envoyer mon programme » | Message : « Ton programme utilise le clavier de l'ordinateur… Essaie-le en mode « En direct ». » | |
 | 23.7 | Pendant que le programme tourne, taper dans un champ de texte (ex. renommer une étiquette) | Les touches vont dans le champ, pas au programme | |
+| 23.8 | Les 4 flèches : 8 blocs « quand la touche … » (appuyée → rouler, relâchée → arrêter), En direct | Le robot obéit aux 4 flèches | |
 

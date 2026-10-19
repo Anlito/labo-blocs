@@ -10,7 +10,9 @@
   'use strict';
 
   const FORMAT = 1;
-  const MAX = { fils: 6, pile: 12, appels: 6, variables: 24, listes: 4, elements: 48, broches: 16 };
+  // fils : 6 dans la carte (vm.c) ; 16 ici, pour les programmes qui restent dans l'ordinateur (clavier, caméra :
+  // noyau/code-octet.js garde la limite de 6 pour tous les autres).
+  const MAX = { fils: 16, pile: 12, appels: 6, variables: 24, listes: 4, elements: 48, broches: 16 };
   const TRANCHE = 200;
   const ERREUR = { ok: 0, marque: 1, format: 2, crc: 3, tropGrand: 4, pile: 5, code: 6 };
   const FIL = { demarrage: 0, boucle: 1, appui: 2, relache: 3 };
