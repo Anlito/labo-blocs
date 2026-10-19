@@ -14,7 +14,8 @@ button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
   position: relative; background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.75rem;
   overflow: hidden; min-height: 0;
 }
-.editeur-blockly { position: absolute; inset: 0; }
+/* Zone des blocs isolée : la palette de Blockly (z-index 70) reste sous les bandeaux collés en haut de page */
+.editeur-blockly { position: absolute; inset: 0; z-index: 0; isolation: isolate; }
 .editeur-etiquettes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 20; }
 .etiquette-bloc {
   position: absolute; transform: translateY(-50%);

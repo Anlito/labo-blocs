@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-19/10/2026 13:41:32 · chromium · page ouverte en file:// · 40/40 critères
+19/10/2026 13:50:22 · chromium · page ouverte en file:// · 40/40 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -39,7 +39,7 @@
 | Mise en ligne directe : clé enregistrée dans les Réglages, « Publier » envoie le parcours dans parcours/ du dépôt | ✔ | clé enregistrée (vide refusée) ; « Version 1.5.0 mise en ligne.Le site de Labo Blocs se met à j… » ; envoyé : parcours/decouverte-mbot-1.5.0.labo-parcours.json (version 1.5.0) |
 | Page des élèves : tous les parcours, sans code professeur, chacun ouvre l’accueil de l’équipe | ✔ | 4 parcours (Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit, Découverte de la caméra (IA)) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code |
 | Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe | ✔ | dossier de l’équipe refusé (« choisis celui qui le contient ») ; autre dossier : créer dedans ou rechoisir (plus de « utiliser quand même ») ; dossier du projet : « Ana_Ben/Ana_Ben.json » créé |
-| Caméra et IA : étiquettes de l’exercice, photos (webcam simulée), IA chargée depuis le dossier, solution vérifiée | ✔ | étiquettes Rien, Pouce levé, Main ouverte ; modes simulateur, direct ; solution réussie ; webcam simulée : « L’IA reconnaît : Pouce levé (40 %) » ; réflexion : 3 barres, « L’IA hésite : aucune étiquette n’atteint le seuil. » ; 10 + 10 photos (image de la caméra visible avec la dernière étiquette) ; étiquette créée par l’élève : Loup |
+| Caméra et IA : étiquettes de l’exercice, photos (webcam simulée), IA chargée depuis le dossier, solution vérifiée | ✔ | étiquettes Rien, Pouce levé, Main ouverte ; modes simulateur, direct ; solution réussie ; webcam simulée : « L’IA reconnaît : Pouce levé (60 %) » ; réflexion : 3 barres, « L’IA hésite : aucune étiquette n’atteint le seuil. » ; 10 + 10 photos (image de la caméra visible avec la dernière étiquette) ; étiquette créée par l’élève : Loup |
 | Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié | ✔ | créée par l’élève : « delay » refusé, « ma vitesse » → ma_vitesse (= 7 en simulation) ; donnée par le professeur : score (sans bouton) |
 | Réglages du collège : liste commune publiée depuis la page Réglages ; la page des élèves suit (niveaux du projet, version en ligne) | ✔ | accueil : 6 classes lues, 4 publiées (site/college.js) ; élèves (niveau 5) : 5A, 5B, 5C, 5D, 5E, 5F → version en ligne 5A, 5G ; « Reseau › 5A › TECHNO › DISTRIBUTEUR DE CEREALES › Prénom_Prénom » |
 | Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « Bureau›Classe›4B›COMMUN›TECHNOLOGIE›PONT-LEVIS › Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |
