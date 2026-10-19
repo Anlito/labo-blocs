@@ -394,6 +394,7 @@
     // Exercice libre : pas de composants à déclarer ni de scénarios ; la solution devient un exemple facultatif.
     $('.ed-edition').classList.toggle('ed-libre', !!e.libre);
     $('.ed-titre-solution').textContent = e.libre ? 'Exemple (facultatif)' : 'Solution de référence';
+    montrerOngletBlocs();
   }
 
   function lierFormulaire() {
@@ -598,10 +599,53 @@
 
   // ----- Solution de référence -----
 
+  // Deux onglets au-dessus des blocs : la solution de référence, et le programme de départ (ce que chaque élève trouve
+  // en ouvrant l'exercice : des blocs à compléter, des commentaires pour expliquer). Le même éditeur sert aux deux.
+  const AIDES_BLOCS = {
+    solution: 'Construis-la comme un élève, avec les blocs cochés.',
+    depart: 'Ce que chaque élève trouve en ouvrant l’exercice : des blocs à compléter, des commentaires (bouton « Commentaire » ou clic droit). Vide : l’élève part de zéro.',
+  };
+  function montrerOngletBlocs() {
+    const onglet = etat.ongletBlocs || 'solution';
+    for (const b of document.querySelectorAll('.ed-onglet-blocs')) b.setAttribute('aria-selected', String(b.dataset.onglet === onglet));
+    $('.ed-aide-blocs').textContent = AIDES_BLOCS[onglet];
+    if (onglet === 'solution') majMessageSolution();
+    else $('.ed-message-solution').hidden = true;
+  }
+
+  // Programme de départ : rien (null) s'il n'y a ni bloc, ni commentaire, ni note.
+  function departDepuisProgramme(programme) {
+    const p = A.solutionDepuisProgramme(programme);
+    const v1 = A.versV1(p);
+    const vide = !(v1.notes && v1.notes.length) && v1.fils.every((f) => !(f.corps || []).length && !f.commentaire && (f.quand === 'demarrage' || f.quand === 'boucle'));
+    return vide ? null : p;
+  }
+
   function creerEditeurSolution() {
+    for (const b of document.querySelectorAll('.ed-onglet-blocs')) {
+      b.addEventListener('click', () => {
+        // Ce qui vient d'être écrit (les événements de Blockly partent un instant plus tard) est rangé d'abord.
+        if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+        if (etat.ongletBlocs === 'depart') {
+          const avant = JSON.stringify(ex().blocsDepart);
+          ex().blocsDepart = departDepuisProgramme(etat.editeur.lire().programme);
+          if (JSON.stringify(ex().blocsDepart) !== avant) modifie();
+        }
+        etat.ongletBlocs = b.dataset.onglet;
+        montrerOngletBlocs();
+        chargerSolution();
+      });
+    }
+    $('.ed-commentaire').addEventListener('mousedown', (e) => e.preventDefault()); // le bloc choisi le reste
+    $('.ed-commentaire').addEventListener('click', () => etat.editeur.commenter());
     etat.editeur = A.creerEditeur($('.ed-solution'), {
       modifie() {
         const e = ex();
+        if (etat.ongletBlocs === 'depart') {
+          e.blocsDepart = departDepuisProgramme(etat.editeur.lire().programme);
+          modifie();
+          return;
+        }
         const avant = JSON.stringify(e.solutionReference);
         const { programme } = etat.editeur.lire();
         const composantsAvant = e.libre ? JSON.stringify(A.composantsDuProgramme(e.solutionReference).composants) : '';
@@ -624,7 +668,8 @@
   function chargerSolution() {
     const e = ex();
     // Les paramètres « $nom » prennent leur valeur, comme chez l'élève.
-    const solution = A.appliquerParametres(e.solutionReference || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
+    const blocs = etat.ongletBlocs === 'depart' ? e.blocsDepart : e.solutionReference;
+    const solution = A.appliquerParametres(blocs || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
     A.carteCourante = carteDuParcours();
     A.etiquettesCamera = ['Rien'].concat((e.camera && e.camera.etiquettes) || []);
     etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres }, A.versBlockly(solution));
@@ -634,7 +679,7 @@
   function majMessageSolution() {
     const el = $('.ed-message-solution');
     el.textContent = etat.messageSolution || '';
-    el.hidden = !etat.messageSolution;
+    el.hidden = !etat.messageSolution || etat.ongletBlocs === 'depart';
   }
 
   // ----- Scénarios de test -----

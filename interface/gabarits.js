@@ -94,6 +94,9 @@
         <div class="groupe-outils">
           <button type="button" class="btn-recentrer" aria-label="Recentrer" title="Recentrer"><span data-icone="recentrer"></span></button>
         </div>
+        <div class="groupe-outils">
+          <button type="button" class="btn-commentaire" title="Ajouter un commentaire : sur le bloc choisi, sinon une note dans l’espace des blocs"><span data-icone="commentaire"></span>Commentaire</button>
+        </div>
       </div>
     </section>
     <section class="code-arduino" aria-label="Code Arduino" hidden>

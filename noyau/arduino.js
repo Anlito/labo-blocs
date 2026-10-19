@@ -85,10 +85,17 @@
     }
 
     let profondeur = 0; // compteurs des boucles « répéter n fois » : i, j, k…
+    // Commentaire d'un bloc (écrit par l'élève ou le professeur) : une ligne « // … » par ligne du commentaire.
+    function commentaire(n, r) {
+      if (!n || typeof n.commentaire !== 'string' || !n.commentaire.trim()) return;
+      for (const l of n.commentaire.trim().split(/\r?\n/)) ajouter(`${r}// ${l}`);
+    }
     function instructions(liste, retrait) {
       const r = ' '.repeat(retrait);
       for (const i of liste || []) {
         const debut = lignes.length + 1;
+        const avantCommentaire = lignes.length;
+        commentaire(i, r);
         switch (i.bloc) {
           case 'led_etat':
             ajouter(`${r}digitalWrite(${numero(i.broche)}, ${i.etat ? 'HIGH' : 'LOW'});`);
@@ -134,6 +141,7 @@
             ajouter(`${r}}`);
             break;
           default:
+            lignes.length = avantCommentaire; // bloc qui n'a pas d'équivalent ici : son commentaire non plus
             continue;
         }
         if (i.id !== undefined) carte[i.id] = [debut, lignes.length];
@@ -187,6 +195,7 @@
       ajouter(`// (Dans Labo Blocs, ce bloc tourne en même temps que « Répéter indéfiniment ».)`);
       ajouter(`int avant${k + 1} = LOW;`);
       ajouter(`void quand${k + 1}() {`);
+      commentaire(f, '  ');
       instructions(f.corps, 2);
       ajouter('}');
       ajouter('');
@@ -207,6 +216,7 @@
       ajouter(`  servo${n}.write(${angle});`);
       ajouter(`  servo${n}.attach(${n});`);
     }
+    commentaire(fil('demarrage'), '  ');
     instructions(fil('demarrage').corps, 2);
     ajouter('}');
     ajouter('');
@@ -218,6 +228,7 @@
       ajouter(`    if (avant${k + 1} == ${f.quand === 'appui' ? 'HIGH' : 'LOW'}) quand${k + 1}();`);
       ajouter('  }');
     });
+    commentaire(fil('boucle'), '  ');
     instructions(fil('boucle').corps, 2);
     // Un tour de boucle dure au moins 1 ms, comme dans le simulateur.
     ajouter('  delay(1);');

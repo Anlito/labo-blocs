@@ -109,3 +109,6 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   — [RECETTE.md](RECETTE.md) §23.
 - **micro:bit : dessin 5 × 5, en recette (19/10/2026)** : bloc « afficher le dessin » avec une grille à cliquer ;
   programme de la carte de la micro:bit en 0.3 — [RECETTE.md](RECETTE.md) §24.
+- **Commentaires, en recette (19/10/2026)** : bouton « Commentaire » dans la zone des blocs (sur un bloc, ou une note
+  libre) ; le professeur écrit un **programme de départ** commenté dans l'éditeur de parcours ; les commentaires
+  deviennent des « // … » dans le code Arduino — [RECETTE.md](RECETTE.md) §25.

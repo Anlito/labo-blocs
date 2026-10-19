@@ -186,6 +186,39 @@
       ws.scroll(0, 0);
     }
 
+    // Bouton « Commentaire » : un commentaire sur le bloc choisi (ouvert), sinon une note en haut à gauche de ce qu'on
+    // voit. Le texte s'écrit tout de suite.
+    function commenter() {
+      const choisi = Blockly.getSelected && Blockly.getSelected();
+      if (choisi && choisi.workspace === ws && typeof choisi.setCommentText === 'function') {
+        if (choisi.getCommentText() === null) choisi.setCommentText('');
+        const icone = choisi.getIcon && choisi.getIcon(Blockly.icons.IconType.COMMENT);
+        if (icone && icone.setBubbleVisible) icone.setBubbleVisible(true);
+        // La zone de texte de la bulle qui vient de s'ouvrir (celle qui a le texte du bloc, la dernière posée).
+        setTimeout(() => {
+          const texte = choisi.getCommentText() || '';
+          const zones = [...ws.getParentSvg().parentNode.querySelectorAll('textarea')].filter((t) => t.value === texte && !t.closest('.blocklyWorkspaceComment, .blocklyComment'));
+          const zoneTexte = zones.pop();
+          if (zoneTexte) zoneTexte.focus();
+        }, 50);
+        return;
+      }
+      // À droite des blocs (sans les cacher), en restant dans ce qu'on voit.
+      const vue = ws.getMetricsManager().getViewMetrics(true);
+      const blocs = ws.getBlocksBoundingBox();
+      const droite = blocs && blocs.right > blocs.left ? blocs.right + 40 : vue.left + 30;
+      const x = Math.max(vue.left + 20, Math.min(droite, vue.left + vue.width - 240));
+      const decalage = ws.getTopComments().length * 24; // une note de plus ne cache pas la précédente
+      const note = new Blockly.comments.RenderedWorkspaceComment(ws);
+      note.setText('');
+      note.setSize(new Blockly.utils.Size(220, 110));
+      note.moveTo(new Blockly.utils.Coordinate(x, vue.top + 20 + decalage));
+      setTimeout(() => {
+        const zoneTexte = note.getSvgRoot && note.getSvgRoot().querySelector('textarea');
+        if (zoneTexte) zoneTexte.focus();
+      }, 50);
+    }
+
     // La zone change de taille (fenêtre, consigne réduite) : Blockly doit se redimensionner.
     new ResizeObserver(() => {
       Blockly.svgResize(ws);
@@ -200,6 +233,7 @@
       surligner,
       zoomer,
       recentrer,
+      commenter,
       annuler: () => ws.undo(false),
       retablir: () => ws.undo(true),
       horsProgramme: () => horsProgramme.slice(),
