@@ -336,7 +336,8 @@
         changer({ cle: 'mauvaise-carte', branchee: NOMS_REPONSE[pong.nom] || pong.nom });
         return false;
       }
-      if (pong.nom !== attendue || pong.version !== (A.VERSION_FIRMWARE || pong.version)) {
+      // Version attendue : celle de la carte (le mBot a la sienne, pour l'afficheur), sinon la version commune.
+      if (pong.nom !== attendue || pong.version !== (c.profil.version || A.VERSION_FIRMWARE || pong.version)) {
         changer({ cle: 'pas-a-jour', branchee: NOMS_REPONSE[pong.nom] || pong.nom, version: pong.version, parCle: !!port.sansFil });
         return false;
       }
@@ -384,7 +385,7 @@
         // micro:bit : le fichier se copie sur le lecteur MICROBIT (le navigateur ne peut pas l'y écrire lui-même).
         const lien = global.document.createElement('a');
         lien.href = URL.createObjectURL(new Blob([hex], { type: 'application/octet-stream' }));
-        lien.download = `labo-blocs-${c.profil.id}-${f.version}.hex`;
+        lien.download = `labo-blocs-${c.profil.id}-${(f.versions || {})[c.profil.firmware] || f.version}.hex`;
         global.document.body.appendChild(lien);
         lien.click();
         lien.remove();

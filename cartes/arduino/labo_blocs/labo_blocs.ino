@@ -32,10 +32,12 @@
 #include "vm.h"
 
 // 0.2 : mBot, un moteur seul (extension 1, commande 9).
-#define VERSION_FIRMWARE "0.2"
+// 0.3 (mBot seulement) : afficheur LED Matrix 8×16 sur le port 4 (extension 1, commandes 10 à 15). L'Uno reste en 0.2.
 #if defined(CARTE_MCORE)
+#define VERSION_FIRMWARE "0.3"
 #define NOM_CARTE "mcore"
 #else
+#define VERSION_FIRMWARE "0.2"
 #define NOM_CARTE "uno"
 #endif
 
@@ -148,13 +150,224 @@ static void ledRgb(int quelle, int r, int v, int b) {
   }
   envoyerLed();
 }
+
+// Afficheur LED Matrix 8×16 de Makeblock sur le port 4 : horloge sur S1 (A0), données sur S2 (A1), comme la
+// bibliothèque Makeblock (MeLEDMatrix). 16 colonnes d'un octet, bit 0 = point du haut. Les tables sont les mêmes que
+// dans noyau/cartes.js (vérifié par un test).
+// Sens de l'afficheur sur le robot : à vérifier avec Thomas (un dessin avec un point en haut à gauche).
+#define MATRICE_HAUT_BAS 0      // 1 : retourner le haut et le bas
+#define MATRICE_GAUCHE_DROITE 0 // 1 : retourner la gauche et la droite
+static const uint8_t MATRICE_SCK = A0, MATRICE_DIN = A1;
+static const uint8_t POLICE_MATRICE[475] PROGMEM = {
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5f, 0x00, 0x00, 0x00, 0x07, 0x00, 0x07, 0x00, 0x14, 0x7f, 0x14, 0x7f, 0x14,
+  0x24, 0x2a, 0x7f, 0x2a, 0x12, 0x23, 0x13, 0x08, 0x64, 0x62, 0x36, 0x49, 0x55, 0x22, 0x50, 0x00, 0x05, 0x03, 0x00, 0x00,
+  0x00, 0x1c, 0x22, 0x41, 0x00, 0x00, 0x41, 0x22, 0x1c, 0x00, 0x08, 0x2a, 0x1c, 0x2a, 0x08, 0x08, 0x08, 0x3e, 0x08, 0x08,
+  0x00, 0x50, 0x30, 0x00, 0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0x60, 0x60, 0x00, 0x00, 0x20, 0x10, 0x08, 0x04, 0x02,
+  0x3e, 0x51, 0x49, 0x45, 0x3e, 0x00, 0x42, 0x7f, 0x40, 0x00, 0x42, 0x61, 0x51, 0x49, 0x46, 0x21, 0x41, 0x45, 0x4b, 0x31,
+  0x18, 0x14, 0x12, 0x7f, 0x10, 0x27, 0x45, 0x45, 0x45, 0x39, 0x3c, 0x4a, 0x49, 0x49, 0x30, 0x01, 0x71, 0x09, 0x05, 0x03,
+  0x36, 0x49, 0x49, 0x49, 0x36, 0x06, 0x49, 0x49, 0x29, 0x1e, 0x00, 0x36, 0x36, 0x00, 0x00, 0x00, 0x56, 0x36, 0x00, 0x00,
+  0x08, 0x14, 0x22, 0x41, 0x00, 0x14, 0x14, 0x14, 0x14, 0x14, 0x00, 0x41, 0x22, 0x14, 0x08, 0x02, 0x01, 0x51, 0x09, 0x06,
+  0x32, 0x49, 0x79, 0x41, 0x3e, 0x7e, 0x11, 0x11, 0x11, 0x7e, 0x7f, 0x49, 0x49, 0x49, 0x36, 0x3e, 0x41, 0x41, 0x41, 0x22,
+  0x7f, 0x41, 0x41, 0x22, 0x1c, 0x7f, 0x49, 0x49, 0x49, 0x41, 0x7f, 0x09, 0x09, 0x09, 0x01, 0x3e, 0x41, 0x49, 0x49, 0x7a,
+  0x7f, 0x08, 0x08, 0x08, 0x7f, 0x00, 0x41, 0x7f, 0x41, 0x00, 0x20, 0x40, 0x41, 0x3f, 0x01, 0x7f, 0x08, 0x14, 0x22, 0x41,
+  0x7f, 0x40, 0x40, 0x40, 0x40, 0x7f, 0x02, 0x0c, 0x02, 0x7f, 0x7f, 0x04, 0x08, 0x10, 0x7f, 0x3e, 0x41, 0x41, 0x41, 0x3e,
+  0x7f, 0x09, 0x09, 0x09, 0x06, 0x3e, 0x41, 0x51, 0x21, 0x5e, 0x7f, 0x09, 0x19, 0x29, 0x46, 0x46, 0x49, 0x49, 0x49, 0x31,
+  0x01, 0x01, 0x7f, 0x01, 0x01, 0x3f, 0x40, 0x40, 0x40, 0x3f, 0x1f, 0x20, 0x40, 0x20, 0x1f, 0x3f, 0x40, 0x38, 0x40, 0x3f,
+  0x63, 0x14, 0x08, 0x14, 0x63, 0x07, 0x08, 0x70, 0x08, 0x07, 0x61, 0x51, 0x49, 0x45, 0x43, 0x00, 0x7f, 0x41, 0x41, 0x00,
+  0x02, 0x04, 0x08, 0x10, 0x20, 0x00, 0x41, 0x41, 0x7f, 0x00, 0x04, 0x02, 0x01, 0x02, 0x04, 0x40, 0x40, 0x40, 0x40, 0x40,
+  0x00, 0x01, 0x02, 0x04, 0x00, 0x20, 0x54, 0x54, 0x54, 0x78, 0x7f, 0x48, 0x44, 0x44, 0x38, 0x38, 0x44, 0x44, 0x44, 0x20,
+  0x38, 0x44, 0x44, 0x48, 0x7f, 0x38, 0x54, 0x54, 0x54, 0x18, 0x08, 0x7e, 0x09, 0x01, 0x02, 0x0c, 0x52, 0x52, 0x52, 0x3e,
+  0x7f, 0x08, 0x04, 0x04, 0x78, 0x00, 0x44, 0x7d, 0x40, 0x00, 0x20, 0x40, 0x44, 0x3d, 0x00, 0x7f, 0x10, 0x28, 0x44, 0x00,
+  0x00, 0x41, 0x7f, 0x40, 0x00, 0x7c, 0x04, 0x18, 0x04, 0x78, 0x7c, 0x08, 0x04, 0x04, 0x78, 0x38, 0x44, 0x44, 0x44, 0x38,
+  0x7c, 0x14, 0x14, 0x14, 0x08, 0x08, 0x14, 0x14, 0x18, 0x7c, 0x7c, 0x08, 0x04, 0x04, 0x08, 0x48, 0x54, 0x54, 0x54, 0x20,
+  0x04, 0x3f, 0x44, 0x40, 0x20, 0x3c, 0x40, 0x40, 0x20, 0x7c, 0x1c, 0x20, 0x40, 0x20, 0x1c, 0x3c, 0x40, 0x30, 0x40, 0x3c,
+  0x44, 0x28, 0x10, 0x28, 0x44, 0x0c, 0x50, 0x50, 0x50, 0x3c, 0x44, 0x64, 0x54, 0x4c, 0x44, 0x00, 0x08, 0x36, 0x41, 0x00,
+  0x00, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x41, 0x36, 0x08, 0x00, 0x08, 0x04, 0x08, 0x10, 0x08,
+};
+static const uint8_t CHIFFRES_MATRICE[33] PROGMEM = {
+  0x7f, 0x41, 0x7f, 0x42, 0x7f, 0x40, 0x79, 0x49, 0x4f, 0x49, 0x49, 0x7f, 0x0f, 0x08, 0x7f, 0x4f, 0x49, 0x79, 0x7f, 0x49,
+  0x79, 0x01, 0x01, 0x7f, 0x7f, 0x49, 0x7f, 0x4f, 0x49, 0x7f, 0x08, 0x08, 0x08,
+};
+static uint8_t matrice[16];          // ce que montre l'afficheur
+static uint8_t dessinRecu[16];       // dessin en cours de réception (commandes 10 et 11)
+static uint8_t lettresRecues[40];    // texte en cours de réception (commandes 14 et 15)
+static uint8_t nbRecues = 0;
+static uint8_t lettresMatrice[40];   // texte affiché (ou qui défile)
+static uint8_t nbLettres = 0;
+static int16_t colonnesDefile = 0;   // largeur du texte qui défile (0 : rien ne défile)
+static uint32_t debutDefile = 0;
+static int16_t decalageAffiche = -32767;
+static bool matriceUtilisee = false; // l'afficheur ne s'éteint que s'il a servi (le port 4 peut rester libre)
+
+static void matriceOctet(uint8_t o) {
+  for (uint8_t i = 0; i < 8; i++) {
+    digitalWrite(MATRICE_SCK, LOW);
+    digitalWrite(MATRICE_DIN, o & 1);
+    digitalWrite(MATRICE_SCK, HIGH);
+    o >>= 1;
+  }
+}
+// Début d'un ordre : DIN descend pendant que l'horloge est haute ; fin : DIN remonte pendant que l'horloge est haute.
+static void matriceDebut() {
+  digitalWrite(MATRICE_SCK, HIGH);
+  digitalWrite(MATRICE_DIN, LOW);
+}
+static void matriceFin() {
+  digitalWrite(MATRICE_SCK, LOW);
+  digitalWrite(MATRICE_DIN, LOW);
+  digitalWrite(MATRICE_SCK, HIGH);
+  digitalWrite(MATRICE_DIN, HIGH);
+}
+static uint8_t retourner(uint8_t o) {
+  uint8_t r = 0;
+  for (uint8_t i = 0; i < 8; i++) r |= ((o >> i) & 1) << (7 - i);
+  return r;
+}
+static void envoyerMatrice() {
+  matriceUtilisee = true;
+  pinMode(MATRICE_SCK, OUTPUT);
+  pinMode(MATRICE_DIN, OUTPUT);
+  digitalWrite(MATRICE_SCK, HIGH);
+  digitalWrite(MATRICE_DIN, HIGH);
+  matriceDebut();
+  matriceOctet(0x40); // les adresses avancent toutes seules
+  matriceFin();
+  matriceDebut();
+  matriceOctet(0xC0); // à partir de la colonne 0
+  for (uint8_t i = 0; i < 16; i++) {
+    uint8_t o = matrice[MATRICE_GAUCHE_DROITE ? 15 - i : i];
+    matriceOctet(MATRICE_HAUT_BAS ? retourner(o) : o);
+  }
+  matriceFin();
+  matriceDebut();
+  matriceOctet(0x8C); // affichage allumé, luminosité moyenne (0 à 7 : 4)
+  matriceFin();
+}
+static void viderMatrice() {
+  memset(matrice, 0, sizeof matrice);
+}
+// Colonne i d'un texte : 5 colonnes par lettre, puis une colonne vide.
+static uint8_t colonneTexte(int16_t i) {
+  if (i < 0 || i >= colonnesDefile) return 0;
+  uint8_t x = i % 6, code = lettresMatrice[i / 6];
+  if (x == 5) return 0;
+  if (code < 32 || code > 126) code = '?';
+  return pgm_read_byte(&POLICE_MATRICE[(code - 32) * 5 + x]);
+}
+static void avancerMatrice();
+// Un texte qui tient (2 lettres au plus) reste immobile et centré ; sinon il entre par la droite et sort par la
+// gauche, une fois, une colonne toutes les 100 ms (avancerMatrice, à chaque tour de loop). Le même texte redonné
+// pendant qu'il défile continue de défiler (comme dans le simulateur).
+static void afficherTexte(const uint8_t *lettres, uint8_t n) {
+  if (colonnesDefile && n == nbLettres && !memcmp(lettres, lettresMatrice, n)) return;
+  memcpy(lettresMatrice, lettres, n);
+  nbLettres = n;
+  colonnesDefile = n ? n * 6 - 1 : 0;
+  viderMatrice();
+  if (colonnesDefile <= 16) {
+    int16_t debut = (16 - colonnesDefile) / 2;
+    for (int16_t i = 0; i < colonnesDefile; i++) matrice[debut + i] = colonneTexte(i);
+    colonnesDefile = 0;
+    envoyerMatrice();
+    return;
+  }
+  debutDefile = millis();
+  decalageAffiche = -32767;
+  avancerMatrice();
+}
+static void avancerMatrice() {
+  if (!colonnesDefile) return;
+  int16_t decalage = (int16_t)((millis() - debutDefile) / 100) - 16;
+  if (decalage == decalageAffiche) return;
+  decalageAffiche = decalage;
+  for (uint8_t x = 0; x < 16; x++) matrice[x] = colonneTexte(decalage + x);
+  envoyerMatrice();
+  if (decalage >= colonnesDefile) colonnesDefile = 0; // sorti par la gauche : l'afficheur reste vide
+}
+static void afficherColonnes() {
+  colonnesDefile = 0;
+  envoyerMatrice();
+}
+static void poserChiffre(uint8_t k, uint8_t x) {
+  for (uint8_t i = 0; i < 3; i++)
+    if (x + i < 16) matrice[x + i] = pgm_read_byte(&CHIFFRES_MATRICE[k * 3 + i]);
+}
+static long diviserArrondi(long n, long d) { return n < 0 ? -((-n + d / 2) / d) : (n + d / 2) / d; }
+// Nombre donné en centièmes : 2, 1 ou 0 chiffres après la virgule (zéros de fin enlevés), le plus précis qui tient
+// en chiffres étroits ; sinon le nombre entier défile (comme texteNombre dans noyau/cartes.js).
+static void afficherNombre(long c) {
+  char s[16];
+  uint8_t n = 0;
+  for (uint8_t d = 3; d-- > 0;) {
+    long p = d == 2 ? 100 : d == 1 ? 10 : 1;
+    long q = diviserArrondi(c, d == 2 ? 1 : d == 1 ? 10 : 100);
+    unsigned long a = q < 0 ? -q : q;
+    n = 0;
+    if (q < 0) s[n++] = '-';
+    char chiffres[12];
+    uint8_t k = 0;
+    unsigned long e = a / p;
+    do chiffres[k++] = '0' + e % 10, e /= 10;
+    while (e && k < 11);
+    while (k) s[n++] = chiffres[--k];
+    if (d) {
+      unsigned long f = a % p;
+      if (f) {
+        s[n++] = '.';
+        if (d == 2) {
+          s[n++] = '0' + f / 10;
+          if (f % 10) s[n++] = '0' + f % 10;
+        } else s[n++] = '0' + f;
+      }
+    }
+    uint8_t largeur = 0;
+    for (uint8_t i = 0; i < n; i++) largeur += (i ? 1 : 0) + (s[i] == '.' ? 1 : 3);
+    if (largeur > 16) continue;
+    viderMatrice();
+    uint8_t x = (16 - largeur) / 2;
+    for (uint8_t i = 0; i < n; i++) {
+      if (s[i] == '.') matrice[x] = 0x40, x += 2;
+      else poserChiffre(s[i] == '-' ? 10 : s[i] - '0', x), x += 4;
+    }
+    afficherColonnes();
+    return;
+  }
+  afficherTexte((const uint8_t *)s, n);
+}
+static void afficherHeure(long h, long m) {
+  h = constrain(h, 0, 99);
+  m = constrain(m, 0, 99);
+  viderMatrice();
+  poserChiffre(h / 10, 0);
+  poserChiffre(h % 10, 4);
+  matrice[7] = 0x14;
+  poserChiffre(m / 10, 9);
+  poserChiffre(m % 10, 13);
+  afficherColonnes();
+}
+static void eteindreMatrice() {
+  colonnesDefile = 0;
+  nbLettres = 0;
+  nbRecues = 0;
+  if (!matriceUtilisee) return;
+  viderMatrice();
+  envoyerMatrice();
+}
+static void deuxColonnes(uint8_t *dest, const float *a) {
+  for (uint8_t i = 0; i < 4; i++) {
+    long v = constrain(lround(a[i]), 0, 65535);
+    dest[i * 2] = v & 255;
+    dest[i * 2 + 1] = v >> 8;
+  }
+}
 #endif
 
 // Extension 1 = mBot. Commandes : 1 moteurs(gauche, droite) · 2 ultrason(port) → cm · 3 ligne(port) → 0..3
 // · 4 bouton de la carte → 0/1 · 5 lumière → 0..1023 · 6 LED(1|2|0 les deux, rouge, vert, bleu)
 // · 9 un moteur seul (1 gauche | 2 droite, vitesse -100..100)
+// · afficheur (port 4) : 10 dessin, colonnes 0 à 7 (4 valeurs : colonne paire + impaire × 256) · 11 dessin, colonnes 8
+//   à 15, puis affichage · 12 nombre (centièmes) · 13 heure (h, min) · 14 lettres à suivre · 15 dernières lettres
 float lb_ext(uint8_t extension, uint8_t commande, uint8_t n, const float *a) {
-  (void)n;
 #if defined(CARTE_MCORE)
   if (extension == 1) {
     switch (commande) {
@@ -170,10 +383,23 @@ float lb_ext(uint8_t extension, uint8_t commande, uint8_t n, const float *a) {
       }
       case 8: return analogRead((int)a[0] - 14 >= 0 && (int)a[0] <= 21 ? (int)a[0] - 14 : 0); // diagnostic : niveau analogique
       case 9: moteurSeul((int)a[0], a[1]); return 0;
+      case 10: deuxColonnes(dessinRecu, a); return 0;
+      case 11:
+        deuxColonnes(dessinRecu + 8, a);
+        memcpy(matrice, dessinRecu, 16);
+        afficherColonnes();
+        return 0;
+      case 12: afficherNombre(lround(a[0])); return 0;
+      case 13: afficherHeure(lround(a[0]), lround(a[1])); return 0;
+      case 14:
+      case 15:
+        for (uint8_t i = 0; i < n && nbRecues < 40; i++) lettresRecues[nbRecues++] = constrain(lround(a[i]), 0, 255);
+        if (commande == 15) afficherTexte(lettresRecues, nbRecues), nbRecues = 0;
+        return 0;
     }
   }
 #else
-  (void)extension, (void)commande, (void)a;
+  (void)extension, (void)commande, (void)n, (void)a;
 #endif
   return 0;
 }
@@ -228,6 +454,9 @@ static uint8_t nbSurveillees = 0;
 
 static void toutEteindre() {
   lb_arreter();
+#if defined(CARTE_MCORE)
+  eteindreMatrice(); // avant de lâcher les broches A0 et A1 (port 4)
+#endif
   for (int b = 2; b <= 19; b++) {
     if (b == 13) continue; // LED de la carte / LED RGB du mCore : réglée à part
     digitalWrite(b, LOW);  // d'abord BAS : sinon la résistance interne resterait branchée et une LED luirait encore
@@ -480,6 +709,9 @@ void setup() {
 
 void loop() {
   lireSerie();
+#if defined(CARTE_MCORE)
+  avancerMatrice(); // texte qui défile sur l'afficheur
+#endif
   if (direct) {
     surveiller();
     if (millis() - dernierMessage > SILENCE_MAX) {

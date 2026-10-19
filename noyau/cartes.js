@@ -8,7 +8,10 @@
 // « déroule » en blocs de base : commande d'extension (ext), attendre, son, calculs. Le même code octet tourne dans
 // le simulateur et dans la carte.
 //   Extension 1 = mBot : 1 moteurs (gauche, droite) · 2 ultrasons (port) → cm · 3 suiveur de ligne (port) → 0..3 ·
-//     4 bouton de la carte · 5 lumière · 6 LED RGB (quelle, rouge, vert, bleu) · 9 un moteur (1 gauche | 2 droite, vitesse)
+//     4 bouton de la carte · 5 lumière · 6 LED RGB (quelle, rouge, vert, bleu) · 9 un moteur (1 gauche | 2 droite, vitesse) ·
+//     afficheur LED Matrix 8×16 sur le port 4 (programme de la carte 0.3) : 10 dessin, colonnes 0 à 7 (4 valeurs de
+//     2 colonnes : paire + impaire × 256) · 11 dessin, colonnes 8 à 15, puis affichage · 12 nombre (en centièmes) ·
+//     13 heure (heures, minutes) · 14 lettres du texte à suivre (4 par commande) · 15 dernières lettres, puis affichage
 //   Extension 2 = micro:bit : 1 nombre · 2 image · 3 pixel (x, y, 0..9) · 4 effacer · 5 bouton A · 6 bouton B ·
 //     7 accélération (axe) · 8 température · 9 logo touché · 10 lumière · 11 texte (codes des lettres) ·
 //     12 note (Hz, s) · 13 geste · 14 lettres du texte à suivre (4 par commande)
@@ -43,8 +46,10 @@
       installation: 'serie',
       broches: { led: [], bouton: [], servo: [], buzzer: [] },
       composants: [],
-      // Branchements imposés aux élèves (décision du 14/10/2026).
-      ports: { ultrasons: 3, ligne: 2 },
+      // Branchements imposés aux élèves (décision du 14/10/2026 ; afficheur : 19/10/2026).
+      ports: { ultrasons: 3, ligne: 2, matrice: 4 },
+      // Programme de la carte propre au mBot (afficheur) : l'Uno et la micro:bit restent en 0.2.
+      version: '0.3',
     },
     microbit: {
       id: 'microbit',
@@ -119,9 +124,125 @@
       .map((c) => c.charCodeAt(0));
   }
 
+  // ---------- Afficheur LED Matrix 8×16 du mBot ----------
+  // 16 colonnes de 8 points ; une colonne est un octet, le bit 0 est le point du haut. Les mêmes tables sont dans le
+  // programme de la carte (cartes/arduino/labo_blocs/labo_blocs.ino) : un test vérifie qu'elles sont identiques.
+  // Police 5 × 7 (lettres 32 à 126), 5 colonnes par lettre.
+  const POLICE_MATRICE = [
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5f, 0x00, 0x00, 0x00, 0x07, 0x00, 0x07, 0x00, 0x14, 0x7f, 0x14, 0x7f, 0x14,
+    0x24, 0x2a, 0x7f, 0x2a, 0x12, 0x23, 0x13, 0x08, 0x64, 0x62, 0x36, 0x49, 0x55, 0x22, 0x50, 0x00, 0x05, 0x03, 0x00, 0x00,
+    0x00, 0x1c, 0x22, 0x41, 0x00, 0x00, 0x41, 0x22, 0x1c, 0x00, 0x08, 0x2a, 0x1c, 0x2a, 0x08, 0x08, 0x08, 0x3e, 0x08, 0x08,
+    0x00, 0x50, 0x30, 0x00, 0x00, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0x60, 0x60, 0x00, 0x00, 0x20, 0x10, 0x08, 0x04, 0x02,
+    0x3e, 0x51, 0x49, 0x45, 0x3e, 0x00, 0x42, 0x7f, 0x40, 0x00, 0x42, 0x61, 0x51, 0x49, 0x46, 0x21, 0x41, 0x45, 0x4b, 0x31,
+    0x18, 0x14, 0x12, 0x7f, 0x10, 0x27, 0x45, 0x45, 0x45, 0x39, 0x3c, 0x4a, 0x49, 0x49, 0x30, 0x01, 0x71, 0x09, 0x05, 0x03,
+    0x36, 0x49, 0x49, 0x49, 0x36, 0x06, 0x49, 0x49, 0x29, 0x1e, 0x00, 0x36, 0x36, 0x00, 0x00, 0x00, 0x56, 0x36, 0x00, 0x00,
+    0x08, 0x14, 0x22, 0x41, 0x00, 0x14, 0x14, 0x14, 0x14, 0x14, 0x00, 0x41, 0x22, 0x14, 0x08, 0x02, 0x01, 0x51, 0x09, 0x06,
+    0x32, 0x49, 0x79, 0x41, 0x3e, 0x7e, 0x11, 0x11, 0x11, 0x7e, 0x7f, 0x49, 0x49, 0x49, 0x36, 0x3e, 0x41, 0x41, 0x41, 0x22,
+    0x7f, 0x41, 0x41, 0x22, 0x1c, 0x7f, 0x49, 0x49, 0x49, 0x41, 0x7f, 0x09, 0x09, 0x09, 0x01, 0x3e, 0x41, 0x49, 0x49, 0x7a,
+    0x7f, 0x08, 0x08, 0x08, 0x7f, 0x00, 0x41, 0x7f, 0x41, 0x00, 0x20, 0x40, 0x41, 0x3f, 0x01, 0x7f, 0x08, 0x14, 0x22, 0x41,
+    0x7f, 0x40, 0x40, 0x40, 0x40, 0x7f, 0x02, 0x0c, 0x02, 0x7f, 0x7f, 0x04, 0x08, 0x10, 0x7f, 0x3e, 0x41, 0x41, 0x41, 0x3e,
+    0x7f, 0x09, 0x09, 0x09, 0x06, 0x3e, 0x41, 0x51, 0x21, 0x5e, 0x7f, 0x09, 0x19, 0x29, 0x46, 0x46, 0x49, 0x49, 0x49, 0x31,
+    0x01, 0x01, 0x7f, 0x01, 0x01, 0x3f, 0x40, 0x40, 0x40, 0x3f, 0x1f, 0x20, 0x40, 0x20, 0x1f, 0x3f, 0x40, 0x38, 0x40, 0x3f,
+    0x63, 0x14, 0x08, 0x14, 0x63, 0x07, 0x08, 0x70, 0x08, 0x07, 0x61, 0x51, 0x49, 0x45, 0x43, 0x00, 0x7f, 0x41, 0x41, 0x00,
+    0x02, 0x04, 0x08, 0x10, 0x20, 0x00, 0x41, 0x41, 0x7f, 0x00, 0x04, 0x02, 0x01, 0x02, 0x04, 0x40, 0x40, 0x40, 0x40, 0x40,
+    0x00, 0x01, 0x02, 0x04, 0x00, 0x20, 0x54, 0x54, 0x54, 0x78, 0x7f, 0x48, 0x44, 0x44, 0x38, 0x38, 0x44, 0x44, 0x44, 0x20,
+    0x38, 0x44, 0x44, 0x48, 0x7f, 0x38, 0x54, 0x54, 0x54, 0x18, 0x08, 0x7e, 0x09, 0x01, 0x02, 0x0c, 0x52, 0x52, 0x52, 0x3e,
+    0x7f, 0x08, 0x04, 0x04, 0x78, 0x00, 0x44, 0x7d, 0x40, 0x00, 0x20, 0x40, 0x44, 0x3d, 0x00, 0x7f, 0x10, 0x28, 0x44, 0x00,
+    0x00, 0x41, 0x7f, 0x40, 0x00, 0x7c, 0x04, 0x18, 0x04, 0x78, 0x7c, 0x08, 0x04, 0x04, 0x78, 0x38, 0x44, 0x44, 0x44, 0x38,
+    0x7c, 0x14, 0x14, 0x14, 0x08, 0x08, 0x14, 0x14, 0x18, 0x7c, 0x7c, 0x08, 0x04, 0x04, 0x08, 0x48, 0x54, 0x54, 0x54, 0x20,
+    0x04, 0x3f, 0x44, 0x40, 0x20, 0x3c, 0x40, 0x40, 0x20, 0x7c, 0x1c, 0x20, 0x40, 0x20, 0x1c, 0x3c, 0x40, 0x30, 0x40, 0x3c,
+    0x44, 0x28, 0x10, 0x28, 0x44, 0x0c, 0x50, 0x50, 0x50, 0x3c, 0x44, 0x64, 0x54, 0x4c, 0x44, 0x00, 0x08, 0x36, 0x41, 0x00,
+    0x00, 0x00, 0x7f, 0x00, 0x00, 0x00, 0x41, 0x36, 0x08, 0x00, 0x08, 0x04, 0x08, 0x10, 0x08,
+  ];
+  // Chiffres étroits 3 × 7 (nombres et heure) : 0 à 9, puis « - ». Le point et les deux points de l'heure font une
+  // colonne.
+  const CHIFFRES_MATRICE = [
+    0x7f, 0x41, 0x7f, 0x42, 0x7f, 0x40, 0x79, 0x49, 0x4f, 0x49, 0x49, 0x7f, 0x0f, 0x08, 0x7f, 0x4f, 0x49, 0x79, 0x7f, 0x49,
+    0x79, 0x01, 0x01, 0x7f, 0x7f, 0x49, 0x7f, 0x4f, 0x49, 0x7f, 0x08, 0x08, 0x08,
+  ];
+  const POINT_MATRICE = 0x40;
+  const DEUX_POINTS_MATRICE = 0x14;
+  const DUREE_COLONNE_MATRICE = 100; // le texte avance d'une colonne toutes les 100 ms
+  // Dessin de départ du bloc (un sourire) : 32 chiffres hexadécimaux, 2 par colonne, de gauche à droite.
+  const DESSIN_DEPART = '00000000264640404040462600000000';
+  const lireDessinMatrice = (hex) => {
+    const s = /^[0-9a-f]{32}$/i.test(String(hex || '')) ? String(hex) : '0'.repeat(32);
+    return Array.from({ length: 16 }, (_, i) => parseInt(s.slice(i * 2, i * 2 + 2), 16));
+  };
+  const centrer = (colonnes) => {
+    const ecran = new Array(16).fill(0);
+    const debut = Math.max(0, Math.floor((16 - colonnes.length) / 2));
+    colonnes.slice(0, 16).forEach((c, i) => (ecran[debut + i] = c));
+    return ecran;
+  };
+
+  // Lettres d'un texte : 5 colonnes chacune, séparées par une colonne vide.
+  function colonnesTexte(codes) {
+    const colonnes = [];
+    codes.forEach((code, i) => {
+      if (i) colonnes.push(0);
+      const k = code >= 32 && code <= 126 ? code - 32 : 31; // « ? » pour une lettre inconnue
+      for (let x = 0; x < 5; x++) colonnes.push(POLICE_MATRICE[k * 5 + x]);
+    });
+    return colonnes;
+  }
+
+  // Arrondi d'un entier n / d au plus proche (moitié : loin de zéro), comme la carte (calcul en entiers).
+  const diviserArrondi = (n, d) => (n < 0 ? -Math.floor((-n + d / 2) / d) : Math.floor((n + d / 2) / d));
+  // Texte d'un nombre donné en centièmes, avec 2, 1 ou 0 chiffres après la virgule (zéros de fin enlevés) : le plus
+  // précis qui tient sur l'afficheur en chiffres étroits ; sinon (trop grand) le nombre entier, qui défilera.
+  function texteNombre(centiemes) {
+    const c = Math.round(Number(centiemes) || 0);
+    let dernier = '';
+    for (const d of [2, 1, 0]) {
+      const q = diviserArrondi(c, d === 2 ? 1 : d === 1 ? 10 : 100);
+      const p = d === 2 ? 100 : d === 1 ? 10 : 1;
+      const a = Math.abs(q);
+      let s = (q < 0 ? '-' : '') + Math.floor(a / p);
+      if (d) {
+        const f = String(a % p).padStart(d, '0').replace(/0+$/, '');
+        if (f) s += '.' + f;
+      }
+      dernier = s;
+      if (largeurChiffres(s) <= 16) return { texte: s, etroit: true };
+    }
+    return { texte: dernier, etroit: false };
+  }
+  const largeurChiffres = (s) => s.split('').reduce((l, ch, i) => l + (i ? 1 : 0) + (ch === '.' ? 1 : 3), 0);
+  function colonnesChiffres(s) {
+    const colonnes = [];
+    s.split('').forEach((ch, i) => {
+      if (i) colonnes.push(0);
+      if (ch === '.') return colonnes.push(POINT_MATRICE);
+      const k = ch === '-' ? 10 : Number(ch);
+      for (let x = 0; x < 3; x++) colonnes.push(CHIFFRES_MATRICE[k * 3 + x]);
+    });
+    return colonnes;
+  }
+  // « 12:30 » : heures aux colonnes 0 et 4, deux points à la colonne 7, minutes aux colonnes 9 et 13 (16 colonnes
+  // en tout : la colonne 8 sépare les deux points des minutes).
+  function colonnesHeure(h, m) {
+    const ecran = new Array(16).fill(0);
+    const poser = (chiffre, x) => {
+      for (let i = 0; i < 3; i++) ecran[x + i] = CHIFFRES_MATRICE[chiffre * 3 + i];
+    };
+    const hh = Math.max(0, Math.min(99, Math.round(Number(h) || 0)));
+    const mm = Math.max(0, Math.min(99, Math.round(Number(m) || 0)));
+    poser(Math.floor(hh / 10), 0);
+    poser(hh % 10, 4);
+    ecran[7] = DEUX_POINTS_MATRICE;
+    poser(Math.floor(mm / 10), 9);
+    poser(mm % 10, 13);
+    return ecran;
+  }
+  // Ce que montre l'afficheur pour un texte : immobile et centré s'il tient, sinon il défile une fois.
+  function animationTexte(colonnes, debut) {
+    return colonnes.length <= 16 ? { ecran: centrer(colonnes) } : { colonnes, debut };
+  }
+
   // Description d'un bloc :
   //   carte, categorie, sorte ('instruction' | 'valeur' | 'condition'), texte (message Blockly : %CHAMP ou %ENTREE),
-  //   champs { NOM: options [[libellé, valeur]] | 'texte' }, entrees { NOM: valeur de départ }, derouler(p) → blocs de base
+  //   champs { NOM: options [[libellé, valeur]] | 'texte' | 'etiquette' (caméra) | 'dessin' (afficheur du mBot) }, entrees { NOM: valeur de départ }, derouler(p) → blocs de base
   //   (p : les champs et entrées du bloc, nommés en minuscules : DIRECTION → p.direction)
   const BLOCS = {
     // ----- Caméra et IA (toutes les cartes) : l'étiquette est un numéro (1, 2… ; 0 = rien), son nom vient de l'exercice -----
@@ -213,6 +334,53 @@
       // Le buzzer du mCore est sur D8. La note est jouée jusqu'au bout avant le bloc suivant (comme mBlock).
       derouler: (p) => [{ bloc: 'son', broche: 'D8', frequence: Number(p.note) || 440, duree: p.duree }, attendre(p.duree)],
     },
+    // ----- mBot : afficheur LED Matrix 8×16 (port 4, imposé) -----
+    mbot_matrice_dessin: {
+      carte: 'mbot',
+      categorie: 'mbot_afficheur',
+      sorte: 'instruction',
+      texte: 'afficher le dessin %DESSIN',
+      champs: { DESSIN: 'dessin' },
+      defauts: { DESSIN: DESSIN_DEPART },
+      // Une commande porte 4 valeurs au plus : 2 colonnes par valeur, le dessin part en deux moitiés.
+      derouler: (p) => {
+        const c = lireDessinMatrice(p.dessin);
+        const moitie = (debut) => [0, 1, 2, 3].map((i) => c[debut + i * 2] + c[debut + i * 2 + 1] * 256);
+        return [ext(1, 10, moitie(0)), ext(1, 11, moitie(8))];
+      },
+    },
+    mbot_matrice_texte: {
+      carte: 'mbot',
+      categorie: 'mbot_afficheur',
+      sorte: 'instruction',
+      texte: 'afficher le texte %TEXTE',
+      champs: { TEXTE: 'texte' },
+      defauts: { TEXTE: 'Bonjour' },
+      derouler: (p) => {
+        const codes = codesTexte(p.texte);
+        const morceaux = [];
+        for (let i = 0; i < codes.length; i += 4) morceaux.push(codes.slice(i, i + 4));
+        if (!morceaux.length) morceaux.push([]);
+        return morceaux.map((m, i) => ext(1, i === morceaux.length - 1 ? 15 : 14, m));
+      },
+    },
+    mbot_matrice_nombre: {
+      carte: 'mbot',
+      categorie: 'mbot_afficheur',
+      sorte: 'instruction',
+      texte: 'afficher le nombre %VALEUR',
+      entrees: { VALEUR: 0 },
+      // En centièmes : le mode « En direct » n'envoie que des entiers.
+      derouler: (p) => ext(1, 12, [{ bloc: 'operation', op: '×', a: p.valeur, b: 100 }]),
+    },
+    mbot_matrice_heure: {
+      carte: 'mbot',
+      categorie: 'mbot_afficheur',
+      sorte: 'instruction',
+      texte: 'afficher l’heure %HEURES : %MINUTES',
+      entrees: { HEURES: 12, MINUTES: 30 },
+      derouler: (p) => ext(1, 13, [p.heures, p.minutes]),
+    },
 
     // ----- micro:bit : écran -----
     mb_nombre: { carte: 'microbit', categorie: 'mb_ecran', sorte: 'instruction', texte: 'afficher le nombre %VALEUR', entrees: { VALEUR: 0 }, derouler: (p) => ext(2, 1, [p.valeur]) },
@@ -297,6 +465,7 @@
     { nom: 'Moteurs', cle: 'mbot_moteurs', carte: 'mbot' },
     { nom: 'Capteurs', cle: 'mbot_capteurs', carte: 'mbot' },
     { nom: 'LED et son', cle: 'mbot_led_son', carte: 'mbot' },
+    { nom: 'Afficheur', cle: 'mbot_afficheur', carte: 'mbot' },
     { nom: 'Écran', cle: 'mb_ecran', carte: 'microbit' },
     { nom: 'Boutons', cle: 'mb_entrees', carte: 'microbit' },
     { nom: 'Capteurs', cle: 'mb_capteurs', carte: 'microbit' },
@@ -400,7 +569,16 @@
 
   // sim : le simulateur (t, entrees, capteurs, ecrire(nom, valeur, type), son(nom, frequence, ms)).
   function creerCarteSimulee(carte, sim) {
-    const etat = { id: carte, ecran: new Array(25).fill(0), animation: null, lettres: [] };
+    // matrice : afficheur du mBot (16 colonnes) ; defile : texte qui défile ; dessin : moitié gauche reçue (10).
+    const etat = { id: carte, ecran: new Array(25).fill(0), animation: null, lettres: [], matrice: new Array(16).fill(0), defile: null, dessin: new Array(16).fill(0) };
+    // Le même texte redonné pendant qu'il défile continue de défiler (comme la carte).
+    function afficherMatrice(a) {
+      const d = etat.defile;
+      if (d && a.colonnes && d.colonnes.join() === a.colonnes.join() && sim.t < d.debut + (d.colonnes.length + 16) * DUREE_COLONNE_MATRICE) return;
+      etat.matrice = a.ecran || new Array(16).fill(0);
+      etat.defile = a.ecran ? null : a;
+    }
+    const octets = (v) => [borner(v, 0, 65535) & 255, borner(v, 0, 65535) >> 8];
     // Écran au temps t : l'animation (texte ou nombre de plusieurs chiffres) prend le pas sur les points.
     function poser(points) {
       etat.ecran = points.slice();
@@ -474,6 +652,28 @@
             return sim.entrees.bouton ? 1 : 0;
           case 5:
             return Number(sim.capteurs.lumiere) || 0;
+          case 10:
+            etat.dessin = [].concat(...a.slice(0, 4).map(octets), etat.dessin.slice(8));
+            return 0;
+          case 11:
+            etat.dessin = etat.dessin.slice(0, 8).concat(...a.slice(0, 4).map(octets));
+            afficherMatrice({ ecran: etat.dessin.slice(0, 16) });
+            return 0;
+          case 12: {
+            const n = texteNombre(a[0]);
+            afficherMatrice(n.etroit ? { ecran: centrer(colonnesChiffres(n.texte)) } : animationTexte(colonnesTexte(codesTexte(n.texte)), sim.t));
+            return 0;
+          }
+          case 13:
+            afficherMatrice({ ecran: colonnesHeure(a[0], a[1]) });
+            return 0;
+          case 14:
+            etat.lettres.push(...a);
+            return 0;
+          case 15:
+            afficherMatrice(animationTexte(colonnesTexte(etat.lettres.concat(a).slice(0, 40).map((x) => borner(x, 0, 255))), sim.t));
+            etat.lettres = [];
+            return 0;
           case 6: {
             // 0 : les deux, 1 : droite, 2 : gauche (à vérifier sur le robot).
             const couleur = couleurRgb(a[1], a[2], a[3]);
@@ -515,6 +715,15 @@
       if (col) for (let y = 0; y < 5; y++) ecran[y * 5 + x] = col[y];
     }
     return ecran;
+  }
+
+  // Les 16 colonnes de l'afficheur du mBot au temps t. Un texte trop long entre par la droite et sort par la gauche,
+  // une fois ; l'afficheur est vide ensuite.
+  function matriceA(etat, t) {
+    const d = etat && etat.defile;
+    if (!d) return etat && etat.matrice ? etat.matrice.slice() : new Array(16).fill(0);
+    const decalage = Math.floor(Math.max(0, t - d.debut) / DUREE_COLONNE_MATRICE) - 16;
+    return Array.from({ length: 16 }, (_, x) => d.colonnes[decalage + x] || 0);
   }
 
   // Ce qui est déjà sur la carte (pas à brancher) : les scénarios de test peuvent l'appuyer ou le vérifier comme un
@@ -589,7 +798,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur };
+  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

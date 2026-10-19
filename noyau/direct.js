@@ -55,24 +55,45 @@
     const envoisExt = [];
     // Une commande qui redonne le même ordre (boucle sans attente : « avancer à 50 % » mille fois par seconde)
     // ne repart pas. Ordres liés : les deux moteurs ensemble ou chacun seul ; les deux LED ensemble ou chacune ;
-    // l'écran de la micro:bit (une image, un point, un texte).
+    // l'écran de la micro:bit (une image, un point, un texte) ; l'afficheur du mBot. Un texte qui défile repart
+    // quand il a fini de défiler (comme dans le simulateur).
     const derniers = new Map();
+    // Ordres en plusieurs morceaux (texte, dessin de l'afficheur) : les morceaux attendent la dernière commande et
+    // partent avec elle, ou pas du tout si l'ordre entier redonne le précédent.
+    const MORCEAUX = { 1: [10, 14], 2: [14] };
+    let morceaux = [];
     function groupe(e, c, a) {
       if (e === 1 && (c === 1 || c === 9)) return { cle: c === 1 ? 'moteurs' : 'moteur' + a[0], efface: c === 1 ? ['moteur1', 'moteur2'] : ['moteurs'] };
       if (e === 1 && c === 6) return { cle: 'led' + a[0], efface: Number(a[0]) === 0 ? ['led1', 'led2'] : ['led0'] };
       if (e === 2 && [1, 2, 3, 4, 11].includes(c)) return { cle: 'ecran', efface: [] };
+      if (e === 1 && [11, 12, 13, 15].includes(c)) return { cle: 'matrice', efface: [] };
       return null;
+    }
+    // Durée d'un texte qui défile (ms) ; un ordre qui ne défile pas reste valable tant qu'un autre ne le remplace pas.
+    function dureeDefilement(e, c, ordre) {
+      const lettres = ordre.reduce((n, l) => n + l.split(' ').length - 3, 0);
+      if (e === 2 && c === 11) return (lettres * 6 + 5) * 150;
+      let colonnes = e === 1 && c === 15 ? lettres * 6 - 1 : 0;
+      if (e === 1 && c === 12) {
+        const n = K().texteNombre(Number(ordre[ordre.length - 1].split(' ')[3]));
+        if (!n.etroit) colonnes = n.texte.length * 6 - 1;
+      }
+      return colonnes > 16 ? (colonnes + 16) * K().DUREE_COLONNE_MATRICE : Infinity;
     }
     function envoyerExtension(e, c, args) {
       if (e === 3) return; // caméra : dans l'ordinateur, jamais vers la carte
       const ligne = ligneExtension(e, c, args);
+      if ((MORCEAUX[e] || []).includes(c)) return morceaux.push(ligne);
+      const ordre = morceaux.concat(ligne);
+      morceaux = [];
       const g = groupe(e, c, args.map((x) => Math.round(Number(x) || 0)));
       if (g) {
-        if (derniers.get(g.cle) === ligne) return;
-        derniers.set(g.cle, ligne);
+        const avant = derniers.get(g.cle);
+        if (avant && avant.ordre === ordre.join('\n') && sim.t < avant.jusqua) return;
+        derniers.set(g.cle, { ordre: ordre.join('\n'), jusqua: sim.t + dureeDefilement(e, c, ordre) });
         for (const k of g.efface) derniers.delete(k);
       }
-      envoisExt.push(ligne);
+      envoisExt.push(...ordre);
     }
     const sim = S.creerSimulation(programme, {
       composants: o.composants,

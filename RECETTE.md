@@ -304,3 +304,20 @@ Préparation (Claude Code ou depuis le dépôt) : `npm run nouveau-projet -- ../
 | 21.13 | Renommer « Loup » en « Renard », fermer et rouvrir la sauvegarde | Le bloc affiche « Renard » ; étiquettes et photos retrouvées | |
 | 21.14 | Éditeur de parcours : cocher « Les élèves créent leurs propres étiquettes » | L'exercice propose « Nouvelle étiquette » aux élèves | |
 
+## 22. Afficheur LED Matrix 8×16 du mBot (port 4)
+
+Avec un mBot et l'afficheur LED Matrix 8×16 de Makeblock, branché sur le **port 4** (ultrasons sur le port 3, suiveur
+de ligne sur le port 2). Page des élèves › « Découverte du mBot » › exercice 4 « L'afficheur ».
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 22.1 | Palette | Catégorie « Afficheur » : afficher le dessin, le texte, le nombre, l'heure | |
+| 22.2 | Cliquer sur le petit dessin du bloc « afficher le dessin » | Une grille de 16 × 8 points s'ouvre ; un clic allume ou éteint un point, on peut aussi glisser ; « Tout effacer » | |
+| 22.3 | Lancer dans le simulateur | L'afficheur, sous le robot, montre le dessin, puis le nombre, l'heure ou le texte | |
+| 22.4 | Connecter le robot (câble) | « Carte pas à jour » : installer le programme de la carte (il passe en 0.3) | |
+| 22.5 | **Sens de l'afficheur** : un dessin avec seulement le point en haut à gauche, « En direct » | Sur le vrai afficheur, le point est **en haut à gauche** quand on regarde le robot de face. Sinon, noter ce qu'on voit (en bas ? à droite ?) : c'est un réglage à changer dans le programme de la carte | |
+| 22.6 | « afficher le nombre 3.14 », « afficher l'heure 9 : 5 » | « 3.14 » ; « 09:05 » | |
+| 22.7 | « afficher le texte Bonjour à tous » | Le texte entre par la droite, défile une fois, puis l'afficheur s'éteint ; « Hi » (2 lettres) reste immobile | |
+| 22.8 | Le même programme « Dans la carte », robot débranché | Même chose qu'en direct | |
+| 22.9 | « Vider la carte » | L'afficheur s'éteint | |
+
