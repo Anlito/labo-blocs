@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-19/10/2026 09:57:30 · chromium · page ouverte en file:// · 36/36 critères
+19/10/2026 10:08:55 · chromium · page ouverte en file:// · 36/36 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -25,7 +25,7 @@
 | Simulateur · micro:bit (écran, bouton A, capteurs) et mBot (moteurs, distance) | ✔ | micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « 50 % en avant », obstacle à 10 cm → « arrêté », vérification réussie |
 | Afficheur LED du mBot (port 4) : dessin à cliquer, simulateur, nombre ; envoyé en direct au robot (0.3) | ✔ | palette : catégorie Afficheur ; grille : 2 points allumés → « 01000000000000000000000000000080 » ; simulateur : « Afficheur : 2 points allumés », puis « Afficheur : 36 points allumés » (3,14) ; en direct : X 1 10 1 0 0 0 · X 1 11 0 0 0 32768 · X 1 12 314 |
 | Un même exercice : simulateur, puis En direct, puis Dans la carte (Uno, exercice 7) | ✔ | simulateur : réussi ; en direct : boutons D3 D4 surveillés, appui sur le vrai D3 → LED D9 allumée (carte et écran), signe de vie tenu 3,5 s, « Arrêter » → W, OFF ; dans la carte : 61 octets envoyés |
-| En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
+| En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; page d’essai de la clé : « La clé et le robot se parlent : « PONG v2 0.3 mcore 0 1012 »… » ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
 | En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice | ✔ | bouton A de la vraie carte → P0 allumée et « X 2 2 3 » ; exercice réglé « simulateur seulement » : sélecteur de modes caché |
 | Professeur : classe test de 8 équipes suivie (tableau, fiche, niveau forcé, programme rejoué) et exportée | ✔ | 8 équipes, 2 bloquées ; fiche : C9 forcé à 3, Note : 10 / 20 (moyenne des niveaux × 5) ; programme rejoué (« Allumer une LED ») ; exports : labo-blocs-distributeur-5A-2026-10-19.csv + labo-blocs-distributeur-5A-2026-10-19.labo-resultats.json (compétences C6, C9) |
 | Code professeur : accueil, éditeur, suivi et mode enseignant cachés sans le code ; page des élèves libre | ✔ | accueil.html : code demandé ; mauvais code : « Ce n’est pas le code professeur. Vérifie-le et recommence. » (ambre) ; reglages.html : code demandé ; editeur.html : code demandé ; prof.html : code demandé ; index.html (enseignant) : code demandé ; index.html : libre ; « Verrouiller » redemande le code |

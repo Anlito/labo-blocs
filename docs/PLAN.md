@@ -463,4 +463,8 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
 34. **Caméra : cadrer en prenant les photos (19/10/2026)**, retour de Thomas (il fallait descendre vers les étiquettes et
    l'image de la caméra disparaissait) : l'image reste collée en haut de la colonne (`position: sticky`), haute d'un
    tiers d'écran au plus ; une étiquette amenée à l'écran s'arrête sous l'image.
+35. **Clé 2.4G du mBot : page d'essai (19/10/2026)** — Thomas a la clé. Avant la recette 9.9 à 9.12, `site/essai-cle.html`
+   (lien dans Réglages › Matériel) choisit la clé, décrit ses rapports HID, envoie `PING` emballé comme Labo Blocs
+   (longueur + octets), puis d'autres façons si le robot ne répond pas, et garde un compte rendu à copier. Rien n'est
+   envoyé ailleurs que vers la clé.
 

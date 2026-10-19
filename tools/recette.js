@@ -648,6 +648,13 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     e = await attendreCarte(p, ATTENTE);
     verifier(e.cle === 'envoye' && /robot/.test(e.message), 'envoi par la clé : ' + e.cle + ' ' + e.message);
     await p.close();
+    // Page d'essai de la clé (professeur) : dit si la clé et le robot se parlent.
+    const essai = await page(pathToFileURL(path.join(RACINE, 'site', 'essai-cle.html')).href, { carte: { modele: 'mcore', firmware: '0.3', cle: true } });
+    await essai.click('#essayer');
+    await essai.waitForSelector('#message:not([hidden])', { timeout: 10000 });
+    const essaiCle = await essai.$eval('#message', (m) => ({ texte: m.textContent, ok: m.classList.contains('ok') }));
+    verifier(essaiCle.ok && /PONG v2 0\.3 mcore/.test(essaiCle.texte), 'page d’essai de la clé : ' + essaiCle.texte);
+    await essai.close();
     // Robot sans programme de base : par la clé, on demande le câble.
     const q = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-01', { carte: { modele: 'mcore', cle: true } });
     await q.click('.btn-mode[data-mode="direct"]');
@@ -655,7 +662,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     e = await attendreCarte(q, ATTENTE);
     verifier(e.cle === 'a-installer' && /câble USB/.test(e.message), 'robot neuf par la clé : ' + e.message);
     await q.close();
-    return `par la clé : « ${roule} », obstacle à 8 cm → « ${arret} » (tableau : ${tableau}, curseur ${curseur}) ; envoi par la clé ; robot neuf : « ${e.message.slice(0, 60)}… »`;
+    return `par la clé : « ${roule} », obstacle à 8 cm → « ${arret} » (tableau : ${tableau}, curseur ${curseur}) ; envoi par la clé ; page d’essai de la clé : « ${essaiCle.texte.slice(0, 60)}… » ; robot neuf : « ${e.message.slice(0, 60)}… »`;
   });
 
   await critere('En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice', async () => {

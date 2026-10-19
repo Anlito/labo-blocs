@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Essai de la clé 2.4G — Labo Blocs</title>
+<link rel="icon" href="img/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../interface/css/composants.css">
+<link rel="stylesheet" href="../interface/css/labo-blocs.css">
+<style>
+  /* Page d'essai de la clé 2.4G du mBot (professeur) : dit si la clé et le robot se parlent, et garde un compte rendu
+     à envoyer si ce n'est pas le cas. */
+  body { height: auto; overflow: auto; background: var(--fond); }
+  main { max-width: 48rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; display: flex; flex-direction: column; gap: 1rem; }
+  h1 { margin: 0; font-size: 1.75rem; }
+  .essai-carte { background: #FFFFFF; border: 1px solid var(--bord); border-radius: 0.875rem; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; }
+  .essai-carte h2 { margin: 0; font-size: 1.125rem; }
+  .essai-carte ol { margin: 0; padding-left: 1.25rem; line-height: 1.6; }
+  .essai-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .essai-actions button { height: 2.5rem; padding: 0 1rem; font-size: 0.9375rem; }
+  .essai-message { margin: 0; padding: 0.625rem 0.75rem; border-radius: 0.625rem; font-weight: 700; font-size: 0.9375rem; }
+  .essai-message.ok { background: var(--reussi-pale); color: var(--reussi-texte); }
+  .essai-message.ecart { background: var(--ecart-pale); color: var(--ecart-texte); }
+  .essai-message[hidden] { display: none; }
+  .essai-journal { margin: 0; padding: 0.75rem; max-height: 22rem; overflow: auto; border-radius: 0.625rem; background: #14213D; color: #F3F5F9; font: 500 0.8125rem/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Essai de la clé 2.4G du mBot</h1>
+  <section class="essai-carte" aria-labelledby="t-avant">
+    <h2 id="t-avant">Avant de commencer</h2>
+    <ol>
+      <li>Le robot a déjà le programme de base de Labo Blocs (installé une fois <strong>avec le câble USB</strong>).</li>
+      <li>Branche la clé 2.4G sur l'ordinateur, allume le robot (module 2.4G posé sur la carte mCore). La petite lumière de la clé et celle du module doivent rester allumées sans clignoter (si elles clignotent : appuie sur le bouton du module pour les appairer).</li>
+      <li>Chrome ou Edge, puis « Essayer la clé ». Une fenêtre liste les appareils : choisis la clé (souvent « Makeblock » ou « HID »).</li>
+    </ol>
+    <div class="essai-actions">
+      <button type="button" class="btn-principal" id="essayer">Essayer la clé</button>
+      <button type="button" class="btn-secondaire" id="copier" disabled>Copier le compte rendu</button>
+    </div>
+    <p class="essai-message" id="message" role="status" hidden></p>
+  </section>
+  <section class="essai-carte" aria-labelledby="t-journal">
+    <h2 id="t-journal">Compte rendu</h2>
+    <p class="cam-aide">Si la clé ne marche pas, copie ce compte rendu et envoie-le : il dit ce que la clé a montré et répondu.</p>
+    <pre class="essai-journal" id="journal">Rien pour l'instant.</pre>
+  </section>
+</main>
+<script>
+  // Essaie la clé comme Labo Blocs (interface/carte.js, portCle) : rapports HID « 1 octet de longueur, puis les
+  // octets ». Si le robot ne répond pas ainsi, essaie d'autres façons d'emballer les octets, pour savoir laquelle est
+  // la bonne. Rien n'est envoyé ailleurs que vers la clé.
+  (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+    const lignes = [];
+    const hexa = (octets) => Array.from(octets, (o) => o.toString(16).padStart(2, '0')).join(' ');
+    const texte = (octets) => Array.from(octets, (o) => (o >= 32 && o < 127 ? String.fromCharCode(o) : o === 10 ? '⏎' : '·')).join('');
+    function noter(l) {
+      lignes.push(l);
+      $('journal').textContent = lignes.join('\n');
+      $('copier').disabled = false;
+    }
+    function dire(t, ton) {
+      const m = $('message');
+      m.textContent = t;
+      m.className = 'essai-message ' + ton;
+      m.hidden = false;
+    }
+    const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // Rapport de sortie : son numéro et sa taille (en octets), lus dans la description de la clé.
+    function rapportSortie(appareil) {
+      for (const col of appareil.collections || [])
+        for (const r of col.outputReports || []) {
+          const bits = (r.items || []).reduce((t, i) => t + (i.reportSize || 0) * (i.reportCount || 0), 0);
+          if (bits) return { id: r.reportId || 0, octets: bits / 8 };
+        }
+      return { id: 0, octets: 32 };
+    }
+    function decrire(appareil) {
+      noter(`Appareil : « ${appareil.productName || 'sans nom'} » · vendorId 0x${(appareil.vendorId || 0).toString(16).padStart(4, '0')} · productId 0x${(appareil.productId || 0).toString(16).padStart(4, '0')}`);
+      for (const col of appareil.collections || []) {
+        const taille = (r) => `n° ${r.reportId || 0} (${(r.items || []).reduce((t, i) => t + (i.reportSize || 0) * (i.reportCount || 0), 0) / 8} octets)`;
+        noter(`  collection usagePage 0x${(col.usagePage || 0).toString(16)} usage 0x${(col.usage || 0).toString(16)} · entrée ${(col.inputReports || []).map(taille).join(', ') || '—'} · sortie ${(col.outputReports || []).map(taille).join(', ') || '—'} · feature ${(col.featureReports || []).map(taille).join(', ') || '—'}`);
+      }
+    }
+
+    // Façons d'emballer « PING⏎ » dans un rapport, et de lire ce qui revient.
+    const FACONS = [
+      { nom: 'longueur + octets (Labo Blocs)', emballer: (o, n) => [o.length, ...o], deballer: (d) => d.slice(1, 1 + Math.min(d[0], d.length - 1)) },
+      { nom: 'octets bruts, complétés par des zéros', emballer: (o) => [...o], deballer: (d) => d.filter((x) => x !== 0) },
+      { nom: '0 + longueur + octets', emballer: (o) => [0, o.length, ...o], deballer: (d) => d.slice(2, 2 + Math.min(d[1] || 0, d.length - 2)) },
+    ];
+
+    async function essayerFacon(appareil, facon, sortie) {
+      const recu = [];
+      const surRapport = (e) => {
+        const d = new Uint8Array(e.data.buffer, e.data.byteOffset, e.data.byteLength);
+        noter(`  ← rapport n° ${e.reportId || 0} : ${hexa(d)}   « ${texte(d)} »`);
+        recu.push(...facon.deballer(Array.from(d)));
+      };
+      appareil.addEventListener('inputreport', surRapport);
+      // Retour à la ligne d'abord : un essai précédent mal emballé ne se colle pas devant « PING ».
+      const ping = Array.from(new TextEncoder().encode('\nPING\n'));
+      const rapport = new Uint8Array(sortie.octets);
+      rapport.set(facon.emballer(ping, sortie.octets).slice(0, sortie.octets));
+      noter(`Essai « ${facon.nom} » → rapport n° ${sortie.id} : ${hexa(rapport)}`);
+      try {
+        await appareil.sendReport(sortie.id, rapport);
+      } catch (e) {
+        noter(`  envoi refusé : ${e.message}`);
+      }
+      for (let i = 0; i < 20 && !/PONG[^\n]*\n/.test(String.fromCharCode(...recu)); i++) await attendre(100);
+      appareil.removeEventListener('inputreport', surRapport);
+      const reponse = String.fromCharCode(...recu);
+      noter(`  lu : « ${texte(recu)} »`);
+      const m = /PONG v2 [^\n]*/.exec(reponse);
+      return m ? m[0].trim() : null;
+    }
+
+    $('essayer').addEventListener('click', async () => {
+      lignes.length = 0;
+      noter(`Essai du ${new Date().toLocaleString('fr-FR')} · ${navigator.userAgent}`);
+      if (!navigator.hid) {
+        noter('Ce navigateur ne connaît pas WebHID.');
+        return dire('Ce navigateur ne sait pas parler à la clé : ouvre cette page avec Chrome ou Edge sur un ordinateur.', 'ecart');
+      }
+      let appareil;
+      try {
+        [appareil] = await navigator.hid.requestDevice({ filters: [] });
+      } catch (e) {
+        noter('Fenêtre refusée : ' + e.message);
+      }
+      if (!appareil) return dire('Aucune clé choisie. Branche la clé, puis clique à nouveau sur « Essayer la clé » et choisis-la dans la liste.', 'ecart');
+      decrire(appareil);
+      try {
+        if (!appareil.opened) await appareil.open();
+      } catch (e) {
+        noter('Ouverture impossible : ' + e.message);
+        return dire('La clé est déjà utilisée (mBlock, autre onglet de Labo Blocs ?). Ferme-les, puis réessaie.', 'ecart');
+      }
+      const sortie = rapportSortie(appareil);
+      let trouvee = null;
+      for (const facon of FACONS) {
+        const pong = await essayerFacon(appareil, facon, sortie);
+        if (pong) {
+          trouvee = { facon, pong };
+          break;
+        }
+      }
+      await appareil.close().catch(() => {});
+      if (trouvee && trouvee.facon === FACONS[0]) {
+        noter(`Résultat : le robot répond « ${trouvee.pong} » (façon de Labo Blocs).`);
+        dire(`La clé et le robot se parlent : « ${trouvee.pong} ». Labo Blocs peut utiliser la clé (« Connecter par la clé 2.4G »).`, 'ok');
+      } else if (trouvee) {
+        noter(`Résultat : le robot répond « ${trouvee.pong} », mais seulement avec la façon « ${trouvee.facon.nom} ».`);
+        dire('Le robot répond, mais pas avec la façon de Labo Blocs : envoie le compte rendu, Labo Blocs sera corrigé pour cette clé.', 'ecart');
+      } else {
+        noter('Résultat : aucune réponse « PONG » du robot.');
+        dire('Le robot ne répond pas par la clé. Vérifie que le robot est allumé, que les deux lumières ne clignotent pas, et que le programme de base de Labo Blocs est installé (au câble). Sinon, envoie le compte rendu.', 'ecart');
+      }
+    });
+
+    $('copier').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(lignes.join('\n'));
+        dire('Compte rendu copié : colle-le dans ton message.', 'ok');
+      } catch {
+        dire('Copie impossible : sélectionne le texte du compte rendu à la main.', 'ecart');
+      }
+    });
+  })();
+</script>
+</body>
+</html>
