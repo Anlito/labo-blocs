@@ -356,6 +356,21 @@
     for (const f of prog.fils) {
       // « Quand la caméra reconnaît X » (ou « ne reconnaît plus X ») : une boucle qui surveille la caméra et lance le
       // corps une fois à chaque changement (variable cachée « déjà vu »). Rien de nouveau pour la machine virtuelle.
+      // « Quand la touche X est appuyée (relâchée) » : la même surveillance, avec le clavier de l'ordinateur.
+      if (f.quand === 'touche') {
+        const deja = { bloc: 'variable', variable: `\u0000touche${cameras++}` };
+        const vu = { bloc: 'comparaison', op: '=', a: { bloc: 'ext', extension: 4, commande: 1, arguments: [CARTES().codeTouche(f.touche)] }, b: 1 };
+        const noter = (v) => ({ bloc: 'affecter', variable: deja.variable, valeur: v });
+        const corps = f.corps || [];
+        const garde = f.front === 'relache'
+          ? { bloc: 'si_sinon', condition: vu, alors: [noter(1)], sinon: [{ bloc: 'si_alors', condition: deja, alors: [noter(0), ...corps] }] }
+          : { bloc: 'si_sinon', condition: vu, alors: [{ bloc: 'si_alors', condition: { bloc: 'non', a: deja }, alors: [noter(1), ...corps] }], sinon: [noter(0)] };
+        if (f.id !== undefined) carte.push([code.length, f.id]);
+        fils.push({ type: FIL.boucle, broche: 0, adresse: code.length });
+        instruction(garde);
+        o8(OP.FIN);
+        continue;
+      }
       if (f.quand === 'camera') {
         const deja = { bloc: 'variable', variable: `\u0000camera${cameras++}` };
         const vu = { bloc: 'comparaison', op: '=', a: { bloc: 'ext', extension: 3, commande: 1, arguments: [Number(f.etiquette) || 0] }, b: 1 };

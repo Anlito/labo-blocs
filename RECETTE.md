@@ -323,3 +323,18 @@ de ligne sur le port 2). Page des élèves › « Découverte du mBot » › exe
 | 22.8 | Le même programme « Dans la carte », robot débranché | Même chose qu'en direct | |
 | 22.9 | « Vider la carte » | L'afficheur s'éteint | |
 
+## 23. Clavier de l'ordinateur (toutes les cartes)
+
+Blocs « quand la touche … est appuyée / relâchée » et « la touche … est appuyée » (catégorie « Clavier ») : flèches,
+espace, lettres, chiffres. Comme la caméra, le clavier est dans l'ordinateur : simulateur et « En direct » seulement.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 23.1 | « Découverte du mBot » › exercice 5 « Télécommande au clavier » | Catégorie « Clavier » ; modes Simulateur et En direct (pas « Dans la carte ») | |
+| 23.2 | Simulateur : « Lancer », tenir la flèche haut, puis la flèche bas, puis rien | Le robot avance, recule, s'arrête ; sous le simulateur : « touche appuyée : flèche haut » ; la page ne défile pas | |
+| 23.3 | « Vérifier mon programme » avec un programme juste, puis avec la flèche bas qui avance | Réussite ; sinon : une phrase qui commence par « Quand la touche flèche bas est appuyée, … » (ambre) | |
+| 23.4 | **En direct par la clé 2.4G**, robot par terre : flèches haut et bas | Le vrai robot avance et recule tant que la touche est tenue, s'arrête quand on la lâche | |
+| 23.5 | Même chose avec une Uno (LED D9 : « quand la touche espace est appuyée → allumer ») et une micro:bit | La vraie LED s'allume à l'appui sur espace | |
+| 23.6 | Un exercice libre avec les blocs du clavier, mode « Dans la carte » › « Envoyer mon programme » | Message : « Ton programme utilise le clavier de l'ordinateur… Essaie-le en mode « En direct ». » | |
+| 23.7 | Pendant que le programme tourne, taper dans un champ de texte (ex. renommer une étiquette) | Les touches vont dans le champ, pas au programme | |
+

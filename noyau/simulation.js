@@ -121,6 +121,9 @@
       },
       ext(e, c, args) {
         if (e === 3) return camera(c, args); // la caméra est dans l'ordinateur : rien ne part vers la carte
+        // Clavier de l'ordinateur : une touche est une entrée du simulateur (« touche:haut »), appuyée par la page ou par
+        // un scénario, comme un bouton. Rien ne part vers la carte.
+        if (e === 4) return c === 1 && sim.entrees[CARTES().entreeTouche(CARTES().toucheDuCode(args[0]))] ? 1 : 0;
         if (opts.extension) return Number(opts.extension(e, c, args)) || 0;
         const r = carteSimulee ? Number(carteSimulee.ext(e, c, args)) || 0 : 0;
         // Mode « En direct » : la commande part aussi vers la vraie carte (noyau/direct.js).

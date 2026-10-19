@@ -151,6 +151,20 @@
       tooltip: 'Les blocs placés ici s’exécutent une fois chaque fois que l’IA de la caméra se met à reconnaître (ou cesse de reconnaître) cette étiquette.',
     },
     {
+      // Clavier de l'ordinateur : simulateur et mode « En direct » (pas « Dans la carte »).
+      type: 'quand_touche',
+      message0: '%1 quand la touche %2 est %3 %4 %5',
+      args0: [
+        image('clavier', 'Clavier'),
+        { type: 'field_dropdown', name: 'TOUCHE', options: A.TOUCHES || [['espace', 'espace']] },
+        { type: 'field_dropdown', name: 'FRONT', options: [['appuyée', 'appui'], ['relâchée', 'relache']] },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' },
+      ],
+      style: 'debut',
+      tooltip: 'Les blocs placés ici s’exécutent une fois à chaque appui (ou relâchement) sur cette touche du clavier de l’ordinateur. Simulateur et mode « En direct » seulement.',
+    },
+    {
       type: 'repeter_n',
       message0: 'répéter %1 fois %2 %3',
       args0: [{ type: 'input_value', name: 'FOIS', check: 'Number' }, { type: 'input_dummy' }, { type: 'input_statement', name: 'DO' }],
@@ -319,7 +333,7 @@
 
   // Blocs des cartes (mBot, micro:bit), décrits dans noyau/cartes.js.
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
-    const args = [d.categorie === 'camera' ? image('camera', 'Caméra') : image('puzzle', 'Bloc de la carte')];
+    const args = [d.categorie === 'camera' ? image('camera', 'Caméra') : d.categorie === 'clavier' ? image('clavier', 'Clavier') : image('puzzle', 'Bloc de la carte')];
     let n = 1;
     const message = d.texte.replace(/%([A-Z]+)/g, (m, nom) => {
       n++;
@@ -350,7 +364,7 @@
     { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard'] },
     { nom: 'Variables', cle: 'variables', couleur: COULEURS.variable, blocs: ['affecter', 'ajouter_a', 'variable', 'nombre'] },
     // Une carte à la fois : la palette d'un exercice ne montre que les blocs autorisés.
-    ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: c.cle === 'camera' ? 'camera' : 'puzzle', carte: c.carte, blocs: c.cle === 'camera' ? ['quand_camera'].concat(c.blocs) : c.blocs })),
+    ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: c.cle === 'camera' || c.cle === 'clavier' ? c.cle : 'puzzle', carte: c.carte, blocs: c.cle === 'camera' ? ['quand_camera'].concat(c.blocs) : c.cle === 'clavier' ? ['quand_touche'].concat(c.blocs) : c.blocs })),
   ];
 
   const FORMES_PALETTE = {
@@ -360,6 +374,8 @@
     led_etat: { fields: { ETAT: '1', BROCHE: 'D2' } },
     quand_bouton: { fields: { BROCHE: 'D2', FRONT: 'appui' } },
     quand_camera: { fields: { FRONT: 'voit', ETIQUETTE: '1' } },
+    quand_touche: { fields: { TOUCHE: 'espace', FRONT: 'appui' } },
+    touche_appuyee: { fields: { TOUCHE: 'espace' } },
     repeter_n: { inputs: { FOIS: { shadow: { type: 'nombre', fields: { NUM: 3 } } } } },
     ajouter_a: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
     son: { fields: { BROCHE: 'D2' }, inputs: { FREQUENCE: { shadow: { type: 'nombre', fields: { NUM: 440 } } }, DUREE: { shadow: { type: 'nombre', fields: { NUM: 0.5 } } } } },
@@ -642,6 +658,7 @@
   const NOMS_BLOCS_BASE = {
     quand_bouton: 'quand le bouton est appuyé',
     quand_camera: 'quand la caméra reconnaît…',
+    quand_touche: 'quand la touche … est appuyée',
     led_etat: 'contrôler la LED',
     son: 'jouer une note',
     attendre: 'attendre … seconde(s)',

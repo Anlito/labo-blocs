@@ -640,7 +640,7 @@
   // ----- Scénarios de test -----
 
   // Composants branchés + ce qui est sur la carte (boutons A et B, logo, moteurs du mBot).
-  const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()));
+  const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()), A.composantsClavier(e));
   function sorties(e) {
     return tousComposants(e).filter((c) => c.type !== 'bouton');
   }

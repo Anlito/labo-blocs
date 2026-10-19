@@ -132,6 +132,7 @@
         <span class="simu-note" aria-live="polite"></span>
         <div class="chrono" aria-label="Temps de la simulation"><span data-icone="horloge" data-epaisseur="2.4"></span><span class="chrono-valeur">00:00</span></div>
       </div>
+      <p class="simu-clavier" hidden></p>
       <div class="simu-commandes">
         <button type="button" class="btn-lancer" aria-pressed="false"><span data-icone="lecture"></span>Lancer</button>
         <button type="button" class="btn-commande btn-pause" disabled><span data-icone="pause" data-epaisseur="3.4"></span>Pause</button>

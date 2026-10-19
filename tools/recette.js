@@ -579,6 +579,45 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `palette : catégorie Afficheur ; grille : ${compte} → « ${valeur} » ; simulateur : « ${dessin} », puis « ${nombre} » (3,14) ; en direct : ${envoyes.join(' · ')}`;
   });
 
+  await critere('Clavier de l’ordinateur : le mBot piloté aux flèches (simulateur, vérification, En direct)', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-mbot&enseignant=1&exercice=mbot-05', { carte: { modele: 'mcore', firmware: '0.3' } });
+    const categories = await p.$$eval('.cat-libelle', (l) => l.map((x) => x.textContent.trim()));
+    verifier(categories.includes('Clavier'), 'catégorie Clavier absente : ' + categories.join(', '));
+    await charger(p, 'mbot-05', 'solution');
+    await pause(200);
+    await p.click('.btn-lancer');
+    await pause(300);
+    await p.keyboard.down('ArrowUp');
+    await pause(400);
+    const haut = await p.evaluate(() => ({ moteur: document.querySelector('[data-etat="moteur gauche"]').textContent, clavier: document.querySelector('.simu-clavier').textContent, defile: document.querySelector('.colonne-test').scrollTop }));
+    await p.keyboard.up('ArrowUp');
+    await pause(300);
+    const lache = await p.$eval('[data-etat="moteur gauche"]', (x) => x.textContent);
+    verifier(haut.moteur === '50 % en avant' && /flèche haut/.test(haut.clavier) && lache === 'arrêté', JSON.stringify({ haut, lache }));
+    await p.click('.btn-verifier');
+    await pause(400);
+    verifier(await p.$eval('.resultat', (e) => e.classList.contains('reussi')), 'la solution de l’exercice au clavier ne réussit pas');
+    const modes = await p.$$eval('.btn-mode', (l) => l.filter((b) => !b.hidden).map((b) => b.dataset.mode));
+    verifier(modes.join() === 'simulateur,direct', 'modes : ' + modes.join());
+    // En direct (câble) : la flèche haut fait partir l'ordre des moteurs, rien d'autre (le clavier reste dans l'ordinateur).
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    const e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle);
+    await p.click('.btn-lancer');
+    await pause(500);
+    await p.keyboard.down('ArrowUp');
+    await pause(500);
+    const avance = await p.evaluate(() => carteVirtuelle.extensions.slice(-1)[0]);
+    await p.keyboard.up('ArrowUp');
+    await pause(500);
+    const arret = await p.evaluate(() => carteVirtuelle.extensions.slice(-1)[0]);
+    const clavierEnvoye = await p.evaluate(() => carteVirtuelle.extensions.some((x) => /^X 4 /.test(x)));
+    verifier(avance === 'X 1 1 50 50' && arret === 'X 1 1 0 0' && !clavierEnvoye, `${avance} / ${arret} / clavier envoyé : ${clavierEnvoye}`);
+    await p.close();
+    return `palette : catégorie Clavier ; simulateur : flèche haut tenue → « ${haut.moteur} » (« ${haut.clavier} »), relâchée → « ${lache} » ; vérification réussie ; modes ${modes.join(', ')} ; en direct : « ${avance} » puis « ${arret} »`;
+  });
+
   // ---------- Jalon 4 : En direct (carte virtuelle) ----------
 
   const sorties = (p) => p.evaluate(() => JSON.stringify(carteVirtuelle.sorties));

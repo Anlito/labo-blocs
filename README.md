@@ -103,3 +103,7 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   nombre », « afficher l'heure ». Simulateur (l'afficheur sous le robot), « En direct » et « Dans la carte » : le
   programme de la carte du mBot passe en **0.3** (l'Uno et la micro:bit restent en 0.2). Exercice d'exemple
   « L'afficheur » (Découverte du mBot) — [RECETTE.md](RECETTE.md) §22.
+- **Clavier de l'ordinateur, en recette (19/10/2026)** : blocs « quand la touche … est appuyée » et « la touche … est
+  appuyée » (flèches, espace, lettres, chiffres), pour piloter la carte ou le robot depuis l'ordinateur : simulateur
+  et « En direct » (Uno, micro:bit, mBot par le câble ou la clé 2.4G). Exercice d'exemple « Télécommande au clavier »
+  — [RECETTE.md](RECETTE.md) §23.

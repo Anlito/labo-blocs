@@ -22,7 +22,8 @@
   const M = typeof module === 'object' && module.exports ? require('./simulation.js') : global.LaboBlocs;
   const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
   // Composants branchés + ce qui est déjà sur la carte (boutons A et B de la micro:bit, moteurs du mBot…).
-  const tous = (exercice) => (exercice.composants || []).concat(exercice.carte && exercice.carte !== 'uno' ? CARTES().composantsCarte(exercice.carte) : []);
+  // Les touches du clavier de l'ordinateur aussi, dans les exercices qui ont ses blocs (« la touche flèche haut »).
+  const tous = (exercice) => (exercice.composants || []).concat(exercice.carte && exercice.carte !== 'uno' ? CARTES().composantsCarte(exercice.carte) : [], CARTES().composantsClavier(exercice));
 
   const SEUIL = 5; // ms : deux changements plus proches sont simultanés
   const TOLERANCE = 300; // ms sur les durées
@@ -125,9 +126,11 @@
     function contexte(etape) {
       if (etape.contexte) return etape.contexte;
       const nom = (b) => nomComposant(composant(exercice, b));
-      if (maintenus.length === 1) return `quand ${nom(maintenus[0])} est appuyé`;
-      if (maintenus.length > 1) return `quand ${maintenus.map(nom).join(' et ')} sont appuyés`;
-      if (relache) return `quand ${nom(relache)} est relâché`;
+      // « la touche … est appuyée » : accord au féminin (composant « feminin »).
+      const e = (liste) => (liste.every((b) => composant(exercice, b).feminin) ? 'e' : '');
+      if (maintenus.length === 1) return `quand ${nom(maintenus[0])} est appuyé${e(maintenus)}`;
+      if (maintenus.length > 1) return `quand ${maintenus.map(nom).join(' et ')} sont appuyé${e(maintenus)}s`;
+      if (relache) return `quand ${nom(relache)} est relâché${e([relache])}`;
       if (appuis.length) {
         const derniers = appuis.slice(-2).map(nom);
         return derniers.length === 2

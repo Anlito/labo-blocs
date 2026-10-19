@@ -151,6 +151,11 @@
       ajouter('// La caméra et son IA sont dans l’ordinateur : ce programme marche seulement en mode « En direct ».');
       ajouter('// Ici, les blocs de la caméra valent 0 et les « quand la caméra … » ne sont pas écrits.');
     }
+    // Clavier de l'ordinateur : même chose que la caméra.
+    if (P.utiliseClavier && P.utiliseClavier(v1)) {
+      ajouter('// Le clavier est celui de l’ordinateur : ce programme marche seulement en mode « En direct ».');
+      ajouter('// Ici, « la touche … est appuyée » vaut 0 et les « quand la touche … » ne sont pas écrits.');
+    }
     if (servos.size) ajouter('#include <Servo.h>');
     ajouter('');
     for (const n of trier(servos)) ajouter(`Servo servo${n};`);

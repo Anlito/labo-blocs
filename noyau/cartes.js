@@ -18,6 +18,8 @@
 //   Extension 3 = caméra (toutes les cartes) : 1 la caméra reconnaît (étiquette n°, 0 = rien) → 0/1 ·
 //     2 certitude de l'IA pour l'étiquette → 0..100. La webcam et l'IA sont dans l'ordinateur : ces commandes ne
 //     partent jamais vers la carte (simulateur et mode « En direct » seulement, jamais « Dans la carte »).
+//   Extension 4 = clavier de l'ordinateur (toutes les cartes) : 1 la touche (code) est appuyée → 0/1. Comme la caméra,
+//     le clavier est dans l'ordinateur : simulateur et « En direct » seulement.
 (function (global) {
   'use strict';
 
@@ -240,6 +242,31 @@
     return colonnes.length <= 16 ? { ecran: centrer(colonnes) } : { colonnes, debut };
   }
 
+  // ---------- Clavier de l'ordinateur ----------
+  // Touches proposées : les flèches, espace, les lettres et les chiffres. Valeur du menu : nom court ; code envoyé au
+  // programme : flèches 1 à 4, espace 32, chiffres et lettres (majuscules) en ASCII.
+  const TOUCHES = [['flèche haut', 'haut'], ['flèche bas', 'bas'], ['flèche gauche', 'gauche'], ['flèche droite', 'droite'], ['espace', 'espace']]
+    .concat('ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((l) => [l, l.toLowerCase()]))
+    .concat('0123456789'.split('').map((c) => [c, c]));
+  const CODES_TOUCHES = { haut: 1, bas: 2, gauche: 3, droite: 4, espace: 32 };
+  const codeTouche = (t) => CODES_TOUCHES[t] || (/^[a-z0-9]$/.test(t) ? t.toUpperCase().charCodeAt(0) : 0);
+  const toucheDuCode = (c) => (TOUCHES.find(([, t]) => codeTouche(t) === Number(c)) || [null, null])[1];
+  // Nom d'une touche du clavier de l'ordinateur (event.key) → valeur du menu, ou null.
+  function toucheDuClavier(cle) {
+    const fleches = { ArrowUp: 'haut', ArrowDown: 'bas', ArrowLeft: 'gauche', ArrowRight: 'droite', ' ': 'espace', Spacebar: 'espace' };
+    if (fleches[cle]) return fleches[cle];
+    const l = String(cle || '').toLowerCase();
+    return /^[a-z0-9]$/.test(l) ? l : null;
+  }
+  // Entrée du simulateur pour une touche (comme un bouton : les scénarios peuvent l'appuyer) : « touche:haut ».
+  const entreeTouche = (t) => 'touche:' + t;
+  const BLOCS_CLAVIER = ['quand_touche', 'touche_appuyee'];
+  // Les touches, comme des boutons déjà là, dans les exercices qui proposent les blocs du clavier.
+  function composantsClavier(exercice) {
+    if (!exercice || !(exercice.blocsAutorises || []).some((b) => BLOCS_CLAVIER.includes(b))) return [];
+    return TOUCHES.map(([nom, t]) => ({ type: 'bouton', broche: entreeTouche(t), libelle: `la touche ${nom}`, integre: true, clavier: true, feminin: true }));
+  }
+
   // Description d'un bloc :
   //   carte, categorie, sorte ('instruction' | 'valeur' | 'condition'), texte (message Blockly : %CHAMP ou %ENTREE),
   //   champs { NOM: options [[libellé, valeur]] | 'texte' | 'etiquette' (caméra) | 'dessin' (afficheur du mBot) }, entrees { NOM: valeur de départ }, derouler(p) → blocs de base
@@ -263,6 +290,15 @@
       champs: { ETIQUETTE: 'etiquette' },
       defauts: { ETIQUETTE: '1' },
       derouler: (p) => ext(3, 2, [Number(p.etiquette) || 0]),
+    },
+    // ----- Clavier de l'ordinateur (toutes les cartes) -----
+    touche_appuyee: {
+      carte: '*',
+      categorie: 'clavier',
+      sorte: 'condition',
+      texte: 'la touche %TOUCHE est appuyée',
+      champs: { TOUCHE: TOUCHES },
+      derouler: (p) => cmp('=', ext(4, 1, [codeTouche(p.touche)]), 1),
     },
     // ----- mBot : moteurs -----
     mbot_deplacer: {
@@ -462,6 +498,7 @@
   // Catégories de la palette pour ces blocs (famille « extensions » : lilas, pictogramme puzzle).
   const CATEGORIES_CARTES = [
     { nom: 'Caméra', cle: 'camera', carte: '*' },
+    { nom: 'Clavier', cle: 'clavier', carte: '*' },
     { nom: 'Moteurs', cle: 'mbot_moteurs', carte: 'mbot' },
     { nom: 'Capteurs', cle: 'mbot_capteurs', carte: 'mbot' },
     { nom: 'LED et son', cle: 'mbot_led_son', carte: 'mbot' },
@@ -798,7 +835,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur };
+  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);
