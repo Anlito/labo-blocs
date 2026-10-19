@@ -302,7 +302,7 @@
 
   // carte : celle du parcours (ses boutons et moteurs servent aussi dans les étapes).
   function nouvelleEtape(cle, exercice, carte) {
-    const composants = ((exercice && exercice.composants) || []).concat(carte && carte !== 'uno' ? K().composantsCarte(carte) : []);
+    const composants = ((exercice && exercice.composants) || []).concat(carte && carte !== 'uno' ? K().composantsCarte(carte) : [], K().composantsClavier(exercice));
     const bouton = (composants.find((c) => c.type === 'bouton') || {}).broche || 'D2';
     const sortie = composants.find((c) => c.type !== 'bouton') || { type: 'led', broche: 'D2' };
     const autre = composants.filter((c) => c.type !== 'bouton')[1] || { broche: 'D3' };
@@ -336,14 +336,15 @@
 
   // Phrase d'une étape, pour le professeur : « Vérifier que la LED D9 est allumée ».
   function decrireEtape(etape, exercice, carte) {
-    const liste = (exercice.composants || []).concat(K().composantsCarte(carte || exercice.carte));
+    const liste = (exercice.composants || []).concat(K().composantsCarte(carte || exercice.carte), K().composantsClavier(exercice));
     const trouver = (b) => liste.find((x) => x.broche === b);
     const c = (b) => V.nomComposant(trouver(b) || { type: /^D[56]$/.test(b) ? 'servo' : 'led', broche: b });
     const etat = (b, v) => {
       const comp = trouver(b);
       if (comp && comp.type === 'servo') return `${c(b)} est à ${nombreFr(v)}°`;
       if (comp && comp.type === 'moteur') return v ? `${c(b)} tourne à ${nombreFr(v)} %` : `${c(b)} est arrêté`;
-      return `${c(b)} est ${v ? (comp && comp.type === 'bouton' ? 'appuyé' : 'allumée') : comp && comp.type === 'bouton' ? 'relâché' : 'éteinte'}`;
+      const f = comp && comp.feminin ? 'e' : '';
+      return `${c(b)} est ${v ? (comp && comp.type === 'bouton' ? 'appuyé' + f : 'allumée') : comp && comp.type === 'bouton' ? 'relâché' + f : 'éteinte'}`;
     };
     const etats = (o) => Object.entries(o || {}).map(([b, v]) => etat(b, v)).join(' et ');
     const debut = etape.contexte ? etape.contexte.charAt(0).toUpperCase() + etape.contexte.slice(1) + ', v' : 'V';
@@ -353,7 +354,7 @@
       case 'appuyer':
         return `Appuyer brièvement sur ${c(etape.appuyer)}`;
       case 'maintenir':
-        return `Maintenir appuyé ${c(etape.maintenir)}`;
+        return `Maintenir appuyé${(trouver(etape.maintenir) || {}).feminin ? 'e' : ''} ${c(etape.maintenir)}`;
       case 'relacher':
         return `Relâcher ${c(etape.relacher)}`;
       case 'regler':

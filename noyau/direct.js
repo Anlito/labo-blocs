@@ -81,7 +81,7 @@
       return colonnes > 16 ? (colonnes + 16) * K().DUREE_COLONNE_MATRICE : Infinity;
     }
     function envoyerExtension(e, c, args) {
-      if (e === 3) return; // caméra : dans l'ordinateur, jamais vers la carte
+      if (e === 3 || e === 4) return; // caméra, clavier : dans l'ordinateur, jamais vers la carte
       const ligne = ligneExtension(e, c, args);
       if ((MORCEAUX[e] || []).includes(c)) return morceaux.push(ligne);
       const ordre = morceaux.concat(ligne);

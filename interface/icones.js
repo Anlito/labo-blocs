@@ -25,6 +25,7 @@
     pas: 'M6 5v14M10 5l9 7-9 7z',
     oeil: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0.01 0z',
     camera: 'M3 8h3l2-3h8l2 3h3v11H3zM12 10a3.5 3.5 0 1 0 0.01 0z',
+    clavier: 'M2 6h20v12H2zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10',
     suivant: 'M9 5l7 7-7 7',
     // Catégories de blocs
     lumiere: 'M8 15V10a4 4 0 0 1 8 0v5zM6 15h12M10 15v5M14 15v4',

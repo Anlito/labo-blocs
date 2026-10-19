@@ -760,6 +760,9 @@
           if (!p || (p.erreurs && p.erreurs.length)) {
             return connexion.signaler({ cle: 'programme', message: 'Ton programme a un bloc incomplet ou inconnu : complète-le, puis réessaie.' });
           }
+          if (p.clavier) {
+            return connexion.signaler({ cle: 'programme', message: 'Ton programme utilise le clavier de l’ordinateur : une fois dans la carte, il ne le verrait pas. Essaie-le en mode « En direct ».' });
+          }
           const r = await connexion.envoyer(p.octets);
           if (r && o.surEnvoi) o.surEnvoi(Object.assign({ octets: p.octets.length }, r));
           return r;

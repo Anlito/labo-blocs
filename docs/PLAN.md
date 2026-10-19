@@ -467,4 +467,14 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    (lien dans Réglages › Matériel) choisit la clé, décrit ses rapports HID, envoie `PING` emballé comme Labo Blocs
    (longueur + octets), puis d'autres façons si le robot ne répond pas, et garde un compte rendu à copier. Rien n'est
    envoyé ailleurs que vers la clé.
+36. **Clavier de l'ordinateur (19/10/2026)**, demande de Thomas (piloter en direct Arduino, micro:bit et mBot, le mBot
+   aussi par la clé 2.4G) : blocs `quand_touche` (appuyée / relâchée) et `touche_appuyee`, catégorie « Clavier » (toutes
+   les cartes) ; flèches, espace, lettres, chiffres.
+   - Extension 4 (1 : la touche, code → 0/1), jamais envoyée à la carte ; « quand la touche » compilé comme
+     « quand la caméra » (boucle de surveillance). Une touche est une entrée du simulateur (`touche:haut`) : les
+     scénarios l'appuient comme un bouton (« Maintenir appuyée la touche flèche haut », accord au féminin).
+   - Page : les touches vont au programme pendant qu'il tourne (capture avant l'éditeur de blocs, ni défilement ni clic
+     de bouton), jamais dans un champ de texte ni avec Ctrl / Alt ; touches lâchées si la fenêtre perd la main ; ligne
+     « touche appuyée : … » sous le simulateur. « Dans la carte » refuse un programme qui utilise le clavier.
+   - Exercice d'exemple `mbot-05` « Télécommande au clavier » (simulateur et direct), Découverte du mBot 1.4.0.
 

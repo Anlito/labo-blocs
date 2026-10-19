@@ -1,11 +1,11 @@
-// Parcours « Découverte du mBot », version 1.3.0 (Labo Blocs).
+// Parcours « Découverte du mBot », version 1.4.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "decouverte-mbot",
   "titre": "Découverte du mBot",
-  "versionParcours": "1.3.0",
+  "versionParcours": "1.4.0",
   "date": "2026-10-20",
   "moteurMinimum": "0.3.0",
   "carte": "mbot",
@@ -283,6 +283,122 @@ definirParcours({
       "solutionReference": {
         "demarrage": [],
         "boucle": []
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "mbot-05",
+      "numero": "5",
+      "titre": "Télécommande au clavier",
+      "defi": false,
+      "consigne": "Pilote le robot avec le clavier de l’ordinateur, en mode « En direct » (par le câble ou par la clé 2.4G).\nTant que la flèche haut est appuyée, le robot avance à la vitesse 50 %. Tant que la flèche bas est appuyée, il recule à la vitesse 50 %. Sinon, il s’arrête.",
+      "composants": [],
+      "modes": [
+        "simulateur",
+        "direct"
+      ],
+      "blocsAutorises": [
+        "quand_touche",
+        "touche_appuyee",
+        "mbot_deplacer",
+        "mbot_arreter",
+        "si_alors",
+        "si_sinon",
+        "attendre"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Flèche haut : il avance ; flèche bas : il recule ; sinon il s’arrête",
+          "etapes": [
+            {
+              "verifier": {
+                "moteur gauche": 0,
+                "moteur droit": 0
+              }
+            },
+            {
+              "maintenir": "touche:haut"
+            },
+            {
+              "verifier": {
+                "moteur gauche": 50,
+                "moteur droit": 50
+              }
+            },
+            {
+              "relacher": "touche:haut"
+            },
+            {
+              "verifier": {
+                "moteur gauche": 0,
+                "moteur droit": 0
+              }
+            },
+            {
+              "maintenir": "touche:bas"
+            },
+            {
+              "verifier": {
+                "moteur gauche": -50,
+                "moteur droit": -50
+              }
+            },
+            {
+              "relacher": "touche:bas"
+            },
+            {
+              "verifier": {
+                "moteur gauche": 0,
+                "moteur droit": 0
+              }
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Le robot regarde sans arrêt le clavier : tout se passe dans « Répéter indéfiniment ».",
+        "Blocs : « si la touche flèche haut est appuyée alors … sinon … », et dans le « sinon », un deuxième « si … sinon … » pour la flèche bas."
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "touche_appuyee",
+              "touche": "haut"
+            },
+            "alors": [
+              {
+                "bloc": "mbot_deplacer",
+                "direction": "avancer",
+                "vitesse": 50
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "si_sinon",
+                "condition": {
+                  "bloc": "touche_appuyee",
+                  "touche": "bas"
+                },
+                "alors": [
+                  {
+                    "bloc": "mbot_deplacer",
+                    "direction": "reculer",
+                    "vitesse": 50
+                  }
+                ],
+                "sinon": [
+                  {
+                    "bloc": "mbot_arreter"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "competence": "C9"
     }

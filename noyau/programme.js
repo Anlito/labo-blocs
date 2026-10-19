@@ -5,7 +5,8 @@
 // Programme v1 :
 //   { format: 'labo-blocs/programme', version: 1,
 //     fils: [ { quand: 'demarrage' | 'boucle' | 'appui' | 'relache', broche?, corps: [instruction…] }
-//             { quand: 'camera', etiquette: n° (0 = rien), front: 'voit' | 'plus', corps } ] }  (caméra : jalon 6)
+//             { quand: 'camera', etiquette: n° (0 = rien), front: 'voit' | 'plus', corps }  (caméra : jalon 6)
+//             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps } ] }  (clavier)
 // Instructions : led_etat, attendre, servo_angle, affecter, ajouter_a, si_alors, si_sinon, repeter_n, tant_que,
 //   repeter_jusqua, son ; expressions : nombre, variable, bouton_etat, valeur_haut_bas, comparaison, operation,
 //   logique, non, hasard (détail : noyau/code-octet.js). Chaque nœud venu de Blockly porte son « id ».
@@ -178,6 +179,8 @@
         fils.push({ quand: 'boucle', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_bouton') {
         fils.push({ quand: champ(b, 'FRONT') === 'relache' ? 'relache' : 'appui', broche: champ(b, 'BROCHE'), id: b.id, corps: pile(entree(b, 'DO')) });
+      } else if (b.type === 'quand_touche') {
+        fils.push({ quand: 'touche', touche: champ(b, 'TOUCHE') || 'espace', front: champ(b, 'FRONT') === 'relache' ? 'relache' : 'appui', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_camera') {
         fils.push({ quand: 'camera', etiquette: Number(champ(b, 'ETIQUETTE')) || 0, front: champ(b, 'FRONT') === 'plus' ? 'plus' : 'voit', id: b.id, corps: pile(entree(b, 'DO')) });
       } else {
@@ -340,10 +343,12 @@
     let y = 24;
     const trouver = (q) => v1.fils.find((f) => f.quand === q);
     // « Au démarrage » et « Répéter indéfiniment » sont toujours là (on ne peut pas les supprimer).
-    const ordre = [trouver('demarrage') || { quand: 'demarrage', corps: [] }, trouver('boucle') || { quand: 'boucle', corps: [] }, ...v1.fils.filter((f) => f.quand === 'appui' || f.quand === 'relache' || f.quand === 'camera')];
+    const ordre = [trouver('demarrage') || { quand: 'demarrage', corps: [] }, trouver('boucle') || { quand: 'boucle', corps: [] }, ...v1.fils.filter((f) => f.quand === 'appui' || f.quand === 'relache' || f.quand === 'camera' || f.quand === 'touche')];
     for (const f of ordre) {
       const evenement = f.quand === 'appui' || f.quand === 'relache';
-      const b = f.quand === 'camera'
+      const b = f.quand === 'touche'
+        ? { type: 'quand_touche', id: f.id || nouvelId(), x: 24, y, fields: { TOUCHE: f.touche || 'espace', FRONT: f.front === 'relache' ? 'relache' : 'appui' } }
+        : f.quand === 'camera'
         ? { type: 'quand_camera', id: f.id || nouvelId(), x: 24, y, fields: { ETIQUETTE: String(f.etiquette || 0), FRONT: f.front === 'plus' ? 'plus' : 'voit' } }
         : evenement
           ? { type: 'quand_bouton', id: f.id || nouvelId(), x: 24, y, fields: { BROCHE: f.broche, FRONT: f.quand } }
@@ -388,7 +393,7 @@
       if (!x || typeof x !== 'object') return;
       if (Array.isArray(x)) return x.forEach(voir);
       if (x.bloc) types.push(x.bloc);
-      if (x.quand) types.push(x.quand === 'appui' || x.quand === 'relache' ? 'quand_bouton' : x.quand === 'camera' ? 'quand_camera' : x.quand);
+      if (x.quand) types.push(x.quand === 'appui' || x.quand === 'relache' ? 'quand_bouton' : x.quand === 'camera' ? 'quand_camera' : x.quand === 'touche' ? 'quand_touche' : x.quand);
       for (const v of Object.values(x)) if (v && typeof v === 'object') voir(v);
     };
     voir(versV1(programme).fils);
@@ -470,7 +475,19 @@
     return oui;
   }
 
-  const api = { utiliseCamera, nomDeVariable, variablesDeSauvegarde, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  // Le programme utilise-t-il le clavier de l'ordinateur (« quand la touche … » ou « la touche … est appuyée ») ?
+  function utiliseClavier(programme) {
+    let oui = false;
+    (function parcourir(x) {
+      if (oui || !x || typeof x !== 'object') return;
+      if (Array.isArray(x)) return x.forEach(parcourir);
+      if (x.quand === 'touche' || x.bloc === 'touche_appuyee' || (x.bloc === 'ext' && x.extension === 4)) oui = true;
+      for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
+    })(programme ? versV1(programme).fils : []);
+    return oui;
+  }
+
+  const api = { utiliseCamera, utiliseClavier, nomDeVariable, variablesDeSauvegarde, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

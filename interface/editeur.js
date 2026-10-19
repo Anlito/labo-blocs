@@ -153,7 +153,7 @@
       for (const b of ws.getAllBlocks(false)) b.getSvgRoot().classList.remove('bloc-hors-programme');
       horsProgramme = [];
       for (const b of ws.getTopBlocks(false)) {
-        if (b.type === 'demarrage' || b.type === 'boucle' || b.type === 'quand_bouton' || b.type === 'quand_camera' || b.isInsertionMarker()) continue;
+        if (b.type === 'demarrage' || b.type === 'boucle' || b.type === 'quand_bouton' || b.type === 'quand_camera' || b.type === 'quand_touche' || b.isInsertionMarker()) continue;
         if (b.isDragging && b.isDragging()) continue;
         horsProgramme.push(b.id);
         b.getSvgRoot().classList.add('bloc-hors-programme');

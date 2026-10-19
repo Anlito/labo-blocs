@@ -210,6 +210,8 @@
       montrerModes(ex);
       if (vue.verrouillerCapteurs) vue.verrouillerCapteurs(etat.modeTest === 'direct');
       niveauDeLExercice(ex);
+      touches.clear();
+      verifierClavier();
       afficher();
       A.noterOuverture(D, ex.id);
       aides.changerExercice(ex);
@@ -442,7 +444,9 @@
           surArretDirect: () => arreter(),
           programme() {
             const ex = etat.exercice;
-            return A.codeOctet.compiler(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse });
+            const prog = editeur.lire().programme;
+            // clavier : le programme utilise le clavier de l'ordinateur (il ne part pas dans la carte, voir carte.js).
+            return Object.assign(A.codeOctet.compiler(prog, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse }), { clavier: !!(A.utiliseClavier && A.utiliseClavier(prog)) });
           },
           surEnvoi(r) {
             if (lecture || !etat.exercice) return;
@@ -460,6 +464,8 @@
     // ----- Simulation -----
 
     function nouvelleSimulation() {
+      touches.clear();
+      verifierClavier();
       const { programme } = editeur.lire();
       etat.sim = A.creerSimulation(programme, { composants: etat.exercice.composants, boutonsVersMasse: etat.exercice.boutonsVersMasse, carte: etat.exercice.carte, capteurs: vue && vue.capteurs });
       etat.servos = {};
@@ -478,6 +484,8 @@
       if (vue && vue.capteurs && A.capteursDepart) Object.assign(vue.capteurs, A.capteursDepart(ex.carte));
       const direct = A.creerDirect(editeur.lire().programme, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse, carte: ex.carte, capteurs: vue && vue.capteurs });
       etat.sim = direct.sim;
+      touches.clear();
+      verifierClavier();
       etat.servos = {};
       etat.rejeu = null;
       etat.mode = 'direct';
@@ -523,6 +531,49 @@
       majCommandes();
       afficher();
     }
+    // ----- Clavier de l'ordinateur (blocs « quand la touche … », « la touche … est appuyée ») -----
+    // Pendant que le programme tourne (simulateur ou « En direct »), les touches de son programme sont pour lui :
+    // elles ne font plus défiler la page ni ne cliquent les boutons. Jamais dans un champ de texte, ni avec Ctrl / Alt.
+    const touches = new Set();
+    let clavierDuProgramme = false;
+    function verifierClavier() {
+      clavierDuProgramme = !!(etat.exercice && A.utiliseClavier && A.utiliseClavier(editeur.lire().programme));
+    }
+    function toucher(t, valeur) {
+      if (valeur) touches.add(t);
+      else touches.delete(t);
+      if (etat.sim && !etat.rejeu) etat.sim.changerEntree(A.entreeTouche(t), valeur ? 1 : 0);
+      afficherClavier();
+    }
+    function lacherTouches() {
+      for (const t of [...touches]) toucher(t, false);
+    }
+    function afficherClavier() {
+      const p = $('.simu-clavier', ecran);
+      p.hidden = !clavierDuProgramme;
+      if (p.hidden) return;
+      const marche = etat.mode === 'marche' || etat.mode === 'direct';
+      const noms = [...touches].map((t) => (A.TOUCHES.find((x) => x[1] === t) || [t])[0]);
+      p.textContent = !marche
+        ? 'Ton programme utilise le clavier : clique sur « Lancer », puis appuie sur ses touches.'
+        : `Clavier de l’ordinateur : ${noms.length ? `touche${noms.length > 1 ? 's' : ''} appuyée${noms.length > 1 ? 's' : ''} : ${noms.join(', ')}` : 'aucune touche appuyée'}.`;
+    }
+    function ecouterClavier(e, valeur) {
+      if (ecran.hidden || !clavierDuProgramme || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = A.toucheDuClavier(e.key);
+      const cible = e.target;
+      if (!t || (cible && cible.closest && cible.closest('input, textarea, select, [contenteditable="true"], dialog'))) return;
+      if (etat.mode !== 'marche' && etat.mode !== 'direct') return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (valeur && e.repeat) return;
+      toucher(t, valeur);
+    }
+    // Phase de capture : avant l'éditeur de blocs (les flèches y déplaceraient le curseur).
+    addEventListener('keydown', (e) => ecouterClavier(e, true), true);
+    addEventListener('keyup', (e) => ecouterClavier(e, false), true);
+    addEventListener('blur', lacherTouches);
+
     function appliquerBoutonsAvant() {
       if (!etat.boutonsAvant || !etat.sim) return;
       for (const [b, v] of Object.entries(etat.boutonsAvant)) etat.sim.changerEntree(b, v);
@@ -544,6 +595,7 @@
     }
     function majCommandes() {
       const marche = etat.mode === 'marche' || etat.mode === 'direct';
+      afficherClavier();
       const b = $('.btn-lancer', ecran);
       b.classList.toggle('actif', marche);
       b.setAttribute('aria-pressed', String(marche));
@@ -751,6 +803,8 @@
 
     let minuteurSecours = null;
     function programmeModifie() {
+      verifierClavier();
+      afficherClavier();
       clearTimeout(minuteurSecours);
       minuteurSecours = setTimeout(() => session.aEnregistrer(false), 800);
     }
