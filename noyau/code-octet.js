@@ -437,7 +437,12 @@
     octets.set([0x4c, 0x42, FORMAT, longueur & 0xff, longueur >> 8, crc & 0xff, crc >> 8]);
     octets.set(corps, 7);
     if (variables.size > 24) erreurs.push('Trop de variables (24 au plus).');
-    if (fils.length > 6) erreurs.push('Trop de blocs « quand… » (6 au plus).');
+    // La carte garde 6 fils au plus. Un programme avec « quand la touche… » ou « quand la caméra… » ne va jamais dans la
+    // carte (il tourne dans l'ordinateur) : 16 fils, une touche ou une étiquette par bloc (ex. les 4 flèches, appuyées
+    // et relâchées).
+    const dansLOrdinateur = prog.fils.some((f) => f.quand === 'touche' || f.quand === 'camera');
+    const maxFils = dansLOrdinateur ? 16 : 6;
+    if (fils.length > maxFils) erreurs.push(`Trop de blocs « quand… » : ${maxFils} au plus, avec « Au démarrage » et « Répéter indéfiniment ».`);
     const nomsVariables = [];
     for (const [nom, n] of variables) nomsVariables[n] = nom;
     return {
