@@ -510,3 +510,20 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Code Arduino : fonction `positionJoystick(broche)`, `pinMode(SW, INPUT_PULLUP)`. Éditeur de parcours : sorte
      « Joystick » (3 broches, cases « Inverser »). Exercice libre : le joystick est ajouté aux composants quand le
      programme l'utilise.
+
+41. **Ré-étalonner et valeur brute du joystick (19/10/2026)**, pour le projet Labyrinthe robotisé (5e et 4e, Arduino
+   Uno : joystick A0 / A1 / SW D4, servomoteurs D5 / D6, plus de mBlock). Décision de Thomas : le joystick doit faire
+   tourner un servomoteur de 0° à 180° ; on garde le vocabulaire de mBlock et de la fiche « à retenir ».
+   - Bloc `reetalonner` (Calculs) : « ré-étalonner v depuis (a, b) vers (c, d) », départ (0, 1023) → (0, 180). Déroulé
+     en blocs de base (`deroulerReetalonner`, `noyau/code-octet.js`) : c + (v − a) × (d − c) ÷ (b − a), arrondi à
+     l'entier (t − (t mod 1), t = x + 0,5) ; a = b → c. Aucun nouvel ordre pour les cartes. Code Arduino :
+     `reetalonner()` avec `floor(… + 0.5)` (même résultat que le simulateur).
+   - Bloc `joystick_valeur` (Joystick) : « valeur du joystick sur X / Y (0 à 1023) », lecture analogique de la broche
+     de l'axe, sans « Inverser » (déroulé dans `deroulerJoystick`). Code Arduino : `analogRead()`.
+   - Moteur **0.4.0** : un parcours qui utilise ces blocs demande `moteurMinimum: '0.4.0'` (un module plus ancien le
+     refuse au lieu de dire « Bloc inconnu »). Les parcours existants ne changent pas.
+   - Parcours **`labyrinthe` 1.0.0** (`parcours/labyrinthe/parcours.js`, modes simulateur et carte) : 1 plateau à plat
+     (D5 à 90°), 2 pencher le plateau (60° ↔ 120°), 3 lire le joystick (VRX > 700), 4 trois positions (directions),
+     5 ré-étalonner un axe (1023, 0) → (0, 180), 6 les deux axes, 7 **final** 60° à 120° (feu vert pour le plateau et
+     l'envoi dans la carte), 8 **défi** 80° à 100° + bouton SW → plateau à plat. Les exercices 6 à 8 partent du
+     programme de l'exercice précédent (on modifie, on ne repart pas de zéro).

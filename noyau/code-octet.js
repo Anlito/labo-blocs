@@ -32,6 +32,16 @@
   const COMPARAISONS = { '=': OP.EGAL, '≠': OP.DIFF, '<': OP.INF, '≤': OP.INF_EGAL, '>': OP.SUP, '≥': OP.SUP_EGAL };
   const OPERATIONS = { '+': OP.ADD, '-': OP.SUB, '×': OP.MUL, '÷': OP.DIV, mod: OP.MOD };
 
+  // « ré-étalonner v depuis (a, b) vers (c, d) » → blocs de base, aucun nouvel ordre pour les cartes :
+  // c + (v − a) × (d − c) ÷ (b − a), arrondi à l'entier le plus proche (t − (t mod 1) avec t = x + 0,5 : le reste
+  // a le signe du diviseur). Si a = b, la division donne 0 (comme dans les cartes) : le résultat vaut c.
+  function deroulerReetalonner(e) {
+    const op = (o, a, b) => ({ bloc: 'operation', op: o, a, b });
+    const x = op('+', e.vers1, op('÷', op('×', op('-', e.valeur, e.de1), op('-', e.vers2, e.vers1)), op('-', e.de2, e.de1)));
+    const t = op('+', x, 0.5);
+    return op('-', t, op('mod', t, 1));
+  }
+
   // « D3 » → 3, « A0 » → 14 (numérotation Arduino Uno) ; micro:bit : « P0 » → 0 … « P20 » → 20.
   function numeroBroche(b) {
     const s = String(b).trim().toUpperCase();
@@ -199,7 +209,10 @@
           return appel(e);
         case 'ext':
           return ext(e);
+        case 'reetalonner':
+          return expression(deroulerReetalonner(e));
         case 'joystick_position':
+        case 'joystick_valeur':
         case 'joystick_direction':
         case 'joystick_bouton': {
           const d = CARTES().deroulerJoystick(e, opts.composants);
@@ -497,7 +510,7 @@
     return crc;
   }
 
-  const api = { compiler, versV1, numeroBroche, crc16, OP, FORMAT };
+  const api = { compiler, versV1, numeroBroche, crc16, deroulerReetalonner, OP, FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else (global.LaboBlocs = global.LaboBlocs || {}).codeOctet = api;
 })(this);

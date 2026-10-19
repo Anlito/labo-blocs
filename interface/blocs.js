@@ -104,6 +104,14 @@
       tooltip: 'De -100 (tout à gauche, tout en bas) à 100 (tout à droite, tout en haut) ; 0 au centre.',
     },
     {
+      type: 'joystick_valeur',
+      message0: '%1 valeur du joystick sur %2 (0 à 1023)',
+      args0: [image('joystick', 'Joystick'), { type: 'field_dropdown', name: 'AXE', options: [['X (gauche – droite)', 'x'], ['Y (bas – haut)', 'y']] }],
+      output: 'Number',
+      style: 'valeur',
+      tooltip: 'La valeur lue sur la broche analogique de cet axe : de 0 à 1023, environ 512 au centre.',
+    },
+    {
       type: 'joystick_direction',
       message0: '%1 le joystick est %2',
       args0: [image('joystick', 'Joystick'), { type: 'field_dropdown', name: 'DIRECTION', options: DIRECTIONS_JOYSTICK }],
@@ -253,6 +261,21 @@
       tooltip: 'Un nombre entier tiré au hasard, bornes comprises.',
     },
     {
+      type: 'reetalonner',
+      message0: 'ré-étalonner %1 depuis ( %2 , %3 ) vers ( %4 , %5 )',
+      args0: [
+        { type: 'input_value', name: 'VALEUR', check: 'Number' },
+        { type: 'input_value', name: 'DE_MIN', check: 'Number' },
+        { type: 'input_value', name: 'DE_MAX', check: 'Number' },
+        { type: 'input_value', name: 'VERS_MIN', check: 'Number' },
+        { type: 'input_value', name: 'VERS_MAX', check: 'Number' },
+      ],
+      inputsInline: true,
+      output: 'Number',
+      style: 'bleu',
+      tooltip: 'Passe une valeur d’une échelle à une autre en gardant les proportions (ex. joystick 0 à 1023 → angle 0 à 180°). Le résultat est arrondi à l’entier.',
+    },
+    {
       type: 'logique',
       message0: '%1 %2 %3',
       args0: [
@@ -393,11 +416,11 @@
     { nom: 'Son', cle: 'son', couleur: COULEURS.lumiere, blocs: ['son'] },
     { nom: 'Temps', cle: 'temps', couleur: COULEURS.bleu, blocs: ['attendre'] },
     { nom: 'Bouton', cle: 'bouton', couleur: COULEURS.bleu, blocs: ['bouton_etat', 'valeur_haut_bas'] },
-    { nom: 'Joystick', cle: 'joystick', couleur: COULEURS.bleu, blocs: ['quand_joystick', 'joystick_direction', 'joystick_position', 'joystick_bouton'] },
+    { nom: 'Joystick', cle: 'joystick', couleur: COULEURS.bleu, blocs: ['quand_joystick', 'joystick_direction', 'joystick_position', 'joystick_valeur', 'joystick_bouton'] },
     { nom: 'Moteur', cle: 'moteur', couleur: COULEURS.servo, blocs: ['servo_angle'] },
     { nom: 'Décisions', cle: 'decisions', couleur: COULEURS.decision, blocs: ['si_alors', 'si_sinon', 'comparaison', 'logique', 'non'] },
     { nom: 'Boucles', cle: 'boucles', couleur: COULEURS.decision, blocs: ['repeter_n', 'tant_que', 'repeter_jusqua'] },
-    { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard'] },
+    { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard', 'reetalonner'] },
     { nom: 'Variables', cle: 'variables', couleur: COULEURS.variable, blocs: ['affecter', 'ajouter_a', 'variable', 'nombre'] },
     // Une carte à la fois : la palette d'un exercice ne montre que les blocs autorisés.
     ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: c.cle === 'camera' || c.cle === 'clavier' ? c.cle : 'puzzle', carte: c.carte, blocs: c.cle === 'camera' ? ['quand_camera'].concat(c.blocs) : c.cle === 'clavier' ? ['quand_touche'].concat(c.blocs) : c.blocs })),
@@ -419,6 +442,7 @@
     // Case à droite pour taper une valeur (ex. distance < 20) ; on peut y glisser un autre bloc (HAUT / BAS, variable…).
     comparaison: { inputs: { B: { shadow: { type: 'nombre', fields: { NUM: 0 } } } } },
     hasard: { inputs: { MIN: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, MAX: { shadow: { type: 'nombre', fields: { NUM: 6 } } } } },
+    reetalonner: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, DE_MIN: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, DE_MAX: { shadow: { type: 'nombre', fields: { NUM: 1023 } } }, VERS_MIN: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, VERS_MAX: { shadow: { type: 'nombre', fields: { NUM: 180 } } } } },
   };
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
     if (!d.entrees) continue;
@@ -735,6 +759,7 @@
     quand_joystick: 'quand le joystick est poussé vers …',
     joystick_direction: 'le joystick est poussé vers …',
     joystick_position: 'position du joystick (X ou Y)',
+    joystick_valeur: 'valeur du joystick, 0 à 1023 (X ou Y)',
     joystick_bouton: 'le bouton du joystick est appuyé',
     led_etat: 'contrôler la LED',
     son: 'jouer une note',
@@ -752,6 +777,7 @@
     repeter_jusqua: 'répéter jusqu’à',
     operation: 'calcul (+, −, ×, ÷)',
     hasard: 'nombre au hasard',
+    reetalonner: 'ré-étalonner … depuis (… , …) vers (… , …)',
     affecter: 'affecter une valeur à une variable',
     ajouter_a: 'ajouter à une variable',
     variable: 'valeur d’une variable',
