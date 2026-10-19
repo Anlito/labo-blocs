@@ -39,6 +39,7 @@
     const variables = new Set();
     let hasard = false;
     let modulo = false;
+    let reetalonner = false;
     let joystickUtilise = false;
     // Joystick : le composant de l'exercice (broches X, Y, bouton).
     const J = K().joystickDe(o.composants);
@@ -53,6 +54,7 @@
       if (x.bloc === 'variable' || x.bloc === 'affecter' || x.bloc === 'ajouter_a') variables.add(nomC(x.variable));
       if (x.bloc === 'hasard') hasard = true;
       if (x.bloc === 'operation' && x.op === 'mod') modulo = true;
+      if (x.bloc === 'reetalonner') reetalonner = true;
       if (x.quand === 'joystick' || K().BLOCS_JOYSTICK.includes(x.bloc)) joystickUtilise = true;
       for (const v of Object.values(x)) if (v && typeof v === 'object') parcourir(v);
     })(v1.fils);
@@ -84,6 +86,10 @@
           return `!(${expression(e.a)})`;
         case 'hasard':
           return `random(${expression(e.min)}, ${expression(e.max)} + 1)`;
+        case 'reetalonner':
+          return `reetalonner(${[e.valeur, e.de1, e.de2, e.vers1, e.vers2].map(expression).join(', ')})`;
+        case 'joystick_valeur':
+          return J ? `analogRead(${numero(e.axe === 'y' ? J.y : J.broche)})` : '0';
         case 'joystick_position':
           return J ? `${(e.axe === 'y' ? J.inverserY : J.inverserX) ? '-' : ''}positionJoystick(${numero(e.axe === 'y' ? J.y : J.broche)})` : '0';
         case 'joystick_direction':
@@ -211,6 +217,14 @@
       ajouter('  if (b == 0) return 0;');
       ajouter('  float r = fmod(a, b);');
       ajouter('  return (r != 0 && ((r < 0) != (b < 0))) ? r + b : r;');
+      ajouter('}');
+      ajouter('');
+    }
+    if (reetalonner) {
+      ajouter('// Ré-étalonner : passe v de l’échelle (a, b) à l’échelle (c, d), arrondi à l’entier (comme dans les blocs).');
+      ajouter('float reetalonner(float v, float a, float b, float c, float d) {');
+      ajouter('  if (b == a) return c;');
+      ajouter('  return floor(c + (v - a) * (d - c) / (b - a) + 0.5);');
       ajouter('}');
       ajouter('');
     }

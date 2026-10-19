@@ -36,6 +36,7 @@
     repeter_n: { FOIS: 3 },
     son: { FREQUENCE: 440, DUREE: 0.5 },
     hasard: { MIN: 1, MAX: 6 },
+    reetalonner: { VALEUR: 0, DE_MIN: 0, DE_MAX: 1023, VERS_MIN: 0, VERS_MAX: 180 },
     operation: { A: 0, B: 0 },
   };
 
@@ -137,8 +138,19 @@
           return Object.assign(e, { bloc: 'non', a: expression(entree(bloc, 'A'), bloc) });
         case 'hasard':
           return Object.assign(e, { bloc: 'hasard', min: expression(entree(bloc, 'MIN'), bloc), max: expression(entree(bloc, 'MAX'), bloc) });
+        case 'reetalonner':
+          return Object.assign(e, {
+            bloc: 'reetalonner',
+            valeur: expression(entree(bloc, 'VALEUR'), bloc),
+            de1: expression(entree(bloc, 'DE_MIN'), bloc),
+            de2: expression(entree(bloc, 'DE_MAX'), bloc),
+            vers1: expression(entree(bloc, 'VERS_MIN'), bloc),
+            vers2: expression(entree(bloc, 'VERS_MAX'), bloc),
+          });
         case 'joystick_position':
           return Object.assign(e, { bloc: 'joystick_position', axe: champ(bloc, 'AXE') === 'y' ? 'y' : 'x' });
+        case 'joystick_valeur':
+          return Object.assign(e, { bloc: 'joystick_valeur', axe: champ(bloc, 'AXE') === 'y' ? 'y' : 'x' });
         case 'joystick_direction':
           return Object.assign(e, { bloc: 'joystick_direction', direction: champ(bloc, 'DIRECTION') || 'haut' });
         case 'joystick_bouton':
@@ -270,6 +282,8 @@
         }
         case 'joystick_position':
           return { type: 'joystick_position', id, fields: { AXE: e.axe === 'y' ? 'y' : 'x' } };
+        case 'joystick_valeur':
+          return { type: 'joystick_valeur', id, fields: { AXE: e.axe === 'y' ? 'y' : 'x' } };
         case 'joystick_direction':
           return { type: 'joystick_direction', id, fields: { DIRECTION: e.direction || 'haut' } };
         case 'joystick_bouton':
@@ -278,6 +292,15 @@
           const bloc = { type: 'hasard', id, inputs: {} };
           entreeNombre(bloc, 'MIN', e.min);
           entreeNombre(bloc, 'MAX', e.max);
+          return bloc;
+        }
+        case 'reetalonner': {
+          const bloc = { type: 'reetalonner', id, inputs: {} };
+          entreeNombre(bloc, 'VALEUR', e.valeur);
+          entreeNombre(bloc, 'DE_MIN', e.de1);
+          entreeNombre(bloc, 'DE_MAX', e.de2);
+          entreeNombre(bloc, 'VERS_MIN', e.vers1);
+          entreeNombre(bloc, 'VERS_MAX', e.vers2);
           return bloc;
         }
         default:

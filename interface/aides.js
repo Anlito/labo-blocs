@@ -50,6 +50,18 @@
           return `<span class="pb-rond pb-grand" style="background:${C().bleu}">${expression(e.a)} ${trous ? trou : echapper(e.op === 'mod' ? 'reste de ÷' : e.op)} ${expression(e.b)}</span>`;
         case 'hasard':
           return `<span class="pb-rond pb-grand" style="background:${C().bleu}">nombre au hasard entre ${expression(e.min)} et ${expression(e.max)}</span>`;
+        case 'reetalonner':
+          return `<span class="pb-rond pb-grand" style="background:${C().bleu}">ré-étalonner ${expression(e.valeur)} depuis ( ${expression(e.de1)} , ${expression(e.de2)} ) vers ( ${expression(e.vers1)} , ${expression(e.vers2)} )</span>`;
+        case 'joystick_position':
+          return `<span class="pb-rond" style="background:${C().valeur}">${image('joystick')} position du joystick sur ${pastille(e.axe === 'y' ? 'Y' : 'X')}</span>`;
+        case 'joystick_valeur':
+          return `<span class="pb-rond" style="background:${C().valeur}">${image('joystick')} valeur du joystick sur ${pastille(e.axe === 'y' ? 'Y' : 'X')} (0 à 1023)</span>`;
+        case 'joystick_direction': {
+          const d = (A.DIRECTIONS_JOYSTICK || []).find((x) => x[1] === e.direction);
+          return `<span class="pb-hexa" style="background:${C().valeur}">${image('joystick')} le joystick est ${pastille(d ? (e.direction === 'centre' ? d[0] : 'poussé ' + d[0]) : e.direction || '')}</span>`;
+        }
+        case 'joystick_bouton':
+          return `<span class="pb-hexa" style="background:${C().valeur}">${image('joystick')} le bouton du joystick est appuyé</span>`;
         case 'logique':
           return `<span class="pb-hexa pb-grand" style="background:${C().bleu}">${expression(e.a)} ${trous ? trou : e.op} ${expression(e.b)}</span>`;
         case 'non':

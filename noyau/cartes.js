@@ -291,7 +291,7 @@
   const SEUIL_JOYSTICK = 50;
   // Réglage « joystick » des scénarios de test (comme un capteur) : 0 au centre, 1 haut, 2 bas, 3 gauche, 4 droite.
   const CODES_JOYSTICK = ['centre', 'haut', 'bas', 'gauche', 'droite'];
-  const BLOCS_JOYSTICK = ['joystick_position', 'joystick_direction', 'joystick_bouton', 'quand_joystick'];
+  const BLOCS_JOYSTICK = ['joystick_position', 'joystick_valeur', 'joystick_direction', 'joystick_bouton', 'quand_joystick'];
   const joystickDe = (composants) => (composants || []).find((c) => c.type === 'joystick') || null;
   function nouveauJoystick(carte) {
     return Object.assign({ type: 'joystick' }, JOYSTICK_DEPART[carte === 'microbit' ? 'microbit' : 'uno']);
@@ -335,6 +335,8 @@
     const j = joystickDe(composants);
     if (!j) return null;
     if (e.bloc === 'joystick_position') return positionJoystick(e.axe === 'y' ? 'y' : 'x', j);
+    // Valeur brute : ce que lit la broche (0 à 1023), sans tenir compte de « Inverser ».
+    if (e.bloc === 'joystick_valeur') return { bloc: 'entree_analogique', broche: e.axe === 'y' ? j.y : j.broche };
     if (e.bloc === 'joystick_direction') return directionJoystick(e.direction, j);
     if (e.bloc === 'joystick_bouton') return { bloc: 'comparaison', op: '=', a: { bloc: 'bouton_etat', broche: j.bouton }, b: 1 };
     return null;
