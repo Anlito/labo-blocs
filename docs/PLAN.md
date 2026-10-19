@@ -460,4 +460,7 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      `MATRICE_GAUCHE_DROITE`). Test : la partie mBot du `.ino` tourne sur l'ordinateur et ses fils sont décodés.
    - « En direct » : les morceaux d'un ordre (texte, dessin) partent avec sa dernière commande ; corrige aussi un
      texte répété de la micro:bit qui laissait des lettres en trop.
+34. **Caméra : cadrer en prenant les photos (19/10/2026)**, retour de Thomas (il fallait descendre vers les étiquettes et
+   l'image de la caméra disparaissait) : l'image reste collée en haut de la colonne (`position: sticky`), haute d'un
+   tiers d'écran au plus ; une étiquette amenée à l'écran s'arrête sous l'image.
 
