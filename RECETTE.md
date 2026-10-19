@@ -156,6 +156,7 @@ Dans un exercice : « Solution », puis à droite **« Tester » › « En direc
 | 9.6 | En direct, fermer l'onglet | La maquette s'éteint (au plus tard 3 s après) | |
 | 9.7 | Même exercice : « Dans la carte » › « Envoyer mon programme », débrancher | Le programme tourne seul sur la maquette | |
 | 9.8 | Atelier (ZIP) : carnet › Programmation › « Essayer en direct sur la maquette » | L'exercice 13 s'ouvre en mode « En direct » | |
+| 9.9a | **Clé 2.4G, d'abord la page d'essai** : Réglages › « Essayer la clé 2.4G » (robot allumé, programme de base installé au câble, lumières de la clé et du module fixes) › « Essayer la clé » | Message vert « La clé et le robot se parlent : PONG v2 0.3 mcore… ». **Sinon : « Copier le compte rendu » et l'envoyer** | |
 | 9.9 (V2) | **mBot, clé 2.4G** : brancher la clé, allumer le robot (programme de base déjà installé au câble), découverte mBot ex. 3 › « En direct » › **« Connecter par la clé 2.4G »** | Une fenêtre liste la clé (« Makeblock », « HID »…) ; après « Connexion » : « Carte connectée · mBot (carte mCore) (clé 2.4G) ». **Sinon : noter ce qui s'affiche et le nom de la clé dans la fenêtre** | |
 | 9.10 | « Lancer », robot par terre ; mettre la main devant les ultrasons | Le robot avance, s'arrête sous 20 cm ; le curseur « Distance » montre la vraie mesure (verrouillé) | |
 | 9.11 (V2) | mBot par la clé : « Dans la carte » › « Envoyer mon programme », puis « Vider la carte » | Envoyé sans fil : le robot garde le programme ; vidé : il ne bouge plus | |
