@@ -339,3 +339,12 @@ espace, lettres, chiffres. Comme la caméra, le clavier est dans l'ordinateur : 
 | 23.7 | Pendant que le programme tourne, taper dans un champ de texte (ex. renommer une étiquette) | Les touches vont dans le champ, pas au programme | |
 | 23.8 | Les 4 flèches : 8 blocs « quand la touche … » (appuyée → rouler, relâchée → arrêter), En direct | Le robot obéit aux 4 flèches | |
 
+## 24. Dessin sur l'écran de la micro:bit (programme de la carte 0.3)
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 24.1 | « Découverte de la micro:bit » › exercice 4 « Mon dessin » : cliquer sur le petit dessin du bloc « afficher le dessin » | Une grille de 5 × 5 points s'ouvre ; un clic allume ou éteint un point (on peut glisser) ; « Tout effacer » | |
+| 24.2 | « Lancer » dans le simulateur | L'écran de la micro:bit simulée montre le dessin | |
+| 24.3 | Connecter une micro:bit encore en 0.2 | « Carte pas à jour » : « Enregistrer le fichier », le glisser sur le lecteur MICROBIT (une fois par micro:bit) | |
+| 24.4 | En direct, puis « Dans la carte » (débranchée de l'ordinateur) | La vraie micro:bit montre le dessin, d'un coup ; le point en haut à gauche est bien en haut à gauche | |
+

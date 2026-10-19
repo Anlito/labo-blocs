@@ -83,6 +83,9 @@ def h_ext(e, c, a):
   return display.read_light_level()
  elif c == 14:
   LETTRES.extend(a)
+ elif c == 15:
+  n = (int(a[0]) & 32767) | ((int(a[1]) & 1023) << 15)
+  display.show(Image(':'.join(''.join('9' if n >> (y * 5 + x) & 1 else '0' for x in range(5)) for y in range(5))))
  elif c == 11:
   LETTRES.extend(a)
   display.scroll(''.join(chr(int(x)) for x in LETTRES), wait=False)
@@ -439,7 +442,7 @@ def commande(l):
  c = m[0]
  n = entiers(m[1:]) if c not in ('H', 'M') else None
  if c == 'PING':
-  ecrire('PONG v2 0.2 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+  ecrire('PONG v2 0.3 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
  elif c == 'OFF':
   tout_eteindre()
   ecrire('OK')

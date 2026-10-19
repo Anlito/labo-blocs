@@ -460,7 +460,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await p.click('.panneau-carte [data-action="installer"]');
     e = await attendreCarte(p, ATTENTE);
     verifier(/\.hex/.test(e.message), 'fichier non proposé : ' + e.message);
-    await p.evaluate(() => carteVirtuelle.copierFichier('0.2'));
+    await p.evaluate(() => carteVirtuelle.copierFichier('0.3'));
     await p.click('.panneau-carte [data-action="reconnecter"]');
     e = await attendreCarte(p, ATTENTE);
     verifier(e.cle === 'connectee', `après copie : ${e.cle} ${e.message}`);
@@ -481,6 +481,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
       ['carte déjà utilisée', null, 'dist-02', { modele: 'uno', firmware: '0.2', occupee: true }, 'occupee', /Ferme-le, puis réessaie/],
       ['carte pas à jour', null, 'dist-02', { modele: 'uno', firmware: '0.1' }, 'pas-a-jour', /Installer le programme de la carte/],
       ['mBot sans l’afficheur (0.2)', 'decouverte-mbot', 'mbot-03', { modele: 'mcore', firmware: '0.2' }, 'pas-a-jour', /Installer le programme de la carte/],
+      ['micro:bit sans le dessin (0.2)', 'decouverte-microbit', 'mb-01', { modele: 'microbit-v2', firmware: '0.2' }, 'pas-a-jour', /Enregistrer le fichier/],
       ['mauvaise carte', 'decouverte-microbit', 'mb-01', { modele: 'uno', firmware: '0.2' }, 'mauvaise-carte', /Branche la bonne carte/],
     ];
     for (const [nom, parcours, ex, carte, cle, attendu] of cas) {
@@ -577,6 +578,42 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(envoyes.join(' | ') === 'X 1 10 1 0 0 0 | X 1 11 0 0 0 32768 | X 1 12 314', 'envoyé : ' + envoyes.join(' | '));
     await p.close();
     return `palette : catégorie Afficheur ; grille : ${compte} → « ${valeur} » ; simulateur : « ${dessin} », puis « ${nombre} » (3,14) ; en direct : ${envoyes.join(' · ')}`;
+  });
+
+  await critere('micro:bit : dessin 5 × 5 à cliquer, montré par l’écran du simulateur, envoyé en direct (0.3)', async () => {
+    const p = await page(PAGE + '?parcours=decouverte-microbit&enseignant=1&exercice=mb-04', { carte: { modele: 'microbit-v2', firmware: '0.3' } });
+    await p.evaluate(() => {
+      const L = LaboBlocs;
+      const ex = L.app.paquet.exercices.find((e) => e.id === 'mb-04');
+      L.app.ecranExercice.editeur.charger(ex, L.versBlockly({ demarrage: [{ bloc: 'mb_dessin', dessin: '0'.repeat(25) }], boucle: [] }));
+    });
+    const champ = await p.evaluate(() => {
+      const b = Blockly.getMainWorkspace().getAllBlocks(false).find((x) => x.type === 'mb_dessin');
+      const r = b.getField('DESSIN').getSvgRoot().getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    });
+    await p.mouse.click(champ.x, champ.y);
+    await p.waitForSelector('.dessin-point', { visible: true, timeout: 3000 });
+    await pause(200);
+    const nb = await p.$$eval('.dessin-point', (l) => l.length);
+    for (const [x, y] of [[1, 1], [3, 3], [5, 5]]) await p.click(`.dessin-point[aria-label="point colonne ${x}, ligne ${y}"]`);
+    const valeur = await p.evaluate(() => Blockly.getMainWorkspace().getAllBlocks(false).find((x) => x.type === 'mb_dessin').getFieldValue('DESSIN'));
+    await p.click('.dessin-fermer');
+    verifier(nb === 25 && valeur === '1000000000001000000000001', `grille de ${nb} points, dessin « ${valeur} »`);
+    await p.click('.btn-lancer');
+    await pause(300);
+    const ecran = await p.$eval('.mb-ecran', (x) => x.getAttribute('aria-label'));
+    verifier(/3 points allumés/.test(ecran), 'écran : ' + ecran);
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    const e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle + ' ' + e.message);
+    await p.click('.btn-lancer');
+    await pause(500);
+    const envoye = await p.evaluate(() => carteVirtuelle.extensions.find((x) => /^X 2 15 /.test(x)));
+    verifier(envoye === 'X 2 15 4097 512', 'envoyé : ' + envoye);
+    await p.close();
+    return `grille de ${nb} points → « ${valeur} » ; simulateur : « ${ecran} » ; en direct : « ${envoye} »`;
   });
 
   await critere('Clavier de l’ordinateur : le mBot piloté aux flèches (simulateur, vérification, En direct)', async () => {
@@ -705,7 +742,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
   });
 
   await critere('En direct · micro:bit : bouton A de la carte → LED P0 et cœur ; modes choisis par exercice', async () => {
-    const p = await page(PAGE + '?parcours=decouverte-microbit&enseignant=1&exercice=mb-01', { carte: { modele: 'microbit-v2', firmware: '0.2' } });
+    const p = await page(PAGE + '?parcours=decouverte-microbit&enseignant=1&exercice=mb-01', { carte: { modele: 'microbit-v2', firmware: '0.3' } });
     await charger(p, 'mb-01', 'solution');
     await p.click('.btn-mode[data-mode="direct"]');
     await p.click('.panneau-carte [data-action="connecter"]');

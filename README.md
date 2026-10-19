@@ -27,7 +27,7 @@ Code repris : [atelier-cereales](https://github.com/Anlito/atelier-cereales) et
 |---|---|
 | `noyau/` | module partagé, sans affichage (aussi exécuté sous Node) : cartes (`cartes.js` : profils Uno / mBot / micro:bit, blocs de carte, carte simulée), programme ⇄ Blockly, code octet, interpréteur, simulateur, vérification par scénarios, code Arduino, paquet de parcours, sauvegarde et progression, édition d'un parcours (`edition.js`) |
 | `interface/` | partie navigateur du module : blocs (style de l'atelier), éditeur, simulateur (micro:bit, tableau du mBot), aides, mode « Dans la carte » (`carte.js`, `televersement.js`), fichiers, écrans élève (`gabarits.js`), charte (`css/`), `integration.js` (`LaboBlocs.monterExercice` : l'écran d'exercice dans la page d'un projet) |
-| `cartes/` | programmes des cartes 0.2 (mBot : 0.3) (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
+| `cartes/` | programmes des cartes 0.2 (mBot et micro:bit : 0.3) (`arduino/` Uno et mBot, `microbit/` MicroPython), fichiers construits (`*.hex`, `firmwares.js`), interpréteur sur l'ordinateur pour les tests (`hote/`) |
 | `parcours/` | paquets de parcours (`distributeur/` : exercices 01 à 13B, fiches, lexique ; `decouverte-mbot/`, `decouverte-microbit/` : `site/index.html?parcours=…` ; `index.js` : la liste ouverte par l'éditeur) |
 | `site/` | application Labo Blocs : `prof.html` (professeur : suivi de classe, niveaux par compétence, exports), `index.html` (élève ; `?enseignant=1` : tout ouvert, rien n'est enregistré ; `&projecteur=1` : grand affichage), `editeur.html` (professeur : éditeur de parcours), `projet.js` (réglages du projet), polices et Blockly copiés dans `vendor/` |
 | `essais/` | essais du jalon 0 (firmware Uno/mBot, micro:bit, page d'essai des cartes) |
@@ -107,3 +107,5 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   appuyée » (flèches, espace, lettres, chiffres), pour piloter la carte ou le robot depuis l'ordinateur : simulateur
   et « En direct » (Uno, micro:bit, mBot par le câble ou la clé 2.4G). Exercice d'exemple « Télécommande au clavier »
   — [RECETTE.md](RECETTE.md) §23.
+- **micro:bit : dessin 5 × 5, en recette (19/10/2026)** : bloc « afficher le dessin » avec une grille à cliquer ;
+  programme de la carte de la micro:bit en 0.3 — [RECETTE.md](RECETTE.md) §24.

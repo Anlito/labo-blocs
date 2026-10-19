@@ -340,7 +340,7 @@
       if (d.champs && nom in d.champs) {
         const c = d.champs[nom];
         if (c === 'etiquette') args.push({ type: 'field_dropdown', name: nom, options: () => A.optionsEtiquettes() });
-        else if (c === 'dessin') args.push({ type: 'field_dessin_matrice', name: nom, value: (d.defauts || {})[nom] });
+        else if (c === 'dessin' || c === 'dessin5') args.push({ type: c === 'dessin' ? 'field_dessin_matrice' : 'field_dessin_microbit', name: nom, value: (d.defauts || {})[nom] });
         else args.push(Array.isArray(c) ? { type: 'field_dropdown', name: nom, options: c } : { type: 'field_input', name: nom, text: (d.defauts || {})[nom] || '' });
       } else args.push({ type: 'input_value', name: nom, check: 'Number' });
       return '%' + n;
@@ -445,14 +445,43 @@
     return { kind: 'categoryToolbox', contents: contenu };
   }
 
-  // Champ « dessin » de l'afficheur du mBot : 16 × 8 points, vus en petit sur le bloc. Un clic ouvre la grille : on
-  // clique (ou on glisse) sur les points pour les allumer ou les éteindre. Valeur : 32 chiffres hexadécimaux, 2 par
-  // colonne de gauche à droite, bit 0 = point du haut (comme noyau/cartes.js).
-  function definirChampDessin(Blockly) {
-    const PAS = 3.4;
-    const vide = '0'.repeat(32);
-    const colonnes = (v) => (A.lireDessinMatrice ? A.lireDessinMatrice(v) : new Array(16).fill(0));
-    const versTexte = (cols) => cols.map((c) => c.toString(16).padStart(2, '0')).join('');
+  // Champs « dessin » : l'afficheur du mBot (16 × 8 points) et l'écran de la micro:bit (5 × 5), vus en petit sur le
+  // bloc. Un clic ouvre la grille : on clique (ou on glisse) sur les points pour les allumer ou les éteindre.
+  // Valeurs (comme noyau/cartes.js) : mBot, 32 chiffres hexadécimaux, 2 par colonne de gauche à droite, bit 0 = point
+  // du haut ; micro:bit, 25 caractères « 0 » / « 1 », ligne par ligne.
+  const CHAMPS_DESSIN = {
+    field_dessin_matrice: {
+      largeur: 16,
+      hauteur: 8,
+      pas: 3.4,
+      allume: '#8EC5FF',
+      titre: 'Dessin de l’afficheur',
+      valide: /^[0-9a-f]{32}$/i,
+      // Valeur → points (ligne par ligne) et retour.
+      lire: (v) => {
+        const cols = A.lireDessinMatrice ? A.lireDessinMatrice(v) : new Array(16).fill(0);
+        return Array.from({ length: 128 }, (_, i) => (cols[i % 16] >> Math.floor(i / 16)) & 1);
+      },
+      ecrire: (points) => Array.from({ length: 16 }, (_, x) => points.reduce((c, p, i) => (i % 16 === x && p ? c | (1 << Math.floor(i / 16)) : c), 0).toString(16).padStart(2, '0')).join(''),
+    },
+    field_dessin_microbit: {
+      largeur: 5,
+      hauteur: 5,
+      pas: 6,
+      allume: '#FF6B5E',
+      taille: '2.75rem', // points plus gros : il n'y en a que 25
+      titre: 'Dessin de l’écran de la micro:bit',
+      valide: /^[01]{25}$/,
+      lire: (v) => (A.lireDessinMicrobit ? A.lireDessinMicrobit(v) : new Array(25).fill(0)),
+      ecrire: (points) => points.map((p) => (p ? '1' : '0')).join(''),
+    },
+  };
+  function definirChampDessin(Blockly, nomChamp, d) {
+    const L = d.largeur;
+    const H = d.hauteur;
+    const PAS = d.pas;
+    const vide = d.ecrire(new Array(L * H).fill(0));
+    const compter = (points) => points.reduce((t, p) => t + (p ? 1 : 0), 0);
     class ChampDessin extends Blockly.Field {
       constructor(valeur, validateur, config) {
         super(valeur || vide, validateur, config);
@@ -464,26 +493,26 @@
         return new ChampDessin(o.value, undefined, o);
       }
       doClassValidation_(v) {
-        return /^[0-9a-f]{32}$/i.test(String(v)) ? String(v).toLowerCase() : null;
+        return d.valide.test(String(v)) ? String(v).toLowerCase() : null;
       }
       initView() {
         const svg = Blockly.utils.dom.createSvgElement;
         // Couleurs en style (le thème de Blockly colore les rectangles des champs modifiables).
-        svg('rect', { x: 0, y: 0, width: 16 * PAS + 3, height: 8 * PAS + 3, rx: 3, style: 'fill: #1F2A30' }, this.fieldGroup_);
-        for (let y = 0; y < 8; y++)
-          for (let x = 0; x < 16; x++) this.points.push(svg('rect', { x: 2 + x * PAS, y: 2 + y * PAS, width: PAS - 1, height: PAS - 1, rx: 1 }, this.fieldGroup_));
-        this.size_ = new Blockly.utils.Size(16 * PAS + 3, 8 * PAS + 3);
+        svg('rect', { x: 0, y: 0, width: L * PAS + 3, height: H * PAS + 3, rx: 3, style: 'fill: #1F2A30' }, this.fieldGroup_);
+        for (let y = 0; y < H; y++)
+          for (let x = 0; x < L; x++) this.points.push(svg('rect', { x: 2 + x * PAS, y: 2 + y * PAS, width: PAS - 1, height: PAS - 1, rx: 1 }, this.fieldGroup_));
+        this.size_ = new Blockly.utils.Size(L * PAS + 3, H * PAS + 3);
       }
       updateSize_() {
-        this.size_ = new Blockly.utils.Size(16 * PAS + 3, 8 * PAS + 3);
+        this.size_ = new Blockly.utils.Size(L * PAS + 3, H * PAS + 3);
       }
       render_() {
-        const cols = colonnes(this.getValue());
-        this.points.forEach((p, i) => (p.style.fill = (cols[i % 16] >> Math.floor(i / 16)) & 1 ? '#8EC5FF' : '#3B4A52'));
+        const points = d.lire(this.getValue());
+        this.points.forEach((p, i) => (p.style.fill = points[i] ? d.allume : '#3B4A52'));
         this.updateSize_();
       }
       getText_() {
-        const n = colonnes(this.getValue()).reduce((t, c) => t + c.toString(2).split('1').length - 1, 0);
+        const n = compter(d.lire(this.getValue()));
         return n ? `dessin de ${n} point${n > 1 ? 's' : ''}` : 'dessin vide';
       }
       // La grille s'ouvre dans une petite fenêtre au-dessus de la page (le menu de Blockly serait coupé par la zone
@@ -491,42 +520,40 @@
       showEditor_() {
         const fenetre = document.createElement('dialog');
         fenetre.className = 'blocklyDessinMatrice';
-        fenetre.setAttribute('aria-label', 'Dessin de l’afficheur');
+        fenetre.setAttribute('aria-label', d.titre);
         fenetre.innerHTML =
-          '<p class="dessin-titre">Dessin de l’afficheur</p>' +
+          `<p class="dessin-titre">${d.titre}</p>` +
           '<p class="dessin-aide">Clique sur les points (ou glisse) pour dessiner.</p>' +
-          '<div class="dessin-grille" role="group" aria-label="16 colonnes et 8 lignes de points"></div>' +
+          `<div class="dessin-grille" role="group" aria-label="${L} colonnes et ${H} lignes de points" style="--colonnes: ${L}; --allume: ${d.allume}${d.taille ? '; --case: ' + d.taille : ''}"></div>` +
           '<p class="dessin-actions"><span class="dessin-compte" aria-live="polite"></span>' +
           '<button type="button" class="dessin-effacer">Tout effacer</button><button type="button" class="dessin-fermer">Fermer</button></p>';
         const grille = fenetre.querySelector('.dessin-grille');
         const cases = [];
-        let cols = colonnes(this.getValue());
+        let points = d.lire(this.getValue());
         let peinture = null; // allumer (true) ou éteindre (false) pendant un glissé
         const montrer = () => {
-          cases.forEach((b, i) => b.setAttribute('aria-pressed', (cols[i % 16] >> Math.floor(i / 16)) & 1 ? 'true' : 'false'));
-          const n = cols.reduce((t, c) => t + c.toString(2).split('1').length - 1, 0);
+          cases.forEach((b, i) => b.setAttribute('aria-pressed', points[i] ? 'true' : 'false'));
+          const n = compter(points);
           fenetre.querySelector('.dessin-compte').textContent = n ? `${n} point${n > 1 ? 's' : ''} allumé${n > 1 ? 's' : ''}` : 'Aucun point allumé';
         };
         const poser = (i, allume) => {
-          const x = i % 16;
-          const bit = 1 << Math.floor(i / 16);
-          cols = cols.slice();
-          cols[x] = allume ? cols[x] | bit : cols[x] & ~bit;
-          this.setValue(versTexte(cols));
+          points = points.slice();
+          points[i] = allume ? 1 : 0;
+          this.setValue(d.ecrire(points));
           montrer();
         };
-        for (let y = 0; y < 8; y++)
-          for (let x = 0; x < 16; x++) {
+        for (let y = 0; y < H; y++)
+          for (let x = 0; x < L; x++) {
             const b = document.createElement('button');
             b.type = 'button';
             b.className = 'dessin-point';
             b.setAttribute('aria-label', `point colonne ${x + 1}, ligne ${y + 1}`);
-            const i = y * 16 + x;
+            const i = y * L + x;
             b.addEventListener('pointerdown', (e) => {
               e.preventDefault();
               // Au doigt, le point touché garde le pointeur : on le lâche pour que le glissé passe aux autres points.
               if (b.hasPointerCapture(e.pointerId)) b.releasePointerCapture(e.pointerId);
-              peinture = !((cols[x] >> y) & 1);
+              peinture = !points[i];
               poser(i, peinture);
             });
             b.addEventListener('pointerenter', () => {
@@ -534,7 +561,7 @@
             });
             // Clavier (Entrée, Espace) : un clic sans pointeur.
             b.addEventListener('click', (e) => {
-              if (e.detail === 0) poser(i, !((cols[x] >> y) & 1));
+              if (e.detail === 0) poser(i, !points[i]);
             });
             cases.push(b);
             grille.appendChild(b);
@@ -543,7 +570,7 @@
         fenetre.addEventListener('pointerup', finir);
         grille.addEventListener('pointerleave', finir);
         fenetre.querySelector('.dessin-effacer').addEventListener('click', () => {
-          cols = new Array(16).fill(0);
+          points = new Array(L * H).fill(0);
           this.setValue(vide);
           montrer();
         });
@@ -559,14 +586,14 @@
         cases[0].focus();
       }
     }
-    Blockly.fieldRegistry.register('field_dessin_matrice', ChampDessin);
+    Blockly.fieldRegistry.register(nomChamp, ChampDessin);
   }
 
   let defini = false;
   function definirBlocs(Blockly) {
     if (defini) return;
     defini = true;
-    definirChampDessin(Blockly);
+    for (const [nom, d] of Object.entries(CHAMPS_DESSIN)) definirChampDessin(Blockly, nom, d);
     Blockly.common.defineBlocksWithJsonArray(DEFINITIONS);
     // Menu HAUT/BAS du bloc LED : « : allumée / : éteinte » pendant les premiers exercices seulement
     // (A.aideLed est réglé à l'ouverture de chaque exercice, voir parametres.js).

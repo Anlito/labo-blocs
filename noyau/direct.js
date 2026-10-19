@@ -65,7 +65,7 @@
     function groupe(e, c, a) {
       if (e === 1 && (c === 1 || c === 9)) return { cle: c === 1 ? 'moteurs' : 'moteur' + a[0], efface: c === 1 ? ['moteur1', 'moteur2'] : ['moteurs'] };
       if (e === 1 && c === 6) return { cle: 'led' + a[0], efface: Number(a[0]) === 0 ? ['led1', 'led2'] : ['led0'] };
-      if (e === 2 && [1, 2, 3, 4, 11].includes(c)) return { cle: 'ecran', efface: [] };
+      if (e === 2 && [1, 2, 3, 4, 11, 15].includes(c)) return { cle: 'ecran', efface: [] };
       if (e === 1 && [11, 12, 13, 15].includes(c)) return { cle: 'matrice', efface: [] };
       return null;
     }

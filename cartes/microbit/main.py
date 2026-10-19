@@ -72,7 +72,8 @@ def h_hasard(a, b):
 
 # Extension 2 = micro:bit : 1 afficher un nombre, 2 image n, 3 pixel(x, y, 0..9), 4 effacer, 5 bouton A,
 # 6 bouton B, 7 acceleration (axe 1 x, 2 y, 3 z) en mg, 8 temperature, 9 logo touche (V2), 10 lumiere,
-# 11 texte qui defile, 12 note sur le haut-parleur, 13 geste, 14 lettres du texte a suivre (version 0.2)
+# 11 texte qui defile, 12 note sur le haut-parleur, 13 geste, 14 lettres du texte a suivre (version 0.2),
+# 15 dessin 5 x 5 (version 0.3) : 2 valeurs, lignes 0 a 2 puis lignes 3 et 4, bit y*5+x de chaque moitie
 # Une commande porte 4 valeurs au plus : un texte arrive en morceaux (14, 14, ..., puis 11 qui le fait defiler).
 IMAGES = None
 LETTRES = []
@@ -107,6 +108,9 @@ def h_ext(e, c, a):
         return display.read_light_level()
     elif c == 14:
         LETTRES.extend(a)
+    elif c == 15:
+        n = (int(a[0]) & 32767) | ((int(a[1]) & 1023) << 15)
+        display.show(Image(':'.join(''.join('9' if n >> (y * 5 + x) & 1 else '0' for x in range(5)) for y in range(5))))
     elif c == 11:
         # texte qui defile : les arguments sont les codes des dernieres lettres
         LETTRES.extend(a)
@@ -489,7 +493,7 @@ def commande(l):
     c = m[0]
     n = entiers(m[1:]) if c not in ('H', 'M') else None
     if c == 'PING':
-        ecrire('PONG v2 0.2 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+        ecrire('PONG v2 0.3 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
     elif c == 'OFF':
         tout_eteindre()
         ecrire('OK')
