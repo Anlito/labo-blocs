@@ -702,6 +702,72 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return `palette : catégorie Clavier ; simulateur : flèche haut tenue → « ${haut.moteur} » (« ${haut.clavier} »), relâchée → « ${lache} » ; vérification réussie ; modes ${modes.join(', ')} ; en direct : « ${avance} » puis « ${arret} »`;
   });
 
+  await critere('Joystick (Uno A0, A1, D2) : manche tiré dans le simulateur, vérification « Régler : joystick », axes relus en direct', async () => {
+    const p = await page(PAGE + '?enseignant=1&exercice=dist-01', { carte: { modele: 'uno', firmware: '0.2' } });
+    // Exercice construit dans la page : poussé vers le haut → LED D9, bouton du joystick → LED D10.
+    await p.evaluate(() => {
+      const L = LaboBlocs;
+      const ex = L.app.paquet.exercices.find((e) => e.id === 'dist-01');
+      const si = (condition, broche) => ({ bloc: 'si_sinon', condition, alors: [{ bloc: 'led_etat', broche, etat: 1 }], sinon: [{ bloc: 'led_etat', broche, etat: 0 }] });
+      Object.assign(ex, {
+        composants: [L.nouveauJoystick('uno'), { type: 'led', broche: 'D9' }, { type: 'led', broche: 'D10' }],
+        blocsAutorises: ['joystick_direction', 'joystick_bouton', 'joystick_position', 'quand_joystick', 'si_sinon', 'led_etat'],
+        solutionReference: { demarrage: [], boucle: [si({ bloc: 'joystick_direction', direction: 'haut' }, 'D9'), si({ bloc: 'joystick_bouton' }, 'D10')] },
+        scenarios: [{ nom: 'Joystick', etapes: [{ regler: { joystick: 1 } }, { verifier: { D9: 1 } }, { regler: { joystick: 0 } }, { verifier: { D9: 0 } }, { maintenir: 'D2' }, { verifier: { D10: 1 } }] }],
+        modes: ['simulateur', 'direct'],
+      });
+      L.app.ecranExercice.ouvrir(ex);
+    });
+    await pause(300);
+    const categories = await p.$$eval('.cat-libelle', (l) => l.map((x) => x.textContent.trim()));
+    verifier(categories.includes('Joystick'), 'catégorie Joystick absente : ' + categories.join(', '));
+    await charger(p, 'dist-01', 'solution');
+    await pause(200);
+    await p.click('.btn-lancer');
+    await pause(300);
+    // Le manche tiré vers le haut à la souris, puis lâché (il revient au centre).
+    const r = await p.$eval('.joystick-plateau', (x) => { const b = x.getBoundingClientRect(); return { x: b.x + b.width / 2, y: b.y + b.height / 2, h: b.height }; });
+    await p.mouse.move(r.x, r.y);
+    await p.mouse.down();
+    await p.mouse.move(r.x, r.y - r.h / 2, { steps: 4 });
+    await pause(400);
+    const tire = await p.evaluate(() => ({ led: document.querySelector('.composant[data-broche="D9"] .pastille-etat').textContent, joystick: document.querySelector('.composant-joystick .pastille-etat').textContent }));
+    await p.mouse.up();
+    await pause(400);
+    const lache = await p.evaluate(() => ({ led: document.querySelector('.composant[data-broche="D9"] .pastille-etat').textContent, joystick: document.querySelector('.composant-joystick .pastille-etat').textContent }));
+    verifier(/Allumée/.test(tire.led) && /Y : 100/.test(tire.joystick) && /Éteinte/.test(lache.led) && /X : 0 · Y : 0/.test(lache.joystick), JSON.stringify({ tire, lache }));
+    // Le bouton du joystick (SW) se tient comme un bouton poussoir.
+    const sw = await p.$('.composant-joystick .bouton-poussoir');
+    const b = await sw.boundingBox();
+    await p.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await p.mouse.down();
+    await pause(300);
+    const d10 = await texte(p, '.composant[data-broche="D10"] .pastille-etat');
+    await p.mouse.up();
+    verifier(/Allumée/.test(d10), 'bouton du joystick : D10 ' + d10);
+    await p.click('.btn-recommencer');
+    await p.click('.btn-verifier');
+    await pause(500);
+    verifier(await p.$eval('.resultat', (e) => e.classList.contains('reussi')), 'la solution au joystick ne réussit pas');
+    await p.evaluate(() => (document.querySelector('.resultat').hidden = true));
+    // En direct : la carte relit A0 et A1 (« RA 14 », « RA 15 ») ; le joystick poussé vers le haut allume la vraie LED.
+    await p.click('.btn-mode[data-mode="direct"]');
+    await p.click('.panneau-carte [data-action="connecter"]');
+    const e = await attendreCarte(p, ATTENTE);
+    verifier(e.cle === 'connectee', 'connexion : ' + e.cle);
+    await p.click('.btn-lancer');
+    await pause(600);
+    await p.evaluate(() => (carteVirtuelle.analogiques[15] = 1023));
+    await pause(600);
+    const haut = await p.evaluate(() => carteVirtuelle.sorties);
+    const lu = await p.evaluate(() => ['RA 14', 'RA 15', 'M 2 P'].map((l) => carteVirtuelle.journal.includes(l)));
+    verifier(haut['9'] === 1 && lu.every(Boolean), `sorties ${JSON.stringify(haut)} ; RA 14, RA 15, M 2 P : ${lu}`);
+    await p.click('.panneau-carte [data-action="arreter-direct"]');
+    await pause(300);
+    await p.close();
+    return `palette : catégorie Joystick ; manche tiré vers le haut → « ${tire.joystick} », D9 « ${tire.led} » ; lâché → « ${lache.joystick} » ; bouton du joystick → D10 allumée ; vérification réussie ; en direct : RA 14 / RA 15 relus, D9 allumée`;
+  });
+
   // ---------- Jalon 4 : En direct (carte virtuelle) ----------
 
   const sorties = (p) => p.evaluate(() => JSON.stringify(carteVirtuelle.sorties));

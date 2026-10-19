@@ -38,8 +38,8 @@
       firmware: 'uno',
       reponse: 'uno', // nom de la carte dans « PONG v2 <version> <carte> … »
       installation: 'serie',
-      broches: { led: D, bouton: D, servo: ['D5', 'D6'], buzzer: D },
-      composants: ['led', 'bouton', 'servo', 'buzzer'],
+      broches: { led: D, bouton: D, servo: ['D5', 'D6'], buzzer: D, joystick: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'] },
+      composants: ['led', 'bouton', 'servo', 'buzzer', 'joystick'],
     },
     mbot: {
       id: 'mbot',
@@ -62,8 +62,8 @@
       // Programme de la carte propre à la micro:bit (dessin 5 × 5) : l'Uno reste en 0.2.
       version: '0.3',
       installation: 'fichier',
-      broches: { led: P, bouton: P, servo: P, buzzer: P },
-      composants: ['led', 'bouton', 'servo'],
+      broches: { led: P, bouton: P, servo: P, buzzer: P, joystick: P },
+      composants: ['led', 'bouton', 'servo', 'joystick'],
     },
   };
 
@@ -279,6 +279,70 @@
   function composantsClavier(exercice) {
     if (!exercice || !(exercice.blocsAutorises || []).some((b) => BLOCS_CLAVIER.includes(b))) return [];
     return TOUCHES.map(([nom, t]) => ({ type: 'bouton', broche: entreeTouche(t), libelle: `la touche ${nom}`, integre: true, clavier: true, feminin: true }));
+  }
+
+  // ---------- Joystick (module 2 axes + bouton, ex. KY-023) ----------
+  // Composant de l'exercice : { type: 'joystick', broche: X, y: Y, bouton: SW, inverserX?, inverserY? } (« broche »
+  // est l'axe X : ce que lisent les outils qui ne voient qu'une broche par composant). Les axes sont des entrées
+  // analogiques (0 à 1023, 512 au centre), le bouton va à la masse (appuyé = 0 V) : résistance interne, toujours.
+  // Pour l'élève : position de -100 (gauche, bas) à 100 (droite, haut) ; direction au-delà de ±50.
+  const JOYSTICK_DEPART = { uno: { broche: 'A0', y: 'A1', bouton: 'D2' }, microbit: { broche: 'P0', y: 'P1', bouton: 'P2' } };
+  const DIRECTIONS_JOYSTICK = [['vers le haut', 'haut'], ['vers le bas', 'bas'], ['vers la gauche', 'gauche'], ['vers la droite', 'droite'], ['au centre', 'centre']];
+  const SEUIL_JOYSTICK = 50;
+  // Réglage « joystick » des scénarios de test (comme un capteur) : 0 au centre, 1 haut, 2 bas, 3 gauche, 4 droite.
+  const CODES_JOYSTICK = ['centre', 'haut', 'bas', 'gauche', 'droite'];
+  const BLOCS_JOYSTICK = ['joystick_position', 'joystick_direction', 'joystick_bouton', 'quand_joystick'];
+  const joystickDe = (composants) => (composants || []).find((c) => c.type === 'joystick') || null;
+  function nouveauJoystick(carte) {
+    return Object.assign({ type: 'joystick' }, JOYSTICK_DEPART[carte === 'microbit' ? 'microbit' : 'uno']);
+  }
+  // Valeurs brutes (0 à 1023) des deux axes pour une direction (scénarios de test, simulateur).
+  function brutsJoystick(direction, j) {
+    const x = { gauche: 0, droite: 1023 }[direction] ?? 512;
+    const y = { bas: 0, haut: 1023 }[direction] ?? 512;
+    return { x: j && j.inverserX ? 1023 - x : x, y: j && j.inverserY ? 1023 - y : y };
+  }
+  // Position (-100 à 100, entière) lue sur la broche de l'axe : blocs de base pour le code octet.
+  function positionJoystick(axe, j) {
+    const op = (o, a, b) => ({ bloc: 'operation', op: o, a, b });
+    const brut = { bloc: 'entree_analogique', broche: axe === 'y' ? j.y : j.broche };
+    const inverse = axe === 'y' ? j.inverserY : j.inverserX;
+    // (brut - 512) × 100 / 512, arrondi : t - (t mod 1) avec t = valeur + 0,5 (le reste a le signe du diviseur).
+    const t = op('+', op('×', op('÷', op('×', op('-', brut, 512), 100), 512), inverse ? -1 : 1), 0.5);
+    return op('-', t, op('mod', t, 1));
+  }
+  function directionJoystick(direction, j) {
+    const cmp = (o, a, b) => ({ bloc: 'comparaison', op: o, a, b });
+    const x = positionJoystick('x', j);
+    const y = positionJoystick('y', j);
+    switch (direction) {
+      case 'haut':
+        return cmp('>', y, SEUIL_JOYSTICK);
+      case 'bas':
+        return cmp('<', y, -SEUIL_JOYSTICK);
+      case 'gauche':
+        return cmp('<', x, -SEUIL_JOYSTICK);
+      case 'droite':
+        return cmp('>', x, SEUIL_JOYSTICK);
+      default: {
+        const et = (a, b) => ({ bloc: 'logique', op: 'et', a, b });
+        return et(et(cmp('≤', x, SEUIL_JOYSTICK), cmp('≥', x, -SEUIL_JOYSTICK)), et(cmp('≤', y, SEUIL_JOYSTICK), cmp('≥', y, -SEUIL_JOYSTICK)));
+      }
+    }
+  }
+  // Blocs du joystick → blocs de base. Le joystick vient des composants de l'exercice (null : il n'y en a pas).
+  function deroulerJoystick(e, composants) {
+    const j = joystickDe(composants);
+    if (!j) return null;
+    if (e.bloc === 'joystick_position') return positionJoystick(e.axe === 'y' ? 'y' : 'x', j);
+    if (e.bloc === 'joystick_direction') return directionJoystick(e.direction, j);
+    if (e.bloc === 'joystick_bouton') return { bloc: 'comparaison', op: '=', a: { bloc: 'bouton_etat', broche: j.bouton }, b: 1 };
+    return null;
+  }
+  // Le bouton du joystick, comme un bouton de l'exercice : les scénarios l'appuient.
+  function composantsJoystick(composants) {
+    const j = joystickDe(composants);
+    return j ? [{ type: 'bouton', broche: j.bouton, libelle: 'le bouton du joystick', integre: true, joystick: true }] : [];
   }
 
   // Description d'un bloc :
@@ -845,6 +909,10 @@
         return `la température est de ${v} °C`;
       case 'camera':
         return Number(valeur) ? `la caméra reconnaît l’étiquette ${v}` : 'la caméra ne reconnaît rien';
+      case 'joystick': {
+        const d = CODES_JOYSTICK[Number(valeur)] || 'centre';
+        return d === 'centre' ? 'le joystick est au centre' : `le joystick est poussé ${DIRECTIONS_JOYSTICK.find((x) => x[1] === d)[0]}`;
+      }
       case 'geste': {
         const g = GESTES.find((x) => Number(x[1]) === Number(valeur));
         return g ? `la carte est ${g[0]}` : 'la carte est immobile';
@@ -863,7 +931,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER };
+  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

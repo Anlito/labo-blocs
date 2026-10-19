@@ -74,8 +74,13 @@
     return html;
   }
 
-  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer' };
-  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son' };
+  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick' };
+  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son', joystick: 'joystick' };
+  // Broches d'un composant dans la liste « Composants » (le joystick en a trois).
+  const brochesDuComposant = (c) =>
+    c.type === 'joystick'
+      ? `<span class="broches-joystick">X <span class="broche">${c.broche}</span> Y <span class="broche">${c.y}</span> bouton <span class="broche">${c.bouton}</span></span>`
+      : `<span class="broche">${c.broche}</span>`;
 
   // contexte : { session, paquet, toutDebloquer, majBandeau(exercice), solution (bouton « Solution » du mode enseignant),
   //   actionsReussite(exercice) → [{ texte, principal, action }] (boutons ajoutés au message de réussite, ex. envoi dans
@@ -90,7 +95,7 @@
     A.fiches = paquet.fiches || {};
     A.lexique = lexique;
 
-    const etat = { exercice: null, mode: 'arrete', vitesse: 1, sim: null, servos: {}, rejeu: null, niveau: 1, boutonsAvant: null };
+    const etat = { exercice: null, mode: 'arrete', vitesse: 1, sim: null, servos: {}, rejeu: null, niveau: 1, boutonsAvant: null, joystickAvant: null };
     const ecran = $('.ecran-exercice');
 
     const editeur = A.creerEditeur($('.editeur', ecran), {
@@ -196,7 +201,7 @@
       const libres = ex.libre ? composantsLibres() : null;
       if (libres) etat.exercice.composants = libres.composants;
       dessinerComposants(libres && libres.conflits);
-      vue = A.creerVueSimulateur($('.simulateur', ecran), etat.exercice, { appuyerBouton });
+      vue = A.creerVueSimulateur($('.simulateur', ecran), etat.exercice, { appuyerBouton, reglerJoystick });
       // Ce que voit la caméra arrive dans les capteurs du simulateur (et du mode « En direct »).
       if (!vue.capteurs) vue.capteurs = {};
       if (panneauCamera) panneauCamera.relier(vue.capteurs);
@@ -228,8 +233,10 @@
 
     function composantsLibres() {
       const ex = etat.exercice;
-      if (ex.carte && ex.carte !== 'uno') return { composants: [], conflits: [] }; // mBot, micro:bit : tout est sur la carte
-      return A.composantsDuProgramme(editeur.lire().programme);
+      // mBot, micro:bit : tout est sur la carte (sauf le joystick de la micro:bit, sur P0, P1, P2).
+      if (ex.carte === 'microbit') return { composants: A.composantsDuProgramme(editeur.lire().programme, 'microbit').composants.filter((c) => c.type === 'joystick'), conflits: [] };
+      if (ex.carte && ex.carte !== 'uno') return { composants: [], conflits: [] };
+      return A.composantsDuProgramme(editeur.lire().programme, 'uno');
     }
     function dessinerComposants(conflits) {
       const ex = etat.exercice;
@@ -239,7 +246,7 @@
         .map(
           (c) =>
             `<li${c.conflit ? ' class="composant-en-conflit"' : ''}><span class="composant-pastille composant-${c.type}">${A.icone(ICONES_COMPOSANTS[c.type] || 'info', { epaisseur: 2.4 })}</span>` +
-            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} <span class="broche">${echapper(c.broche)}</span>${c.conflit ? ' <span class="broche-partagee">⚠ broche partagée</span>' : ''}</span></li>`,
+            `<span>${echapper(NOMS_COMPOSANTS[c.type] || c.type)}${c.nom ? ' ' + echapper(c.nom) : ''} ${brochesDuComposant(c)}${c.conflit ? ' <span class="broche-partagee">⚠ broche partagée</span>' : ''}</span></li>`,
         )
         .join('');
       // Ce qui est déjà sur la carte (rien à brancher).
@@ -380,7 +387,7 @@
     function majCode() {
       if (etat.niveau !== 3 || !etat.exercice) return;
       try {
-        code = A.versArduino(editeur.lire().programme, { titre: `Exercice ${etat.exercice.numero} · ${etat.exercice.titre}`, boutonsVersMasse: etat.exercice.boutonsVersMasse });
+        code = A.versArduino(editeur.lire().programme, { titre: `Exercice ${etat.exercice.numero} · ${etat.exercice.titre}`, boutonsVersMasse: etat.exercice.boutonsVersMasse, composants: etat.exercice.composants });
       } catch {
         code = null;
       }
@@ -573,7 +580,7 @@
       if (ecran.hidden || !clavierDuProgramme || e.ctrlKey || e.metaKey || e.altKey) return;
       const t = A.toucheDuClavier(e.key);
       const cible = e.target;
-      if (!t || (cible && cible.closest && cible.closest('input, textarea, select, [contenteditable="true"], dialog'))) return;
+      if (!t || (cible && cible.closest && cible.closest('input, textarea, select, [contenteditable="true"], dialog, .joystick-plateau'))) return;
       if (etat.mode !== 'marche' && etat.mode !== 'direct') return;
       e.preventDefault();
       e.stopPropagation();
@@ -585,7 +592,31 @@
     addEventListener('keyup', (e) => ecouterClavier(e, false), true);
     addEventListener('blur', lacherTouches);
 
+    // Joystick du simulateur : le manche tiré à la souris (ou au doigt), 0 à 1023 sur chaque axe.
+    function reglerJoystick(x, y) {
+      if (etat.rejeu) return;
+      const j = A.joystickDe(etat.exercice.composants);
+      if (!j) return;
+      if (etat.modeTest === 'direct') {
+        $('.simu-note', ecran).textContent = 'En direct, bouge le vrai joystick : l’écran montre ce que lit la carte.';
+        return;
+      }
+      if (!etat.sim) {
+        etat.joystickAvant = { x, y };
+        if (x !== 512 || y !== 512) $('.simu-note', ecran).textContent = 'Clique sur « Lancer » pour que ton programme réagisse au joystick.';
+      } else {
+        etat.sim.changerAnalogique(j.broche, x);
+        etat.sim.changerAnalogique(j.y, y);
+      }
+      afficher();
+    }
     function appliquerBoutonsAvant() {
+      const j = A.joystickDe(etat.exercice && etat.exercice.composants);
+      if (etat.joystickAvant && etat.sim && j) {
+        etat.sim.changerAnalogique(j.broche, etat.joystickAvant.x);
+        etat.sim.changerAnalogique(j.y, etat.joystickAvant.y);
+        etat.joystickAvant = null;
+      }
       if (!etat.boutonsAvant || !etat.sim) return;
       for (const [b, v] of Object.entries(etat.boutonsAvant)) etat.sim.changerEntree(b, v);
       etat.boutonsAvant = null;
@@ -632,6 +663,11 @@
 
     // Valeur affichée d'un composant (deux composants d'un exercice libre peuvent partager une broche).
     function etatComposant(c, sim) {
+      if (c.type === 'joystick') {
+        const av = etat.joystickAvant || { x: 512, y: 512 };
+        const bouton = sim ? sim.entrees[c.bouton] || 0 : (etat.boutonsAvant && etat.boutonsAvant[c.bouton]) || 0;
+        return sim ? `${sim.entrees[c.broche] ?? 512},${sim.entrees[c.y] ?? 512},${bouton}` : `${av.x},${av.y},${bouton}`;
+      }
       if (c.type === 'bouton') return sim ? sim.entrees[c.broche] || 0 : (etat.boutonsAvant && etat.boutonsAvant[c.broche]) || 0;
       if (c.type === 'buzzer') {
         const note = sim && sim.journal.filter((e) => e.broche === c.broche && e.type === 'son').pop();
@@ -645,7 +681,8 @@
       const sim = etat.sim;
       const etats = {};
       for (const c of etat.exercice.composants || []) {
-        if (c.type === 'bouton') etats[c.broche] = sim ? sim.entrees[c.broche] || 0 : (etat.boutonsAvant && etat.boutonsAvant[c.broche]) || 0;
+        if (c.type === 'joystick') etats[c.broche] = etatComposant(c, sim);
+        else if (c.type === 'bouton') etats[c.broche] = sim ? sim.entrees[c.broche] || 0 : (etat.boutonsAvant && etat.boutonsAvant[c.broche]) || 0;
         else if (c.type === 'led') etats[c.broche] = sim ? sim.sorties[c.broche] || 0 : 0;
         else if (c.type === 'buzzer') {
           const note = sim && sim.journal.filter((e) => e.broche === c.broche && e.type === 'son').pop();

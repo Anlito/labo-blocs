@@ -44,16 +44,26 @@
       avancer: (ms) => avancerJusqua(sim.t + ms),
       pas,
       changerEntree: (broche, valeur) => planifierEntree(sim.t, broche, valeur),
+      // Entrée analogique (axe du joystick) : 0 à 1023, gardée telle quelle.
+      changerAnalogique: (broche, valeur) => planifierEntree(sim.t, broche, valeur, true),
       planifierEntree,
       planifierCapteur,
       valeur: (broche) => (broche in sim.sorties ? sim.sorties[broche] : sim.entrees[broche] || 0),
     };
 
     for (const c of opts.composants || []) {
+      if (c.type === 'joystick') {
+        // Axes au centre (512), bouton relâché.
+        sim.entrees[c.broche] = sim.initiales[c.broche] = 512;
+        sim.entrees[c.y] = sim.initiales[c.y] = 512;
+        sim.entrees[c.bouton] = sim.initiales[c.bouton] = 0;
+        continue;
+      }
       if (c.type === 'bouton') sim.entrees[c.broche] = 0;
       else sim.sorties[c.broche] = 0;
       sim.initiales[c.broche] = 0;
     }
+    const joystick = (opts.composants || []).find((c) => c.type === 'joystick');
 
     // Carte micro:bit ou mBot : écran, boutons, capteurs, moteurs et LED de la carte (noyau/cartes.js).
     let carteSimulee = null;
@@ -137,8 +147,8 @@
     const planifiees = []; // entrées à appliquer : { t, broche, valeur }, triées par t
     let reveil = 0;
 
-    function planifierEntree(t, broche, valeur) {
-      const e = { t: Math.max(t, sim.t), broche, valeur: valeur ? 1 : 0 };
+    function planifierEntree(t, broche, valeur, analogique) {
+      const e = { t: Math.max(t, sim.t), broche, valeur: analogique ? Math.max(0, Math.min(1023, Math.round(Number(valeur) || 0))) : valeur ? 1 : 0 };
       let i = planifiees.length;
       while (i > 0 && planifiees[i - 1].t > e.t) i--;
       planifiees.splice(i, 0, e);
@@ -157,6 +167,17 @@
     function appliquerEntrees() {
       while (planifiees.length && planifiees[0].t <= sim.t) {
         const e = planifiees.shift();
+        if (e.capteur === 'joystick' && joystick) {
+          // Scénario « régler le joystick » : les deux axes prennent la valeur de cette direction.
+          const b = CARTES().brutsJoystick(CARTES().CODES_JOYSTICK[e.valeur] || 'centre', joystick);
+          for (const [broche, v] of [[joystick.broche, b.x], [joystick.y, b.y]]) {
+            if (sim.entrees[broche] !== v) {
+              sim.entrees[broche] = v;
+              sim.journal.push({ t: sim.t, broche, valeur: v, type: 'entree' });
+            }
+          }
+          continue;
+        }
         if (e.capteur !== undefined) {
           if (sim.capteurs) sim.capteurs[e.capteur] = e.valeur;
           continue;

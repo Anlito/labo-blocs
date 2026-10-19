@@ -359,3 +359,20 @@ espace, lettres, chiffres. Comme la caméra, le clavier est dans l'ordinateur : 
 | 25.5 | Éditeur de parcours : un exercice › onglet « Programme de départ » : poser une note (« Commentaire ») et un bloc commenté ; publier | Chez l'élève, l'exercice s'ouvre avec ce programme de départ, les commentaires ouverts | |
 | 25.6 | Revenir sur l'onglet « Solution de référence » | La solution n'a pas les notes du programme de départ ; « Vérifier » marche comme avant | |
 
+
+## 26. Joystick 2 axes + bouton (Arduino Uno, micro:bit)
+
+Module à 2 axes + bouton (type KY-023 : VRx, VRy, SW). Broches réglées par l'exercice, au départ **A0, A1, D2** sur
+l'Uno et **P0, P1, P2** sur la micro:bit. Le bouton (SW) va à la masse, avec la résistance interne de la carte.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 26.1 | Éditeur de parcours : un exercice › « Ajouter un composant » › Sorte « Joystick » | Broches X A0, Y A1, Bouton D2 (P0, P1, P2 sur un parcours micro:bit) ; cases « Inverser haut / bas » et « Inverser gauche / droite » ; une broche déjà prise est refusée | |
+| 26.2 | Cocher les blocs de la catégorie « Joystick » ; solution : « si le joystick est poussé vers le haut alors allumer la LED D9 » | Les 4 blocs : « quand le joystick est … », « le joystick est … », « position du joystick sur X / Y », « le bouton du joystick est appuyé » | |
+| 26.3 | Scénario : « Régler un capteur (ou la caméra, le joystick) » › joystick › « vers le haut », puis vérifier D9 allumée | La solution passe ; un programme qui allume D10 donne une phrase en ambre « Quand le joystick est poussé vers le haut, la LED D9 devrait être allumée… » | |
+| 26.4 | Élève, simulateur : « Lancer », tirer le manche à la souris (ou au doigt), le lâcher | Le manche suit, « X : … · Y : … » de -100 à 100 ; lâché, il revient au centre (X : 0 · Y : 0) ; flèches du clavier sur le manche (après un clic dessus) | |
+| 26.5 | Tenir le bouton à côté du manche | « bouton appuyé » ; le bloc « le bouton du joystick est appuyé » est vrai | |
+| 26.6 | **Vrai joystick sur l'Uno** (VRx → A0, VRy → A1, SW → D2, +5V, GND), « En direct » : pousser vers le haut, puis vers la gauche | Le simulateur montre la position lue par la carte ; la LED réagit. **Vérifier le sens des axes** : si « haut » donne Y négatif (ou gauche / droite inversés), cocher la case « Inverser » de l'exercice | |
+| 26.7 | « Dans la carte » (Uno), puis niveau 3 (code Arduino) | Le programme marche débranché de l'ordinateur ; le code montre `positionJoystick(A0)` et `pinMode(2, INPUT_PULLUP)` | |
+| 26.8 | **micro:bit** (VRx → P0, VRy → P1, SW → P2, 3V, GND), En direct puis Dans la carte | Même chose. Attention : un programme qui joue une note sur la micro:bit envoie aussi le son sur P0 (axe X) | |
+| 26.9 | Exercice libre (Uno ou micro:bit) avec les blocs du joystick | « Composants » : Joystick X A0 Y A1 bouton D2 (ou P0, P1, P2), ajouté tout seul dès qu'un bloc du joystick est posé | |

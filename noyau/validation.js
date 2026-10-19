@@ -23,7 +23,7 @@
   const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
   // Composants branchés + ce qui est déjà sur la carte (boutons A et B de la micro:bit, moteurs du mBot…).
   // Les touches du clavier de l'ordinateur aussi, dans les exercices qui ont ses blocs (« la touche flèche haut »).
-  const tous = (exercice) => (exercice.composants || []).concat(exercice.carte && exercice.carte !== 'uno' ? CARTES().composantsCarte(exercice.carte) : [], CARTES().composantsClavier(exercice));
+  const tous = (exercice) => (exercice.composants || []).concat(exercice.carte && exercice.carte !== 'uno' ? CARTES().composantsCarte(exercice.carte) : [], CARTES().composantsClavier(exercice), CARTES().composantsJoystick(exercice.composants));
 
   const SEUIL = 5; // ms : deux changements plus proches sont simultanés
   const TOLERANCE = 300; // ms sur les durées
@@ -61,6 +61,7 @@
 
   function nomComposant(c) {
     if (c.libelle) return c.libelle;
+    if (c.type === 'joystick') return 'le joystick';
     const mot = { led: 'la LED', bouton: 'le bouton', servo: 'le moteur' }[c.type] || 'la broche';
     return c.nom ? `${mot} ${c.nom} (${c.broche})` : `${mot} ${c.broche}`;
   }

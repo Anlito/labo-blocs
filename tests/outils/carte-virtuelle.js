@@ -32,6 +32,7 @@
       extensions: [], // commandes X qui agissent (moteurs, LED, écran…)
       capteurs: {}, // réponse des lectures : { 'X 1 2 3': 25 }
       niveaux: {}, // niveau électrique des entrées (boutons)
+      analogiques: {}, // valeur lue (0 à 1023) sur les entrées analogiques (joystick), 512 sinon
       surveillees: [],
       securite: 0, // nombre de fois où la carte a tout éteint faute de signe de vie
     };
@@ -152,6 +153,10 @@
         direct();
         carte.surveillees = n.filter((x) => !Number.isNaN(x));
         return repondre('OK');
+      }
+      if (c === 'RA') {
+        direct();
+        return repondre(`V ${n[0]} ${carte.analogiques[n[0]] === undefined ? 512 : carte.analogiques[n[0]]}`);
       }
       if (c === 'R') return repondre(`V ${n[0]} ${carte.niveaux[n[0]] === undefined ? 1 : carte.niveaux[n[0]]}`);
       if (c === 'X') {

@@ -76,6 +76,16 @@
     }
     const nomsBroches = {};
     for (const c of opts.composants || []) nomsBroches[numeroBroche(c.broche)] = c.broche;
+    // Joystick : deux axes analogiques, un bouton vers la masse (toujours, quel que soit le réglage du parcours).
+    const joystick = (opts.composants || []).find((c) => c.type === 'joystick');
+    if (joystick) {
+      for (const [b, type] of [[joystick.broche, BROCHE.analogique], [joystick.y, BROCHE.analogique], [joystick.bouton, BROCHE.boutonMasse]]) {
+        broches.set(numeroBroche(b), type);
+        nomsBroches[numeroBroche(b)] = b;
+      }
+    }
+    const MANQUE_JOYSTICK = 'Ce programme utilise le joystick : il manque dans les composants de l’exercice.';
+    const sansJoystick = () => erreurs.includes(MANQUE_JOYSTICK) || erreurs.push(MANQUE_JOYSTICK);
     const declarer = (b, type) => {
       const n = numeroBroche(b);
       if (!broches.has(n)) broches.set(n, type);
@@ -189,6 +199,14 @@
           return appel(e);
         case 'ext':
           return ext(e);
+        case 'joystick_position':
+        case 'joystick_direction':
+        case 'joystick_bouton': {
+          const d = CARTES().deroulerJoystick(e, opts.composants);
+          if (d) return expression(d);
+          sansJoystick();
+          return nombre(0);
+        }
         default: {
           // Bloc d'une carte (mBot, micro:bit) : déroulé en blocs de base (noyau/cartes.js).
           const d = CARTES().deroulerBlocCarte(e);
@@ -356,6 +374,23 @@
     for (const f of prog.fils) {
       // « Quand la caméra reconnaît X » (ou « ne reconnaît plus X ») : une boucle qui surveille la caméra et lance le
       // corps une fois à chaque changement (variable cachée « déjà vu »). Rien de nouveau pour la machine virtuelle.
+      // « Quand le joystick est poussé vers … » : la même surveillance ; le corps part une fois, quand le joystick
+      // arrive dans cette direction.
+      if (f.quand === 'joystick') {
+        const vu = CARTES().deroulerJoystick({ bloc: 'joystick_direction', direction: f.direction }, opts.composants);
+        if (!vu) {
+          sansJoystick();
+          continue;
+        }
+        const deja = { bloc: 'variable', variable: `\u0000joystick${cameras++}` };
+        const noter = (v) => ({ bloc: 'affecter', variable: deja.variable, valeur: v });
+        const garde = { bloc: 'si_sinon', condition: vu, alors: [{ bloc: 'si_alors', condition: { bloc: 'non', a: deja }, alors: [noter(1), ...(f.corps || [])] }], sinon: [noter(0)] };
+        if (f.id !== undefined) carte.push([code.length, f.id]);
+        fils.push({ type: FIL.boucle, broche: 0, adresse: code.length });
+        instruction(garde);
+        o8(OP.FIN);
+        continue;
+      }
       // « Quand la touche X est appuyée (relâchée) » : la même surveillance, avec le clavier de l'ordinateur.
       if (f.quand === 'touche') {
         const deja = { bloc: 'variable', variable: `\u0000touche${cameras++}` };

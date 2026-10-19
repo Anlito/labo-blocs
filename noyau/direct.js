@@ -105,11 +105,13 @@
       },
     });
     const numero = (b) => N.numeroBroche(b);
-    const boutons = (o.composants || []).filter((c) => c.type === 'bouton');
+    // Le bouton du joystick va toujours à la masse (résistance interne), quel que soit le réglage du parcours.
+    const boutons = (o.composants || []).filter((c) => c.type === 'bouton').concat(K().composantsJoystick(o.composants).map((c) => Object.assign({}, c, { masse: true })));
+    const aLaMasse = (b) => b.masse || versMasse;
 
     // Au départ : tout éteint, boutons en entrée (avec la résistance interne s'ils vont à la masse), surveillés.
     const depart = ['OFF'];
-    for (const b of boutons) depart.push(`M ${numero(b.broche)} ${versMasse ? 'P' : 'I'}`);
+    for (const b of boutons) depart.push(`M ${numero(b.broche)} ${aLaMasse(b) ? 'P' : 'I'}`);
     if (boutons.length) depart.push('W ' + boutons.map((b) => numero(b.broche)).join(' '));
 
     let lu = 0; // entrées du journal déjà traduites en commandes
@@ -138,7 +140,7 @@
       const b = boutons.find((x) => numero(x.broche) === Number(m[1]));
       if (!b) return false;
       const niveau = Number(m[2]);
-      sim.changerEntree(b.broche, versMasse ? (niveau ? 0 : 1) : niveau);
+      sim.changerEntree(b.broche, aLaMasse(b) ? (niveau ? 0 : 1) : niveau);
       return true;
     }
 
@@ -171,10 +173,17 @@
       }
       return { ligne, appliquer };
     });
+    // Joystick : ses deux axes sont relus (« RA 14 » → « V 14 512 »), le programme les lit dans le simulateur.
+    const joystick = K().joystickDe(o.composants);
+    if (joystick) {
+      for (const b of [joystick.broche, joystick.y]) {
+        lectures.push({ ligne: `RA ${numero(b)}`, broche: true, appliquer: (v) => sim.entrees[b] !== v && sim.changerAnalogique(b, v) });
+      }
+    }
 
-    // Réponse « V 12 » à une lecture.
+    // Réponse « V 12 » à une lecture (« V <broche> <valeur> » pour une broche).
     function lire(lecture, reponse) {
-      const m = /^V (-?[\d.]+)/.exec(reponse || '');
+      const m = (lecture.broche ? /^V \d+ (-?[\d.]+)/ : /^V (-?[\d.]+)/).exec(reponse || '');
       if (!m) return false;
       lecture.appliquer(Number(m[1]));
       return true;

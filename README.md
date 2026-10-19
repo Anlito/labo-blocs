@@ -112,3 +112,7 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
 - **Commentaires, en recette (19/10/2026)** : bouton « Commentaire » dans la zone des blocs (sur un bloc, ou une note
   libre) ; le professeur écrit un **programme de départ** commenté dans l'éditeur de parcours ; les commentaires
   deviennent des « // … » dans le code Arduino — [RECETTE.md](RECETTE.md) §25.
+- **Joystick, en recette (19/10/2026)** : module 2 axes + bouton sur l'Arduino Uno (A0, A1, D2) ou la micro:bit
+  (P0, P1, P2), broches réglées par l'exercice ; blocs « quand le joystick est poussé … », « le joystick est … »,
+  « position du joystick », « le bouton du joystick est appuyé » ; manche à tirer dans le simulateur ; « En direct » et
+  « Dans la carte » sans mise à jour des cartes — [RECETTE.md](RECETTE.md) §26.

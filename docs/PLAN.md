@@ -495,3 +495,18 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    `versV1` ; sans effet sur le code octet. Code Arduino : lignes « // … ». La sauvegarde de l'équipe (Blockly) les
    garde déjà.
 
+40. **Joystick (19/10/2026)**, demande de Thomas pour un futur projet. Décisions : Arduino Uno et micro:bit ; module
+   2 axes + bouton (KY-023) ; blocs « position X / Y », « direction », « bouton du joystick », événement « quand le
+   joystick est poussé … » ; broches réglées par l'exercice (composant `{ type: 'joystick', broche: X, y: Y, bouton:
+   SW, inverserX?, inverserY? }`), au départ A0 / A1 / D2 (Uno) et P0 / P1 / P2 (micro:bit).
+   - Aucun nouvel ordre dans le code octet ni dans les programmes de carte : les blocs du joystick se déroulent en
+     blocs de base (`deroulerJoystick`, `noyau/cartes.js`) : lecture analogique, position = arrondi de
+     (brut − 512) × 100 / 512 (−100 à 100, signe changé si inversé), direction au-delà de 50 ; le bouton se lit comme
+     un bouton vers la masse (résistance interne). « Quand le joystick est poussé » : surveillance comme « quand la
+     caméra », une fois à chaque entrée dans la direction.
+   - Simulateur : manche à tirer (souris, doigt, flèches), retour au centre au lâcher ; bouton SW à côté
+     (`sim.changerAnalogique`). Scénarios : réglage « joystick » comme un capteur (0 centre, 1 haut, 2 bas, 3 gauche,
+     4 droite). En direct : axes relus par `RA` (déjà dans les programmes de carte 0.2), bouton surveillé (`W`).
+   - Code Arduino : fonction `positionJoystick(broche)`, `pinMode(SW, INPUT_PULLUP)`. Éditeur de parcours : sorte
+     « Joystick » (3 broches, cases « Inverser »). Exercice libre : le joystick est ajouté aux composants quand le
+     programme l'utilise.
