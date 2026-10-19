@@ -487,4 +487,11 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    Bloc `mb_dessin` (catégorie Écran), champ `field_dessin_microbit` : même grille à cliquer que l'afficheur du mBot
    (champ commun, `interface/blocs.js`). Extension 2, commande 15 : 2 valeurs (lignes 0 à 2, puis 3 et 4) ;
    `main.py` les remet en `Image`. Exercice libre d'exemple `mb-04` « Mon dessin » (Découverte de la micro:bit 1.3.0).
+39. **Commentaires (19/10/2026)**, demande de Thomas (informations sur les exercices ; les élèves commentent leur code).
+   Décision : le professeur les écrit dans un **programme de départ** (onglet à côté de la solution, éditeur de
+   parcours). Commentaires de Blockly : sur un bloc (bulle) et notes libres (`workspaceComments`) ; bouton
+   « Commentaire » dans la zone des blocs (bloc choisi, sinon une note), clic droit aussi. Programme v1 : `commentaire`
+   sur tout bloc ou fil, `notes` (texte, x, y, largeur, hauteur) ; gardés par `solutionDepuisProgramme`, `versSimplifie`,
+   `versV1` ; sans effet sur le code octet. Code Arduino : lignes « // … ». La sauvegarde de l'équipe (Blockly) les
+   garde déjà.
 

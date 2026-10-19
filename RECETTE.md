@@ -348,3 +348,14 @@ espace, lettres, chiffres. Comme la caméra, le clavier est dans l'ordinateur : 
 | 24.3 | Connecter une micro:bit encore en 0.2 | « Carte pas à jour » : « Enregistrer le fichier », le glisser sur le lecteur MICROBIT (une fois par micro:bit) | |
 | 24.4 | En direct, puis « Dans la carte » (débranchée de l'ordinateur) | La vraie micro:bit montre le dessin, d'un coup ; le point en haut à gauche est bien en haut à gauche | |
 
+## 25. Commentaires dans la zone de programmation
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 25.1 | Élève : bouton « Commentaire » (en bas de la zone des blocs) sans bloc choisi | Une note jaune apparaît à droite des blocs ; on écrit tout de suite dedans ; on peut la déplacer, la réduire, la supprimer (clic droit) | |
+| 25.2 | Cliquer sur un bloc, puis « Commentaire » (ou clic droit sur le bloc › « Ajouter un commentaire ») | Une bulle s'ouvre sur ce bloc ; un petit « ? » reste sur le bloc quand elle est fermée | |
+| 25.3 | Fermer l'onglet, rouvrir la sauvegarde de l'équipe | Notes et commentaires retrouvés | |
+| 25.4 | Niveau 3 (code Arduino) | Les commentaires des blocs sont des lignes « // … » au-dessus de leur code | |
+| 25.5 | Éditeur de parcours : un exercice › onglet « Programme de départ » : poser une note (« Commentaire ») et un bloc commenté ; publier | Chez l'élève, l'exercice s'ouvre avec ce programme de départ, les commentaires ouverts | |
+| 25.6 | Revenir sur l'onglet « Solution de référence » | La solution n'a pas les notes du programme de départ ; « Vérifier » marche comme avant | |
+

@@ -381,7 +381,9 @@
   function solutionDepuisProgramme(programme) {
     const sansIds = JSON.parse(JSON.stringify(programme, (k, v) => (k === 'id' ? undefined : v)));
     const simple = P.versSimplifie(sansIds);
-    return simple && !simple.fils ? simple : sansIds;
+    // Un commentaire sur « Au démarrage » ou « Répéter indéfiniment » ne tient que dans le programme v1.
+    const commentaireDeFil = Array.isArray(sansIds.fils) && sansIds.fils.some((f) => f.commentaire);
+    return simple && !simple.fils && !commentaireDeFil ? simple : sansIds;
   }
 
   // L'exercice tel que l'élève le recevra (paramètres remplacés), dans son parcours.

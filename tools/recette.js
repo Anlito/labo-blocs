@@ -281,6 +281,53 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return 'publication possible : version ' + (await texte(p, '.texte-publier')).replace('Publier la version ', '');
   });
 
+  await critere('Commentaires : l’élève commente son programme (bouton « Commentaire ») ; le professeur écrit le programme de départ', async () => {
+    // Élève : une note dans l'espace des blocs (rien n'est choisi), puis un commentaire sur « Au démarrage ».
+    const p = await page(PAGE + '?enseignant=1&exercice=dist-01');
+    await charger(p, 'dist-01', 'vide');
+    await p.click('.btn-commentaire');
+    await pause(300);
+    await p.keyboard.type('Ma note pour plus tard');
+    await p.evaluate(() => {
+      const ws = Blockly.getMainWorkspace();
+      Blockly.common.setSelected(ws.getTopBlocks(false).find((b) => b.type === 'demarrage'));
+    });
+    await p.click('.btn-commentaire');
+    await pause(300);
+    await p.keyboard.type('Ici on prépare');
+    await p.evaluate(() => document.activeElement.blur()); // le texte est pris quand on quitte la bulle
+    await pause(300);
+    const eleve = await p.evaluate(() => {
+      const prog = LaboBlocs.depuisBlockly(Blockly.serialization.workspaces.save(Blockly.getMainWorkspace())).programme;
+      return { notes: (prog.notes || []).map((n) => n.texte), demarrage: prog.fils.find((f) => f.quand === 'demarrage').commentaire };
+    });
+    verifier(eleve.notes.join() === 'Ma note pour plus tard' && eleve.demarrage === 'Ici on prépare', JSON.stringify(eleve));
+    await p.close();
+    // Professeur : onglet « Programme de départ », une note, gardée quand on change d'onglet.
+    const e = await page(pathToFileURL(path.join(RACINE, 'site', 'editeur.html')).href);
+    await e.evaluate(() => localStorage.clear());
+    await e.reload();
+    await pause(800);
+    await e.click('[data-choix="connu"]');
+    await pause(800);
+    await e.click('.ed-onglet-blocs[data-onglet="depart"]');
+    await pause(300);
+    const aide = await e.$eval('.ed-aide-blocs', (x) => x.textContent);
+    await e.click('.ed-commentaire');
+    await pause(300);
+    await e.keyboard.type('Indice du professeur');
+    await pause(300);
+    await e.click('.ed-onglet-blocs[data-onglet="solution"]');
+    await pause(300);
+    const solution = await e.evaluate(() => Blockly.getMainWorkspace().getTopComments().length);
+    await e.click('.ed-onglet-blocs[data-onglet="depart"]');
+    await pause(300);
+    const depart = await e.evaluate(() => Blockly.getMainWorkspace().getTopComments().map((c) => c.getText()));
+    await e.close();
+    verifier(/Ce que chaque élève trouve/.test(aide) && solution === 0 && depart.join() === 'Indice du professeur', JSON.stringify({ aide, solution, depart }));
+    return `élève : note « ${eleve.notes[0]} », commentaire sur « Au démarrage » : « ${eleve.demarrage} » ; professeur : programme de départ avec la note « ${depart[0]} » (la solution n’en a pas)`;
+  });
+
   await critere('Éditeur : un exercice complet créé sans code, publié, puis réussi par un élève', async () => {
     // Copie de Labo Blocs : le dépôt n'est pas modifié.
     const copie = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'labo-blocs-recette-'));

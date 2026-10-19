@@ -809,6 +809,9 @@
     $('.btn-zoom-moins', ecran).addEventListener('click', () => editeur.zoomer(-1));
     $('.btn-zoom-plus', ecran).addEventListener('click', () => editeur.zoomer(1));
     $('.btn-recentrer', ecran).addEventListener('click', editeur.recentrer);
+    // Le bouton ne prend pas la main au clic : le bloc choisi le reste (sinon Blockly le « déchoisit »).
+    $('.btn-commentaire', ecran).addEventListener('mousedown', (e) => e.preventDefault());
+    $('.btn-commentaire', ecran).addEventListener('click', editeur.commenter);
 
     // ----- Enregistrement -----
 

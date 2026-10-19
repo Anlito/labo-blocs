@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-19/10/2026 12:12:52 · chromium · page ouverte en file:// · 38/38 critères
+19/10/2026 12:50:15 · chromium · page ouverte en file:// · 39/39 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -17,6 +17,7 @@
 | Colonnes repliables : la zone de programmation s’agrandit, le choix est gardé | ✔ | 502 → 1198 px |
 | Reprendre le travail après fermeture de l’onglet (copie de secours) | ✔ |  |
 | Éditeur : le parcours du distributeur s’ouvre, chaque solution passe ses scénarios | ✔ | publication possible : version 1.4.0 |
+| Commentaires : l’élève commente son programme (bouton « Commentaire ») ; le professeur écrit le programme de départ | ✔ | élève : note « Ma note pour plus tard », commentaire sur « Au démarrage » : « Ici on prépare » ; professeur : programme de départ avec la note « Indice du professeur » (la solution n’en a pas) |
 | Éditeur : un exercice complet créé sans code, publié, puis réussi par un élève | ✔ | exercice dist-14 : Vérifier que la LED D4 est allumée · Attendre 2,5 s · Vérifier que la LED D4 est éteinte ; version 1.4.0 publiée ; chez l’élève : réussite, et « Au bout de 0,3 s, la LED D4 devrait être allumée. Dans ton programme, … » pour un programme vide |
 | Dans la carte · Arduino Uno neuve : programme de la carte installé, programme de l’élève envoyé, carte vidée | ✔ | programme de la carte 0.2 (uno) installé par le câble ; 47 octets envoyés et gardés ; carte vidée |
 | Dans la carte · mBot : envoi du programme et « Vider la carte » | ✔ | 54 octets envoyés, puis carte vidée : « Le programme est effacé : la carte ne commande plus rien. Vé… » |
@@ -37,7 +38,7 @@
 | Mise en ligne directe : clé enregistrée dans les Réglages, « Publier » envoie le parcours dans parcours/ du dépôt | ✔ | clé enregistrée (vide refusée) ; « Version 1.5.0 mise en ligne.Le site de Labo Blocs se met à j… » ; envoyé : parcours/decouverte-mbot-1.5.0.labo-parcours.json (version 1.5.0) |
 | Page des élèves : tous les parcours, sans code professeur, chacun ouvre l’accueil de l’équipe | ✔ | 4 parcours (Distributeur de céréales, Découverte du mBot, Découverte de la micro:bit, Découverte de la caméra (IA)) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code |
 | Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe | ✔ | dossier de l’équipe refusé (« choisis celui qui le contient ») ; autre dossier : créer dedans ou rechoisir (plus de « utiliser quand même ») ; dossier du projet : « Ana_Ben/Ana_Ben.json » créé |
-| Caméra et IA : étiquettes de l’exercice, photos (webcam simulée), IA chargée depuis le dossier, solution vérifiée | ✔ | étiquettes Rien, Pouce levé, Main ouverte ; modes simulateur, direct ; solution réussie ; webcam simulée : « L’IA reconnaît : Pouce levé (50 %) » ; réflexion : 3 barres, « L’IA hésite : aucune étiquette n’atteint le seuil. » ; 10 + 10 photos (image de la caméra visible avec la dernière étiquette) ; étiquette créée par l’élève : Loup |
+| Caméra et IA : étiquettes de l’exercice, photos (webcam simulée), IA chargée depuis le dossier, solution vérifiée | ✔ | étiquettes Rien, Pouce levé, Main ouverte ; modes simulateur, direct ; solution réussie ; webcam simulée : « L’IA reconnaît : Pouce levé (70 %) » ; réflexion : 3 barres, « L’IA hésite : aucune étiquette n’atteint le seuil. » ; 10 + 10 photos (image de la caméra visible avec la dernière étiquette) ; étiquette créée par l’élève : Loup |
 | Variables : données par le professeur (menu) ou créées par l’élève (« Créer une variable »), nom vérifié | ✔ | créée par l’élève : « delay » refusé, « ma vitesse » → ma_vitesse (= 7 en simulation) ; donnée par le professeur : score (sans bouton) |
 | Réglages du collège : liste commune publiée depuis la page Réglages ; la page des élèves suit (niveaux du projet, version en ligne) | ✔ | accueil : 6 classes lues, 4 publiées (site/college.js) ; élèves (niveau 5) : 5A, 5B, 5C, 5D, 5E, 5F → version en ligne 5A, 5G ; « Reseau › 5A › TECHNO › DISTRIBUTEUR DE CEREALES › Prénom_Prénom » |
 | Nouveau projet (npm run nouveau-projet) : page des élèves et outil du professeur marchent en file:// | ✔ | élèves : équipe Zoé (4B), dossier « Bureau›Classe›4B›COMMUN›TECHNOLOGIE›PONT-LEVIS › Zoé », exercice « Allumer une LED » ; professeur : 8 équipes (dont une sauvegarde d'un autre projet) |

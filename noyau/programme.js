@@ -6,7 +6,9 @@
 //   { format: 'labo-blocs/programme', version: 1,
 //     fils: [ { quand: 'demarrage' | 'boucle' | 'appui' | 'relache', broche?, corps: [instruction…] }
 //             { quand: 'camera', etiquette: n° (0 = rien), front: 'voit' | 'plus', corps }  (caméra : jalon 6)
-//             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps } ] }  (clavier)
+//             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps } ],
+//     notes?: [ { texte, x, y, largeur?, hauteur? } ] }  (clavier ; notes : commentaires posés dans l'espace des blocs)
+// Tout bloc (instruction, expression, fil) peut porter « commentaire » : le texte de son commentaire Blockly.
 // Instructions : led_etat, attendre, servo_angle, affecter, ajouter_a, si_alors, si_sinon, repeter_n, tant_que,
 //   repeter_jusqua, son ; expressions : nombre, variable, bouton_etat, valeur_haut_bas, comparaison, operation,
 //   logique, non, hasard (détail : noyau/code-octet.js). Chaque nœud venu de Blockly porte son « id ».
@@ -48,7 +50,7 @@
   // Programme simplifié de l'atelier → v1 (un v1 est rendu tel quel).
   function versV1(p) {
     if (p && Array.isArray(p.fils)) return p;
-    return {
+    const v1 = {
       format: FORMAT,
       version: VERSION,
       fils: [
@@ -56,6 +58,8 @@
         { quand: 'boucle', corps: (p && p.boucle) || [] },
       ],
     };
+    if (p && Array.isArray(p.notes) && p.notes.length) v1.notes = p.notes;
+    return v1;
   }
 
   // v1 → programme simplifié de l'atelier { demarrage, boucle } (outils des projets qui lisent encore ce format).
@@ -66,6 +70,7 @@
     const autres = p.fils.filter((f) => f.quand !== 'demarrage' && f.quand !== 'boucle');
     const r = { demarrage: corps('demarrage'), boucle: corps('boucle') };
     if (autres.length) r.fils = autres;
+    if (Array.isArray(p.notes) && p.notes.length) r.notes = p.notes;
     return r;
   }
 
@@ -79,16 +84,24 @@
     let demarrage = false;
     let boucle = false;
 
+    // Commentaire Blockly d'un bloc (clic droit › « Ajouter un commentaire ») : gardé dans « commentaire ».
+    function commenter(n, b) {
+      const texte = b && b.icons && b.icons.comment && b.icons.comment.text;
+      if (n && typeof texte === 'string' && texte.trim()) n.commentaire = texte;
+      return n;
+    }
+
     function pile(bloc) {
       const liste = [];
       for (let b = bloc; b; b = b.next && b.next.block) {
-        const i = instruction(b);
+        const i = commenter(instruction(b), b);
         if (i) liste.push(i);
       }
       return liste;
     }
 
-    function expression(bloc, parent) {
+    const expression = (bloc, parent) => commenter(expressionSeule(bloc, parent), bloc);
+    function expressionSeule(bloc, parent) {
       if (!bloc) {
         incomplets.push(parent.id);
         return null;
@@ -185,11 +198,19 @@
         fils.push({ quand: 'camera', etiquette: Number(champ(b, 'ETIQUETTE')) || 0, front: champ(b, 'FRONT') === 'plus' ? 'plus' : 'voit', id: b.id, corps: pile(entree(b, 'DO')) });
       } else {
         horsProgramme.push(b.id);
+        continue;
       }
+      commenter(fils[fils.length - 1], b);
     }
     // « Au démarrage » d'abord, comme sur la carte.
     fils.sort((a, b) => (a.quand === 'demarrage' ? -1 : b.quand === 'demarrage' ? 1 : 0));
-    return { programme: { format: FORMAT, version: VERSION, fils }, horsProgramme, incomplets };
+    const programme = { format: FORMAT, version: VERSION, fils };
+    // Notes posées dans l'espace des blocs (clic droit dans le vide › « Ajouter un commentaire », ou le bouton).
+    const notes = ((sauvegarde && sauvegarde.workspaceComments) || [])
+      .filter((c) => typeof c.text === 'string' && c.text.trim())
+      .map((c) => ({ texte: c.text, x: Math.round(Number(c.x) || 0), y: Math.round(Number(c.y) || 0), largeur: Math.round(Number(c.width) || 200), hauteur: Math.round(Number(c.height) || 100) }));
+    if (notes.length) programme.notes = notes;
+    return { programme, horsProgramme, incomplets };
   }
 
   // Écrit un programme (v1 ou atelier) en sauvegarde Blockly (blocs de départ, solution de référence, indice 3).
@@ -202,7 +223,13 @@
       return { type: 'nombre', id: nouvelId(), fields: { NUM: Number(valeur) || 0 } };
     }
 
-    function expression(e) {
+    // Commentaire d'un nœud → commentaire Blockly, ouvert (le professeur s'en sert pour donner une information).
+    function commenter(b, n) {
+      if (b && n && typeof n.commentaire === 'string' && n.commentaire.trim()) b.icons = { comment: { text: n.commentaire, pinned: true, height: 80, width: 200 } };
+      return b;
+    }
+    const expression = (e) => commenter(expressionSeule(e), e);
+    function expressionSeule(e) {
       if (e === null || e === undefined) return null;
       if (typeof e === 'number') return nombreBloc(e);
       const id = e.id || nouvelId();
@@ -267,7 +294,7 @@
     function entreeNombre(bloc, nom, e) {
       const defaut = (ENTREES_NOMBRE[bloc.type] || (CARTES().BLOCS_CARTES[bloc.type] || {}).entrees || {})[nom] || 0;
       if (typeof e === 'number' || (e && e.bloc === 'nombre')) {
-        bloc.inputs[nom] = { shadow: expression(e) };
+        bloc.inputs[nom] = { shadow: expressionSeule(e) }; // un bloc fantôme ne porte pas de commentaire
       } else {
         bloc.inputs[nom] = { shadow: nombreBloc(defaut) };
         const b = expression(e);
@@ -329,7 +356,7 @@
       let premier = null;
       let dernier = null;
       for (const i of liste || []) {
-        const b = instruction(i);
+        const b = commenter(instruction(i), i);
         if (!b) continue;
         if (dernier) dernier.next = { block: b };
         else premier = b;
@@ -355,10 +382,15 @@
           : { type: f.quand, id: f.quand, x: 24, y, deletable: false };
       const p = pile(f.corps);
       if (p) b.inputs = { DO: { block: p } };
+      commenter(b, f);
       blocs.push(b);
       y += 76 + Math.max(1, compterBlocs(f.corps)) * 44 + 28;
     }
-    return { blocks: { languageVersion: 0, blocks: blocs } };
+    const sauvegarde = { blocks: { languageVersion: 0, blocks: blocs } };
+    if (Array.isArray(v1.notes) && v1.notes.length) {
+      sauvegarde.workspaceComments = v1.notes.map((n) => ({ id: nouvelId(), text: String(n.texte || ''), x: Number(n.x) || 0, y: Number(n.y) || 0, width: Number(n.largeur) || 200, height: Number(n.hauteur) || 100 }));
+    }
+    return sauvegarde;
   }
 
   function compterBlocs(liste) {

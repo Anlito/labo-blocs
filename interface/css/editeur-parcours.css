@@ -51,6 +51,13 @@ a.ed-btn { text-decoration: none; }
 .ed-carte-tete { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; }
 .ed-carte-tete h3 { margin: 0; font-size: 1.125rem; }
 .ed-aide { margin: 0; font-size: 0.875rem; color: var(--texte-2); }
+.ed-onglets-blocs { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.ed-onglet-blocs {
+  min-height: 2.25rem; padding: 0 0.875rem; border: 1px solid var(--bord); border-radius: 0.625rem; background: #FFFFFF;
+  font: 700 0.9375rem var(--titres); color: var(--texte-2); cursor: pointer;
+}
+.ed-onglet-blocs[aria-selected="true"] { background: var(--action-pale); border-color: var(--action); color: var(--action-fonce); }
+.ed-commentaire .icone { width: 1.125rem; height: 1.125rem; }
 .ed-carte label { display: flex; flex-direction: column; gap: 0.25rem; font-weight: 700; font-size: 0.9375rem; }
 .ed-carte input:not([type="checkbox"]), .ed-carte select, .ed-carte textarea {
   font: inherit; font-weight: 400; font-size: 1rem; padding: 0.5rem 0.625rem; border: 2px solid var(--bord-fort); border-radius: 0.5rem; background: #FFFFFF; color: var(--texte);

@@ -594,6 +594,16 @@
     if (defini) return;
     defini = true;
     for (const [nom, d] of Object.entries(CHAMPS_DESSIN)) definirChampDessin(Blockly, nom, d);
+    // Commentaires : sur un bloc (clic droit › « Ajouter un commentaire ») et notes libres dans l'espace des blocs
+    // (clic droit dans le vide). Les mots que la traduction française de Blockly n'a pas.
+    const reg = Blockly.ContextMenuRegistry.registry;
+    if (Blockly.ContextMenuItems && Blockly.ContextMenuItems.registerCommentOptions && !reg.getItem('commentCreate')) Blockly.ContextMenuItems.registerCommentOptions();
+    Object.assign(Blockly.Msg, {
+      COLLAPSE_COMMENT: 'Réduire le commentaire',
+      EXPAND_COMMENT: 'Ouvrir le commentaire',
+      COMMENT: 'Commentaire',
+      WORKSPACE_COMMENT_DEFAULT_TEXT: 'Écris ton commentaire ici…',
+    });
     Blockly.common.defineBlocksWithJsonArray(DEFINITIONS);
     // Menu HAUT/BAS du bloc LED : « : allumée / : éteinte » pendant les premiers exercices seulement
     // (A.aideLed est réglé à l'ouverture de chaque exercice, voir parametres.js).
