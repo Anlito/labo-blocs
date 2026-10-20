@@ -34,6 +34,8 @@ function publier(out) {
   writeFileSync(join(OUT, 'parcours', 'index.js'), scriptIndex(parcours.map((p) => p.id)));
 
   const r = construire();
+  // Point d’accès unique pour les projets : généré depuis les sources de Labo Blocs.
+  cpSync(r.dossier, join(OUT, 'module'), { recursive: true });
   for (const f of r.exportes) {
     const texte = readFileSync(join(RACINE, 'dist', 'parcours', f));
     writeFileSync(join(OUT, 'parcours', f), texte);
