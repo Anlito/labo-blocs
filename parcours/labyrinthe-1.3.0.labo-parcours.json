@@ -1,0 +1,1484 @@
+{
+  "format": "labo-blocs/parcours",
+  "version": 1,
+  "id": "labyrinthe",
+  "titre": "Labyrinthe robotisé",
+  "versionParcours": "1.3.0",
+  "date": "2026-10-20",
+  "moteurMinimum": "0.4.0",
+  "carte": "uno",
+  "modes": [
+    "simulateur",
+    "carte"
+  ],
+  "boutonsVersMasse": true,
+  "parametres": {},
+  "exercices": [
+    {
+      "id": "lab-01",
+      "numero": "1",
+      "titre": "Le plateau à plat",
+      "defi": false,
+      "consigne": "Le servomoteur de l’axe X est branché sur la broche D5.\nAu démarrage, place-le à 90° : c’est la position où le plateau est à plat.",
+      "composants": [
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        }
+      ],
+      "blocsAutorises": [
+        "servo_angle"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Le servomoteur D5 va à 90°",
+          "etapes": [
+            {
+              "attendre": 1
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0
+            },
+            {
+              "stable": {
+                "D5": 90
+              },
+              "duree": 2
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Un seul bloc suffit : le servomoteur D5 doit aller à 90°, une seule fois.",
+        "Bloc : « contrôler l’angle à 90 ° sur la broche D5 », dans « Au démarrage »."
+      ],
+      "aSavoir": "servo",
+      "solutionReference": {
+        "demarrage": [
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": 90
+          }
+        ],
+        "boucle": []
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "lab-02",
+      "numero": "2",
+      "titre": "Pencher le plateau",
+      "defi": false,
+      "consigne": "Le plateau penche d’un côté puis de l’autre, sans fin : le servomoteur D5 va à 60°, attend 1 seconde, va à 120°, attend 1 seconde… et ça recommence.",
+      "composants": [
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        }
+      ],
+      "blocsAutorises": [
+        "servo_angle",
+        "attendre"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Le plateau penche à gauche puis à droite",
+          "etapes": [
+            {
+              "sequence": "D5",
+              "valeurs": [
+                60,
+                120
+              ],
+              "intervalle": 1,
+              "duree": 6,
+              "changements": 4
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "60°, attendre 1 seconde, 120°, attendre 1 seconde : ces 4 blocs se répètent sans fin.",
+        "Blocs : deux « contrôler l’angle » (D5) et deux « attendre 1 seconde », dans « Répéter indéfiniment »."
+      ],
+      "aSavoir": "demarrage-boucle",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": 60
+          },
+          {
+            "bloc": "attendre",
+            "duree": 1
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": 120
+          },
+          {
+            "bloc": "attendre",
+            "duree": 1
+          }
+        ]
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "lab-03",
+      "numero": "3",
+      "titre": "Lire le joystick",
+      "defi": false,
+      "consigne": "Le joystick est branché sur A0 (axe X, gauche – droite) et A1 (axe Y). Il donne une valeur de 0 à 1023 (environ 512 au centre).\nRange la valeur de l’axe X dans la variable VRX. Si VRX est plus grande que 700, le servomoteur D5 va à 120°. Sinon, il va à 90°.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_valeur",
+        "affecter",
+        "variable",
+        "nombre",
+        "si_sinon",
+        "comparaison",
+        "servo_angle"
+      ],
+      "blocsDepart": null,
+      "variables": [
+        "VRX"
+      ],
+      "scenarios": [
+        {
+          "nom": "Le joystick poussé à droite",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 120
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 120
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est de nouveau poussé vers la droite"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "D’abord « affecter à VRX la valeur du joystick sur X », puis « si VRX > 700 alors … sinon … ». Le tout se répète sans fin.",
+        "Blocs : « affecter à VRX », « valeur du joystick sur X », « si … alors … sinon » avec « VRX > 700 », et deux « contrôler l’angle » (D5)."
+      ],
+      "aSavoir": "joystick",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "comparaison",
+              "op": ">",
+              "a": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "b": 700
+            },
+            "alors": [
+              {
+                "bloc": "servo_angle",
+                "broche": "D5",
+                "angle": 120
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "servo_angle",
+                "broche": "D5",
+                "angle": 90
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C6"
+    },
+    {
+      "id": "lab-04",
+      "numero": "4",
+      "titre": "Trois positions",
+      "defi": false,
+      "consigne": "Joystick poussé vers la droite : le servomoteur D5 va à 60°. Poussé vers la gauche : 120°. Sinon (au centre) : 90°.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_direction",
+        "si_alors",
+        "si_sinon",
+        "servo_angle"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Droite, gauche, centre",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 60
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 120
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick revient au centre"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Il y a trois cas : un « si … alors … sinon » placé dans le « sinon » d’un autre.",
+        "Blocs : « si le joystick est poussé vers la droite alors 60° sinon (si poussé vers la gauche alors 120° sinon 90°) »."
+      ],
+      "aSavoir": "joystick",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "joystick_direction",
+              "direction": "droite"
+            },
+            "alors": [
+              {
+                "bloc": "servo_angle",
+                "broche": "D5",
+                "angle": 60
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "si_sinon",
+                "condition": {
+                  "bloc": "joystick_direction",
+                  "direction": "gauche"
+                },
+                "alors": [
+                  {
+                    "bloc": "servo_angle",
+                    "broche": "D5",
+                    "angle": 120
+                  }
+                ],
+                "sinon": [
+                  {
+                    "bloc": "servo_angle",
+                    "broche": "D5",
+                    "angle": 90
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "lab-05",
+      "numero": "5",
+      "titre": "Ré-étalonner un axe",
+      "defi": false,
+      "consigne": "Le joystick donne 0 à 1023, le servomoteur attend un angle de 0° à 180°.\nRange la valeur du joystick sur X dans VRX, puis ré-étalonne VRX dans MoteurX : depuis (1023, 0) vers (0, 180). Le servomoteur D5 prend l’angle MoteurX.\nAvec (1023, 0), quand on pousse à droite le servomoteur va à 0° : c’est le sens du plateau du labyrinthe.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_valeur",
+        "reetalonner",
+        "servo_angle",
+        "affecter",
+        "variable",
+        "nombre"
+      ],
+      "blocsDepart": null,
+      "variables": [
+        "VRX",
+        "MoteurX"
+      ],
+      "scenarios": [
+        {
+          "nom": "Le servomoteur suit le joystick",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 0
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 180
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick revient au centre"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Trois étapes dans « Répéter indéfiniment » : lire le joystick dans VRX, ré-étalonner VRX dans MoteurX, régler le servomoteur à MoteurX.",
+        "Blocs : « affecter à MoteurX la valeur ré-étalonner VRX depuis (1023, 0) vers (0, 180) », puis « contrôler l’angle à MoteurX sur la broche D5 »."
+      ],
+      "aSavoir": "reetalonner",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 0,
+              "vers2": 180
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          }
+        ]
+      },
+      "competence": "C6"
+    },
+    {
+      "id": "lab-06",
+      "numero": "6",
+      "titre": "Les deux axes",
+      "defi": false,
+      "consigne": "Ajoute l’axe Y : la valeur du joystick sur Y va dans VRY, ré-étalonnée depuis (0, 1023) vers (180, 0) dans MoteurY. Le servomoteur D6 prend l’angle MoteurY.\nL’axe X reste comme à l’exercice 5.\n⚠️ Plateau NON installé : avec 0° à 180°, les servomoteurs vont en butée.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe Y",
+          "broche": "D6"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_valeur",
+        "reetalonner",
+        "servo_angle",
+        "affecter",
+        "variable",
+        "nombre"
+      ],
+      "blocsDepart": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 0,
+              "vers2": 180
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          }
+        ]
+      },
+      "variables": [
+        "VRX",
+        "VRY",
+        "MoteurX",
+        "MoteurY"
+      ],
+      "scenarios": [
+        {
+          "nom": "Le joystick pilote les deux servomoteurs",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 0,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 180,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 1
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 0
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le haut"
+            },
+            {
+              "regler": {
+                "joystick": 2
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 180
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le bas"
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick revient au centre"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Copie les trois blocs de l’axe X et change-les pour l’axe Y : VRY, MoteurY, broche D6.",
+        "Pour Y : « ré-étalonner VRY depuis (0, 1023) vers (180, 0) », puis « contrôler l’angle à MoteurY sur la broche D6 »."
+      ],
+      "aSavoir": "reetalonner",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "VRY",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "y"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 0,
+              "vers2": 180
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurY",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRY"
+              },
+              "de1": 0,
+              "de2": 1023,
+              "vers1": 180,
+              "vers2": 0
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurY"
+            }
+          }
+        ]
+      },
+      "competence": "C9"
+    },
+    {
+      "id": "lab-07",
+      "numero": "7",
+      "titre": "Protéger les servomoteurs (60° à 120°)",
+      "defi": false,
+      "consigne": "Avec 0° à 180°, le plateau penche trop et les servomoteurs forcent.\nModifie les deux « ré-étalonner » pour que les angles restent entre 60° et 120°.\nQuand c’est réussi, appelle le professeur : tu pourras installer le plateau et envoyer le programme dans la carte.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe Y",
+          "broche": "D6"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_valeur",
+        "reetalonner",
+        "servo_angle",
+        "affecter",
+        "variable",
+        "nombre"
+      ],
+      "blocsDepart": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "VRY",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "y"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 0,
+              "vers2": 180
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurY",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRY"
+              },
+              "de1": 0,
+              "de2": 1023,
+              "vers1": 180,
+              "vers2": 0
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurY"
+            }
+          }
+        ]
+      },
+      "variables": [
+        "VRX",
+        "VRY",
+        "MoteurX",
+        "MoteurY"
+      ],
+      "scenarios": [
+        {
+          "nom": "Le joystick pilote les deux servomoteurs",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 60,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 120,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 1
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 60
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le haut"
+            },
+            {
+              "regler": {
+                "joystick": 2
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 120
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le bas"
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick revient au centre"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Seules les deux valeurs après « vers » changent, dans les deux blocs « ré-étalonner ».",
+        "Axe X : vers (60, 120). Axe Y : vers (120, 60) (dans le même ordre qu’avant : le plus grand d’abord)."
+      ],
+      "aSavoir": "reetalonner",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "VRY",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "y"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 60,
+              "vers2": 120
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurY",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRY"
+              },
+              "de1": 0,
+              "de2": 1023,
+              "vers1": 120,
+              "vers2": 60
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurY"
+            }
+          }
+        ]
+      },
+      "competence": "C6"
+    },
+    {
+      "id": "lab-08",
+      "numero": "8",
+      "titre": "Mouvement doux et bouton du joystick (défi)",
+      "defi": true,
+      "consigne": "Deux améliorations :\n1. Mouvement plus doux : les angles restent entre 80° et 100°.\n2. Quand on appuie sur le bouton du joystick (SW, broche D4), les deux servomoteurs reviennent à 90° : le plateau se remet à plat.",
+      "composants": [
+        {
+          "type": "joystick",
+          "broche": "A0",
+          "y": "A1",
+          "bouton": "D4"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe X",
+          "broche": "D5"
+        },
+        {
+          "type": "servo",
+          "nom": "Axe Y",
+          "broche": "D6"
+        }
+      ],
+      "blocsAutorises": [
+        "joystick_valeur",
+        "reetalonner",
+        "servo_angle",
+        "affecter",
+        "variable",
+        "nombre",
+        "joystick_bouton",
+        "si_alors",
+        "si_sinon"
+      ],
+      "blocsDepart": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "VRY",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "y"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 60,
+              "vers2": 120
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurY",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRY"
+              },
+              "de1": 0,
+              "de2": 1023,
+              "vers1": 120,
+              "vers2": 60
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D5",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurX"
+            }
+          },
+          {
+            "bloc": "servo_angle",
+            "broche": "D6",
+            "angle": {
+              "bloc": "variable",
+              "variable": "MoteurY"
+            }
+          }
+        ]
+      },
+      "variables": [
+        "VRX",
+        "VRY",
+        "MoteurX",
+        "MoteurY"
+      ],
+      "scenarios": [
+        {
+          "nom": "Le joystick pilote les deux servomoteurs",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est au centre"
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 80,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "regler": {
+                "joystick": 3
+              }
+            },
+            {
+              "verifier": {
+                "D5": 100,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la gauche"
+            },
+            {
+              "regler": {
+                "joystick": 1
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 80
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le haut"
+            },
+            {
+              "regler": {
+                "joystick": 2
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 100
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers le bas"
+            },
+            {
+              "regler": {
+                "joystick": 0
+              }
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick revient au centre"
+            }
+          ]
+        },
+        {
+          "nom": "Le bouton remet le plateau à plat",
+          "etapes": [
+            {
+              "attendre": 0.5
+            },
+            {
+              "regler": {
+                "joystick": 4
+              }
+            },
+            {
+              "verifier": {
+                "D5": 80
+              },
+              "delai": 0.3,
+              "contexte": "quand le joystick est poussé vers la droite"
+            },
+            {
+              "maintenir": "D4"
+            },
+            {
+              "verifier": {
+                "D5": 90,
+                "D6": 90
+              },
+              "delai": 0.3,
+              "contexte": "quand on appuie sur le bouton du joystick (même poussé vers la droite)"
+            },
+            {
+              "relacher": "D4"
+            },
+            {
+              "verifier": {
+                "D5": 80
+              },
+              "delai": 0.3,
+              "contexte": "quand on relâche le bouton du joystick"
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "D’abord les angles : vers (80, 100). Puis un « si le bouton du joystick est appuyé alors … sinon … » autour des deux « contrôler l’angle ».",
+        "Blocs : « si le bouton du joystick est appuyé alors (D5 à 90°, D6 à 90°) sinon (D5 à MoteurX, D6 à MoteurY) »."
+      ],
+      "aSavoir": "reetalonner",
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "affecter",
+            "variable": "VRX",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "x"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "VRY",
+            "valeur": {
+              "bloc": "joystick_valeur",
+              "axe": "y"
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurX",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRX"
+              },
+              "de1": 1023,
+              "de2": 0,
+              "vers1": 80,
+              "vers2": 100
+            }
+          },
+          {
+            "bloc": "affecter",
+            "variable": "MoteurY",
+            "valeur": {
+              "bloc": "reetalonner",
+              "valeur": {
+                "bloc": "variable",
+                "variable": "VRY"
+              },
+              "de1": 0,
+              "de2": 1023,
+              "vers1": 100,
+              "vers2": 80
+            }
+          },
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "joystick_bouton"
+            },
+            "alors": [
+              {
+                "bloc": "servo_angle",
+                "broche": "D5",
+                "angle": 90
+              },
+              {
+                "bloc": "servo_angle",
+                "broche": "D6",
+                "angle": 90
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "servo_angle",
+                "broche": "D5",
+                "angle": {
+                  "bloc": "variable",
+                  "variable": "MoteurX"
+                }
+              },
+              {
+                "bloc": "servo_angle",
+                "broche": "D6",
+                "angle": {
+                  "bloc": "variable",
+                  "variable": "MoteurY"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C9"
+    }
+  ],
+  "fiches": {
+    "servo": {
+      "titre": "Le servomoteur",
+      "lignes": [
+        "Un servomoteur est un moteur qui se place à un angle précis, entre 0° et 180°.",
+        "C’est un actionneur : il agit sur le monde réel. Ici, il incline le plateau du labyrinthe.",
+        "90° : plateau à plat. Moins de 90° : il penche d’un côté. Plus de 90° : de l’autre côté.",
+        "Le labyrinthe a deux servomoteurs : D5 pour l’axe X (gauche – droite), D6 pour l’axe Y (haut – bas)."
+      ],
+      "schema": {
+        "type": "servo"
+      }
+    },
+    "demarrage-boucle": {
+      "titre": "« Au démarrage » et « Répéter indéfiniment »",
+      "lignes": [
+        "« Au démarrage » : les blocs s’exécutent une seule fois, quand la carte s’allume.",
+        "« Répéter indéfiniment » : les blocs s’exécutent de haut en bas, puis tout recommence, sans fin.",
+        "Pour suivre le joystick en permanence, il faut « Répéter indéfiniment »."
+      ],
+      "schema": {
+        "type": "deroulement"
+      }
+    },
+    "joystick": {
+      "titre": "Le joystick",
+      "lignes": [
+        "Le joystick est un capteur : il mesure la position que tu lui donnes avec le doigt.",
+        "Axe X (gauche – droite) sur A0, axe Y (bas – haut) sur A1 : ce sont des broches analogiques, elles donnent une valeur de 0 à 1023.",
+        "Au centre, la valeur est d’environ 512. Tout d’un côté : 0. Tout de l’autre : 1023.",
+        "Le bouton du joystick (SW, broche D4) s’enfonce en appuyant sur le manche."
+      ]
+    },
+    "reetalonner": {
+      "titre": "Ré-étalonner",
+      "lignes": [
+        "Le joystick donne une valeur de 0 à 1023, mais un servomoteur attend un angle de 0° à 180°.",
+        "« ré-étalonner » passe d’une échelle à l’autre en gardant les proportions : le milieu reste au milieu (512 → 90°).",
+        "depuis (0, 1023) vers (0, 180) : 0 → 0°, 512 → 90°, 1023 → 180°.",
+        "Inverser les deux nombres de « depuis » inverse le sens du mouvement.",
+        "Réduire l’écart entre les deux nombres de « vers » réduit l’inclinaison du plateau : (60, 120) est plus doux que (0, 180)."
+      ]
+    }
+  },
+  "lexique": [
+    {
+      "mot": "Broche",
+      "icone": "lumiere",
+      "formes": [
+        "broche",
+        "broches"
+      ],
+      "definition": "Un petit trou de la carte où l’on branche un composant. Chaque broche a un nom, comme D5 ou A0."
+    },
+    {
+      "mot": "Broche analogique",
+      "icone": "info",
+      "formes": [
+        "analogique",
+        "analogiques"
+      ],
+      "definition": "Une broche (A0 à A5) qui mesure une valeur continue, de 0 à 1023, et pas seulement 0 ou 1."
+    },
+    {
+      "mot": "Servomoteur",
+      "icone": "info",
+      "formes": [
+        "servomoteur",
+        "servomoteurs",
+        "servo"
+      ],
+      "definition": "Un moteur qui se place à un angle précis, entre 0° et 180°. C’est un actionneur."
+    },
+    {
+      "mot": "Joystick",
+      "icone": "info",
+      "formes": [
+        "joystick"
+      ],
+      "definition": "Un capteur qui mesure la position du manche sur deux axes (X et Y), avec un bouton quand on l’enfonce."
+    },
+    {
+      "mot": "Variable",
+      "icone": "info",
+      "formes": [
+        "variable",
+        "variables"
+      ],
+      "definition": "Une boîte qui garde une valeur pour la réutiliser plus loin dans le programme (ex. VRX garde la position du joystick)."
+    },
+    {
+      "mot": "Ré-étalonner",
+      "icone": "info",
+      "formes": [
+        "ré-étalonner",
+        "ré-étalonne"
+      ],
+      "definition": "Passer une valeur d’une échelle à une autre en gardant les proportions (0 à 1023 → 0° à 180°)."
+    },
+    {
+      "mot": "Butée",
+      "icone": "info",
+      "formes": [
+        "butée",
+        "butées"
+      ],
+      "definition": "La limite où le servomoteur ne peut plus tourner. S’il force contre une butée, il peut casser."
+    }
+  ]
+}
