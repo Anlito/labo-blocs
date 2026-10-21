@@ -20,6 +20,7 @@
   const VERSION = 1;
   const APPLICATION = 'labo-blocs';
   const FORMAT_FICHIER = 1;
+  const PA = typeof module === 'object' && module.exports ? require('./parcours.js') : global.LaboBlocs;
   // Applications dont Labo Blocs sait lire le fichier (chaque projet garde le sien).
   const APPLICATIONS = { 'labo-blocs': 1, 'atelier-cereales': 2 };
 
@@ -268,7 +269,7 @@
   }
   function noterCamera(d, camera) {
     d.programmation.camera = { modele: camera.modele || null, exemples: camera.exemples || {} };
-    if (Array.isArray(camera.etiquettes)) d.programmation.camera.etiquettes = camera.etiquettes.slice();
+    if (Array.isArray(camera.etiquettes)) d.programmation.camera.etiquettes = PA.etiquettesPersonnages(camera.etiquettes);
     d.modifieLe = maintenant();
   }
 
@@ -277,7 +278,7 @@
     const r = exercice.apprentissage;
     if (!r) return {ok:true};
     const camera = lireCamera(d);
-    const noms = camera.etiquettes || exercice.camera?.etiquettes || [];
+    const noms = PA.etiquettesPersonnages(camera.etiquettes || exercice.camera?.etiquettes || []);
     const minimum = Math.max(0,Number(r.etiquettes)||0);
     if (noms.length < minimum) return {ok:false,message:`Crée au moins ${minimum} étiquettes pour tes personnages dans « Caméra et IA ».`};
     const photos = Math.max(1,Number(r.photos)||10);

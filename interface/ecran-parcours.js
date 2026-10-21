@@ -20,7 +20,7 @@
     const { session, paquet } = contexte;
     const D = session.donnees;
     const opts = { toutDebloquer: !!contexte.toutDebloquer };
-    const ecran = $('.ecran-parcours');
+    const ecran = $('.ecran-parcours', contexte.racine);
 
     function dessiner() {
       const a = A.avancement(D, paquet);
