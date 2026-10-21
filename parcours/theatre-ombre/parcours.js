@@ -419,6 +419,10 @@ definirParcours({
         {
           "type": "led",
           "broche": "D10"
+        },
+        {
+          "type": "buzzer",
+          "broche": "D8"
         }
       ],
       "camera": {
