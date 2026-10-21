@@ -187,3 +187,14 @@ details[open] > .ed-etape-tete .ed-etape-phrase::after { content: ' ▾'; }
 
 /* Variables de l'exercice (sous les blocs proposés) */
 .ed-variables { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--bord); }
+.ed-apprentissage .ed-droite > :not(.ed-notice-apprentissage),
+.ed-apprentissage .ed-carte-blocs,
+.ed-apprentissage .ed-carte-libre,
+.ed-apprentissage .ed-carte-reprise,
+.ed-apprentissage .ed-carte-indices,
+.ed-apprentissage .ed-rangee,
+.ed-apprentissage label:has([data-champ="modes"]),
+.ed-apprentissage label:has([data-champ="libre"]) { display: none; }
+.ed-notice-apprentissage { padding: 1.25rem; line-height: 1.6; }
+.ed-regles-apprentissage { display: flex; flex-direction: column; gap: .75rem; padding-top: .75rem; border-top: 1px solid var(--bord); }
+.ed-regles-apprentissage[hidden] { display: none; }

@@ -522,3 +522,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .ecran-exercice.apprentissage-ia .colonne-aide,
 .ecran-exercice.apprentissage-ia .simulateur {display:none;}
 .ecran-exercice.apprentissage-ia .colonne-test {grid-column:2;grid-row:1 / 3;}
+@media(max-width:800px){
+  .ecran-exercice.apprentissage-ia{grid-template-columns:minmax(0,1fr);overflow:auto;}
+  .ecran-exercice.apprentissage-ia .consigne,.ecran-exercice.apprentissage-ia .colonne-test{grid-column:1;grid-row:auto;}
+}

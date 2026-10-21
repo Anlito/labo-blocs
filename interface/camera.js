@@ -103,7 +103,7 @@
       </details>
       <p class="cam-message" role="status" hidden></p>
       <p class="cam-aide">Pour chaque étiquette, montre-la à la caméra et prends des photos (${PHOTOS_CONSEILLEES} au moins, sous plusieurs angles).
-        Chaque clic en ajoute 10 : si l’IA hésite, ajoute des photos. « Rien » : la caméra sans rien devant.
+        Chaque clic en ajoute 10 : si l’IA hésite, ajoute des photos. L’étiquette « Rien » est déjà créée : elle représente le fond vide, sans personnage. Ne la crée pas une deuxième fois.
         ${o.lecture ? 'Mode enseignant : les photos ne sont pas enregistrées.' : 'Ce que tu apprends à l’IA est gardé dans le fichier de ton équipe.'}</p>
       <ul class="cam-etiquettes"></ul>
       <form class="cam-nouvelle" hidden>
@@ -348,11 +348,11 @@
         const lues = (o.donnees && o.donnees()) || {};
         libres = !!reglage.etiquettesLibres;
         const depart = libres && Array.isArray(lues.etiquettes) && lues.etiquettes.length ? lues.etiquettes : reglage.etiquettes || [];
-        noms = ['Rien'].concat(depart);
+        noms = ['Rien'].concat(A.etiquettesPersonnages(depart));
         A.etiquettesCamera = noms;
         // Un autre modèle d'IA : les anciennes photos ne servent plus (les nombres ne se comparent pas).
         camera = { modele: MODELE, exemples: lues.modele && lues.modele !== MODELE ? {} : Object.assign({}, lues.exemples) };
-        if (Array.isArray(lues.etiquettes)) camera.etiquettes = lues.etiquettes.slice();
+        if (Array.isArray(lues.etiquettes)) camera.etiquettes = A.etiquettesPersonnages(lues.etiquettes);
         apprendreTout();
         manuel = 0;
         ecart('');

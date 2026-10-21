@@ -57,6 +57,16 @@
 
   // Problèmes d'un paquet (liste vide : il est utilisable). Phrases pour le professeur.
   const MODES = ['simulateur', 'direct', 'carte'];
+  // « Rien » est la catégorie réservée au fond vide, jamais un personnage à ajouter.
+  function etiquettesPersonnages(noms) {
+    const vus = new Set(['rien']);
+    return (Array.isArray(noms) ? noms : []).filter((nom) => {
+      const cle = String(nom).trim().toLocaleLowerCase('fr');
+      if (!cle || vus.has(cle)) return false;
+      vus.add(cle);
+      return true;
+    }).map((nom) => String(nom).trim());
+  }
   function controler(paquet, versionMoteur) {
     const pb = [];
     if (!paquet || paquet.format !== FORMAT) return ['Ce fichier n’est pas un parcours Labo Blocs.'];
@@ -72,6 +82,13 @@
       else if (vus.has(e.id)) pb.push(`${nom} : l’identifiant « ${e.id} » est déjà utilisé.`);
       vus.add(e.id);
       if (!e.titre) pb.push(`${nom} : pas de titre.`);
+      if (e.apprentissage) {
+        if (!e.libre || !e.camera) pb.push(`${nom} : un entraînement IA demande la caméra et la validation « J’ai terminé ».`);
+        if (!Number.isInteger(e.apprentissage.photos) || e.apprentissage.photos < 1 ||
+            !Number.isInteger(e.apprentissage.etiquettes) || e.apprentissage.etiquettes < 0 || e.apprentissage.etiquettes > 8) {
+          pb.push(`${nom} : indique au moins une photo et entre 0 et 8 étiquettes de personnages pour l’entraînement IA.`);
+        }
+      }
       // Exercice libre : ni solution ni scénario (l'élève fait ce qu'il veut avec les blocs proposés).
       if (!e.libre && !e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
       if (!e.libre && !(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
@@ -161,7 +178,7 @@
     return /^[\s,]*$/.test(reste) ? ids : null;
   }
 
-  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, idsIndexParcours, scriptParcours, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis };
+  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, idsIndexParcours, scriptParcours, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis, etiquettesPersonnages };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else {
     Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);

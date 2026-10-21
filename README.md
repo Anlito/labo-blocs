@@ -1,5 +1,13 @@
 # Labo Blocs
 
+## Corrections du parcours Théâtre et de l’éditeur — 21 octobre 2026
+
+- L’éditeur propose le type « Entraînement de l’IA sans programmation » : caméra, nombre de personnages et photos minimales sont modifiables. Ces exercices se publient sans bloc, solution ni scénario de programme ; les exercices de programmation gardent leurs contrôles habituels.
+- La caméra peut être activée avec le fond vide seul. « Rien — fond vide » est indiquée comme étiquette automatique ; l’éditeur et la caméra filtrent ce nom réservé et les doublons. Les photos déjà enregistrées restent conservées. « Rien » ne compte pas comme un personnage dans les critères de réussite.
+- Le parcours Théâtre passe en version 1.2.0, en reprenant la version 1.1.0 publiée par le professeur (titre modifié conservé). Le bloc ajouté pour contourner le contrôle de publication et le second « Rien » sont retirés du premier exercice. Les consignes expliquent les photos, la validation et l’enregistrement.
+- L’intégration commune `interface/theatre-parcours.js` accepte une liste intégrée au site hôte (`listeHote`). Les exercices gardent l’écran commun en pleine page ; « Parcours » revient à la liste et actualise la progression.
+- Vérifications : 142 tests logiciels réussis (63 essais nécessitant des outils externes non disponibles ignorés), construction du site, et essais Chrome de la liste, des dix photos avec extraction de test, du retour, de l’éditeur et du contrôle de publication. La précision de l’IA et l’Arduino réel restent à vérifier en classe.
+
 <!-- suivi-maintenance:debut -->
 ## État du projet et améliorations documentées — 21 octobre 2026
 

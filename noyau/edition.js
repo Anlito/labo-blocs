@@ -485,7 +485,7 @@
     for (const ex of paquet.exercices || []) {
       const nom = `Exercice ${ex.numero || ''} (${ex.titre})`;
       if (!String(ex.consigne || '').trim()) problemes.push(`${nom} : la consigne est vide.`);
-      if (!(ex.blocsAutorises || []).length) problemes.push(`${nom} : aucun bloc n’est proposé aux élèves.`);
+      if (!ex.apprentissage && !(ex.blocsAutorises || []).length) problemes.push(`${nom} : aucun bloc n’est proposé aux élèves.`);
       if (ex.libre) continue; // exercice libre : pas de solution ni de scénario à tester
       for (const r of testerScenarios(paquet, ex)) if (!r.reussi) problemes.push(`${nom}, scénario « ${r.nom} » : ${r.vide ? r.message : 'la solution ne passe pas. ' + r.message}`);
     }

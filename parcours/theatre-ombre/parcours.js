@@ -4,7 +4,7 @@ definirParcours({
   "version": 1,
   "id": "theatre-ombre",
   "titre": "Théâtre d’ombre augmenté",
-  "versionParcours": "1.0.0",
+  "versionParcours": "1.2.0",
   "date": "2026-10-21",
   "moteurMinimum": "0.4.0",
   "carte": "uno",
@@ -46,8 +46,8 @@ definirParcours({
     {
       "id": "theatre-01",
       "numero": "1",
-      "titre": "Apprendre le fond vide",
-      "consigne": "Dans « Caméra et IA », allume la webcam. L’étiquette « Rien » représente le fond vide du théâtre. Ne place aucun personnage devant la caméra et ajoute au moins 10 photos sous des éclairages légèrement différents.\nAucune programmation n’est demandée. Quand les photos sont prises, clique sur « J’ai terminé ». Les images restent dans le fichier de ton équipe.",
+      "titre": "Apprendre le fond vide V1",
+      "consigne": "Objectif : apprendre à l’IA à reconnaître le théâtre vide, sans personnage.\n1. Dans « Caméra et IA », clique sur « Allumer la caméra ».\n2. Utilise l’étiquette « Rien », déjà créée automatiquement : ne la recrée pas.\n3. Laisse le théâtre vide et clique sur « + 10 photos » pour « Rien ». Varie légèrement l’éclairage ou le cadrage.\n4. Clique sur « J’ai terminé », puis sur « Enregistrer » pour garder les photos dans le fichier de ton équipe.\nAucun bloc de programmation n’est demandé dans cet exercice.",
       "defi": false,
       "composants": [],
       "camera": {
@@ -72,7 +72,7 @@ definirParcours({
       "id": "theatre-02",
       "numero": "2",
       "titre": "Créer les étiquettes des deux personnages",
-      "consigne": "Crée deux étiquettes portant les noms de tes personnages (par exemple Loup et Roi). Pour chaque personnage, prends au moins 10 photos en changeant légèrement sa position et sa distance. Garde aussi les exemples du fond vide.\nPrésente ensuite les personnages dans un autre ordre : le nom reconnu doit être le bon. Si l’IA hésite, complète les photos. « Faire comme si » teste un programme ; cela n’entraîne pas l’IA.",
+      "consigne": "Crée deux étiquettes portant les noms de tes personnages (par exemple Loup et Roi). Pour chaque personnage, prends au moins 10 photos en changeant légèrement sa position et sa distance. Garde aussi les exemples du fond vide.\nPrésente ensuite les personnages dans un autre ordre : le nom reconnu doit être le bon. Si l’IA hésite, complète les photos. « Faire comme si » teste un programme ; cela n’entraîne pas l’IA.\nL’étiquette « Rien » existe déjà : ne l’ajoute pas à la liste des personnages. Aucun bloc n’est demandé. Clique sur « J’ai terminé », puis « Enregistrer ».",
       "defi": false,
       "composants": [],
       "camera": {
@@ -182,7 +182,7 @@ definirParcours({
       "blocsDepart": null,
       "scenarios": [
         {
-          "nom": "Le pouce levé",
+          "nom": "Le premier personnage",
           "etapes": [
             {
               "verifier": {
@@ -223,7 +223,7 @@ definirParcours({
         }
       ],
       "indices": [
-        "Deux événements : quand la caméra reconnaît le pouce levé, et quand elle ne le reconnaît plus.",
+        "Deux événements : quand la caméra reconnaît ton premier personnage, et quand elle ne le reconnaît plus.",
         "Blocs : deux « quand la caméra … », chacun avec un « contrôler la LED »."
       ],
       "solutionReference": {
@@ -296,7 +296,7 @@ definirParcours({
       "blocsDepart": null,
       "scenarios": [
         {
-          "nom": "Les deux gestes",
+          "nom": "Les deux personnages",
           "etapes": [
             {
               "verifier": {
@@ -341,7 +341,7 @@ definirParcours({
         }
       ],
       "indices": [
-        "La carte regarde sans arrêt ce que reconnaît la caméra : pouce levé, main ouverte, ou rien.",
+        "La carte regarde sans arrêt ce que reconnaît la caméra : personnage 1, personnage 2, ou fond vide.",
         "Blocs : deux « si … alors … sinon » l’un dans l’autre, avec « la caméra reconnaît … »."
       ],
       "solutionReference": {
@@ -440,7 +440,7 @@ definirParcours({
       "blocsDepart": null,
       "scenarios": [
         {
-          "nom": "Les deux gestes",
+          "nom": "Les deux personnages",
           "etapes": [
             {
               "verifier": {

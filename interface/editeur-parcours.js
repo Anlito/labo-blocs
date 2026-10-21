@@ -168,6 +168,7 @@
   function ouvrir(paquet, selection) {
     etat.paquet = copie(paquet);
     etat.paquet.exercices = etat.paquet.exercices || [];
+    for(const e of etat.paquet.exercices)if(e.camera)e.camera.etiquettes=A.etiquettesPersonnages(e.camera.etiquettes);
     if (!etat.paquet.exercices.length) A.ajouterExercice(etat.paquet);
     etat.i = Math.max(0, etat.paquet.exercices.findIndex((e) => e.id === selection));
     $('.ed-accueil').hidden = true;
@@ -327,6 +328,8 @@
       `<div class="ed-carte-tete"><h3 class="ed-numero-ex">Exercice ${echapper(e.numero)}</h3><span class="ed-aide">identifiant : <code>${echapper(e.id)}</code></span></div>` +
       `<label>Titre<input class="champ" data-champ="titre" value="${echapper(e.titre)}" maxlength="80"></label>` +
       `<label>Consigne<textarea class="champ" data-champ="consigne" rows="4">${echapper(e.consigne)}</textarea></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ-entrainement"${e.apprentissage ? ' checked' : ''}> Entraînement de l’IA sans programmation</label>` +
+      (e.apprentissage ? '<p class="ed-aide">Cet exercice se valide avec les photos et les étiquettes ci-dessous. Aucun bloc, solution ni scénario de programme n’est nécessaire pour le publier. L’élève clique sur « J’ai terminé », puis enregistre son fichier d’équipe.</p>' : '') +
       '<p class="ed-aide">« si », « alors », « sinon » vont à la ligne chez l’élève. Une ligne qui commence par « - » devient une étiquette.</p>' +
       '<div class="ed-rangee">' +
       `<label>Niveau de blocs<select class="champ" data-champ="niveau"><option value="">Au choix de l’élève</option>${Object.entries(NIVEAUX)
@@ -353,14 +356,17 @@
       // Caméra et IA
       '<div class="carte ed-carte">' +
       '<div class="ed-carte-tete"><h3>Caméra et IA</h3><span class="ed-aide">Facultatif</span></div>' +
-      `<label>Étiquettes que les élèves apprennent à l’IA<input class="champ-camera" value="${echapper(((e.camera && e.camera.etiquettes) || []).join(', '))}" placeholder="aucune caméra (ex. Loup, Roi, Sorcière)"></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ-camera-activer"${e.camera ? ' checked' : ''}${e.apprentissage ? ' disabled' : ''}> Activer la caméra (possible avec le fond vide seul)</label>` +
+      '<p class="ed-aide"><strong>Étiquette automatique : Rien — fond vide.</strong> Elle existe déjà et ne doit pas être ajoutée à la liste des personnages.</p>' +
+      `<label>Étiquettes des personnages (sans « Rien »)<input class="champ-camera" value="${echapper(A.etiquettesPersonnages(e.camera?.etiquettes).join(', '))}" placeholder="ex. Loup, Roi, Sorcière"></label>` +
       `<label class="ed-case"><input type="checkbox" class="champ-camera-libres"${e.camera && e.camera.etiquettesLibres ? ' checked' : ''}> Les élèves créent leurs propres étiquettes (celles ci-dessus sont celles de départ, il peut n’y en avoir aucune)</label>` +
       '<p class="ed-aide">Sépare les noms par des virgules. Avec des étiquettes, l’élève a un panneau « Caméra et IA » : il prend des photos de chaque étiquette (et de « Rien »). Coche ensuite les blocs de la catégorie « Caméra ». La caméra est dans l’ordinateur : simulateur et « En direct » seulement (pas « Dans la carte »). Dans les scénarios, « Régler » la caméra fait comme si elle reconnaissait une étiquette.</p>' +
-      '</div>' +
-      // Composants
+      '<div class="ed-regles-apprentissage"'+(e.apprentissage?'':' hidden')+'>' +
       `<label>Apprentissage IA : nombre minimal d’étiquettes des personnages<input type="number" min="0" max="8" class="champ-apprentissage" data-apprentissage="etiquettes" value="${e.apprentissage?.etiquettes ?? ''}" placeholder="aucune exigence"></label>` +
       `<label>Apprentissage IA : photos minimales par étiquette (fond vide compris)<input type="number" min="1" max="100" class="champ-apprentissage" data-apprentissage="photos" value="${e.apprentissage?.photos ?? ''}" placeholder="aucune exigence"></label>` +
-      `<label>Reprendre le programme de l’exercice (identifiant)<input class="champ-reprise" value="${echapper(e.reprendreProgramme || '')}" placeholder="ex. theatre-05"></label>` +
+      '</div></div>' +
+      // Composants
+      `<div class="carte ed-carte ed-carte-reprise"><label>Reprendre le programme de l’exercice (identifiant)<input class="champ-reprise" value="${echapper(e.reprendreProgramme || '')}" placeholder="ex. theatre-05"></label></div>` +
       '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
       '<div class="carte ed-carte ed-carte-composants">' +
@@ -371,7 +377,7 @@
       '<p class="ed-aide">Si tu changes une broche, la solution et les scénarios suivent ; la consigne, seulement si tu le demandes.</p>' +
       '</div>' +
       // Blocs
-      '<div class="carte ed-carte">' +
+      '<div class="carte ed-carte ed-carte-blocs">' +
       '<div class="ed-carte-tete"><h3>Blocs proposés aux élèves</h3><span class="ed-aide">Coche ce qui apparaît dans la palette.</span></div>' +
       '<div class="ed-blocs">' +
       A.CATEGORIES.filter((cat) => !cat.carte || cat.carte === '*' || cat.carte === carteDuParcours()).map(
@@ -392,7 +398,7 @@
       '<p class="ed-message ed-ecart ed-message-listes" hidden></p>' +
       '</div></div>' +
       // Indices
-      '<div class="carte ed-carte">' +
+      '<div class="carte ed-carte ed-carte-indices">' +
       '<div class="ed-carte-tete"><h3>Indices</h3></div>' +
       `<label>Indice 1 · avec des mots<textarea class="champ-indice" data-n="0" rows="2">${echapper((e.indices || [])[0] || '')}</textarea></label>` +
       `<label>Indice 2 · les blocs à utiliser<textarea class="champ-indice" data-n="1" rows="2">${echapper((e.indices || [])[1] || '')}</textarea></label>` +
@@ -402,6 +408,9 @@
     lierFormulaire();
     // Exercice libre : pas de composants à déclarer ni de scénarios ; la solution devient un exemple facultatif.
     $('.ed-edition').classList.toggle('ed-libre', !!e.libre);
+    $('.ed-edition').classList.toggle('ed-apprentissage', !!e.apprentissage);
+    const notice=$('.ed-notice-apprentissage');
+    notice.hidden=!e.apprentissage;
     $('.ed-titre-solution').textContent = e.libre ? 'Exemple (facultatif)' : 'Solution de référence';
     montrerOngletBlocs();
   }
@@ -411,7 +420,13 @@
     zone.oninput = (evt) => {
       const t = evt.target;
       const e = ex();
-      if (t.matches('[data-champ="titre"], [data-champ="consigne"]')) {
+      if (t.matches('.champ-entrainement')) {
+        if(t.checked){
+          e.apprentissage={etiquettes:0,photos:10};e.camera=e.camera||{etiquettes:[]};e.libre=true;
+          e.blocsAutorises=[];e.blocsDepart=null;e.scenarios=[];delete e.solutionReference;
+        }else delete e.apprentissage;
+        modifie();dessinerFormulaire();chargerSolution();dessinerScenarios();
+      } else if (t.matches('[data-champ="titre"], [data-champ="consigne"]')) {
         e[t.dataset.champ] = t.value;
         if (t.dataset.champ === 'titre') majLigneListe();
         modifie();
@@ -524,18 +539,21 @@
       } else if (t.matches('.champ-apprentissage')) {
         const photos = zone.querySelector('[data-apprentissage="photos"]').value;
         const etiquettes = zone.querySelector('[data-apprentissage="etiquettes"]').value;
-        if (photos) e.apprentissage={etiquettes:Math.min(8,Math.max(0,Number(etiquettes)||0)),photos:Math.min(100,Math.max(1,Number(photos)||10))};
+        if (photos) {e.apprentissage={etiquettes:Math.min(8,Math.max(0,Number(etiquettes)||0)),photos:Math.min(100,Math.max(1,Number(photos)||10))};e.libre=true;e.camera=e.camera||{etiquettes:[]};}
         else delete e.apprentissage;
         modifie();
+        dessinerFormulaire();chargerSolution();dessinerScenarios();
       } else if (t.matches('.champ-reprise')) {
         if(t.value.trim())e.reprendreProgramme=t.value.trim();else delete e.reprendreProgramme;
         modifie();
-      } else if (t.matches('.champ-camera') || t.matches('.champ-camera-libres')) {
+      } else if (t.matches('.champ-camera') || t.matches('.champ-camera-libres') || t.matches('.champ-camera-activer')) {
         const champ = $('.champ-camera', zone);
-        const noms = [...new Set(champ.value.split(',').map((x) => x.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 8);
+        const noms = A.etiquettesPersonnages(champ.value.split(',').map((x) => x.trim().replace(/\s+/g, ' '))).slice(0, 8);
+        champ.value=noms.join(', ');
         const libres = $('.champ-camera-libres', zone).checked;
-        if (noms.length || libres) e.camera = libres ? { etiquettes: noms, etiquettesLibres: true } : { etiquettes: noms };
+        if (noms.length || libres || e.apprentissage || $('.champ-camera-activer',zone).checked) e.camera = libres ? { etiquettes: noms, etiquettesLibres: true } : { etiquettes: noms };
         else delete e.camera;
+        $('.champ-camera-activer',zone).checked=!!e.camera;
         A.etiquettesCamera = ['Rien'].concat(noms);
         modifie();
         chargerSolution();
@@ -773,7 +791,7 @@
     const blocs = etat.ongletBlocs === 'depart' ? e.blocsDepart : e.solutionReference;
     const solution = A.appliquerParametres(blocs || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
     A.carteCourante = carteDuParcours();
-    A.etiquettesCamera = ['Rien'].concat((e.camera && e.camera.etiquettes) || []);
+    A.etiquettesCamera = ['Rien'].concat(A.etiquettesPersonnages(e.camera?.etiquettes));
     etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres, listes: e.listes }, A.versBlockly(solution));
     majMessageSolution();
   }
@@ -1239,7 +1257,7 @@
     } else {
       const local = global.showDirectoryPicker && (location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname));
       contenu.innerHTML =
-        `<p class="ed-message ed-reussi">${A.icone('coche', { epaisseur: 2.6 })}<span>Les ${etat.paquet.exercices.length} exercices sont prêts : chaque solution passe ses scénarios.</span></p>` +
+        `<p class="ed-message ed-reussi">${A.icone('coche', { epaisseur: 2.6 })}<span>Les ${etat.paquet.exercices.length} exercices sont prêts. Les programmes passent leurs scénarios ; les entraînements IA utilisent les critères de photos et d’étiquettes demandés.</span></p>` +
         `<p>La version <strong>${suivante}</strong> du parcours « ${echapper(etat.paquet.titre)} » va être :</p><ul>` +
         (local
           ? `<li>écrite dans le dossier de Labo Blocs (<code>parcours/${echapper(etat.paquet.id)}/parcours.js</code>) : choisis le dossier qui contient « site » et « parcours » ;</li>`
