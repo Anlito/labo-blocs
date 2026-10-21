@@ -130,6 +130,7 @@ function construire() {
     cpSync(join(RACINE, 'node_modules', 'blockly', fichier), join(OUT, 'blockly', fichier));
   // IA de la caméra (TensorFlow.js et MobileNet, ~12 Mo) : chargée seulement quand un exercice allume la caméra.
   cpSync(join(RACINE, 'site', 'vendor', 'vision'), join(OUT, 'vision'), { recursive: true });
+  require('./construire-theatre.js').construireTheatre(OUT);
   const date = new Date().toISOString().slice(0, 10);
   writeFileSync(join(OUT, 'VERSION.json'), JSON.stringify({ moteur: VERSION_MOTEUR, construit: date }, null, 2) + '\n');
   writeFileSync(
@@ -172,3 +173,4 @@ if (require.main === module) {
 }
 
 module.exports = { construire, prefixer, lireParcours };
+
