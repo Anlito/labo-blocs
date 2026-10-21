@@ -1265,14 +1265,16 @@
         const sien = await dossier.getDirectoryHandle(publie.id, { create: true });
         await ecrire(sien, 'parcours.js', script);
         // Un nouveau parcours rejoint la liste de l'éditeur.
-        let ids = [];
+        // Liste lue avec ses apostrophes simples ou doubles ; illisible, elle n'est pas touchée (jamais vidée).
+        let ids = null;
+        let texte = null;
         try {
-          const t = await (await (await dossier.getFileHandle('index.js')).getFile()).text();
-          ids = JSON.parse(t.match(/definirIndexParcours\((\[[\s\S]*?\])\)/)[1]);
+          texte = await (await (await dossier.getFileHandle('index.js')).getFile()).text();
         } catch {
-          ids = [];
+          ids = []; // pas encore de liste : on la crée
         }
-        if (!ids.includes(publie.id)) {
+        if (texte !== null) ids = A.idsIndexParcours(texte);
+        if (ids && !ids.includes(publie.id)) {
           ids.push(publie.id);
           await ecrire(
             dossier,

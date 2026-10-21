@@ -149,7 +149,19 @@
   }
 
   const parcoursDefinis = [];
-  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, scriptParcours, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis };
+  // Liste des parcours d'un fichier parcours/index.js (« definirIndexParcours(['a', "b"]) ») ; null si illisible.
+  function idsIndexParcours(texte) {
+    const m = /definirIndexParcours\(\s*\[([\s\S]*?)\]\s*\)/.exec(String(texte || ''));
+    if (!m) return null;
+    const ids = [];
+    const reste = m[1].replace(/(['"])([^'"\\]*)\1/g, (_, q, id) => {
+      ids.push(id);
+      return '';
+    });
+    return /^[\s,]*$/.test(reste) ? ids : null;
+  }
+
+  const api = { FORMAT_PARCOURS: FORMAT, VERSION_MOTEUR, idsIndexParcours, scriptParcours, controler, preparer, comparer, empreinte, comparerVersions, silhouette, canonique, parcoursDefinis };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else {
     Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);

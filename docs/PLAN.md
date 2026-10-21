@@ -550,3 +550,17 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Simulateur : `illustration: 'simon'` → console à 4 touches (4 premières LED et 4 premiers boutons, bleu, vert,
      jaune, rouge), son du buzzer joué par l'ordinateur (WebAudio, bouton « Son »).
    - Moteur **0.5.0**. Tests : `tests/listes-fonctions.test.js` (Simon complet joué et vérifié dans le simulateur).
+43. **Parcours « Simon Rétro Game » 1.0.0 (21/10/2026)** (`parcours/simon/parcours.js`, construit et vérifié par
+   `tools/construire-simon.js`). Décisions de Thomas : les 12 exercices du brief §6.5 ; couleurs 1 bleu, 2 vert,
+   3 jaune, 4 rouge ; niveaux 5e et 4e ; « Mon Simon » : sons libres, on vérifie qu'il y en a. Standard D2 à D10
+   (boutons D2/D4/D6/D8, LED D3/D5/D7/D9, buzzer D10), console Simon dès l'exercice 3, notes 262/330/392/523 Hz.
+   - 1–4 : LED, bouton, quatre couleurs, une note par couleur ; 5 : fonction « allumer » (départ : la fonction vide et
+     ses 4 appels) ; 6 : la séquence de l'élève dans la liste « sequence » (4 couleurs au moins) ; 7 : « lire_bouton » ;
+     8 : son d'erreur ; 9 : une couleur de plus à chaque tour ; 10 : victoire ; 11 **Mon Simon** (6 couleurs au moins,
+     tout personnalisé, programme du tournoi) ; 12 **défi** au hasard (liste qui s'allonge). 6 à 12 reprennent le
+     programme de l'exercice précédent.
+   - Vérification sans supposer la séquence : étapes `jouerListe` (calme 1,5 s : les pauses de l'élève durent 1 s au
+     plus), `entendre` avec `sauf: 'couleurs'` (le son d'erreur doit différer des notes des couleurs), `exactement`
+     (3 notes après 2 tours), `memeDepart` (son d'erreur puis retour au début), `grandit` (défi).
+   - Corrigé : l'éditeur relisait mal `parcours/index.js` (apostrophes simples) et le réécrivait avec son seul parcours ;
+     il lit maintenant les deux sortes et ne touche plus à une liste illisible (`idsIndexParcours`).

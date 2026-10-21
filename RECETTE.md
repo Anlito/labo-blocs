@@ -392,3 +392,15 @@ Projet Simon Rétro Game : 4 boutons D2 / D4 / D6 / D8 (vers la masse), 4 LED D3
 | 27.7 | **Vraie Uno câblée D2–D10** : « Dans la carte », puis jouer | Même jeu que dans le simulateur, débranché de l'ordinateur ; même note par couleur | |
 | 27.8 | Une ancienne sauvegarde (Distributeur, Labyrinthe) | S'ouvre comme avant, rien ne change | |
 | 27.9 | Un module 0.4.0 (projet pas encore mis à jour) reçoit un parcours qui utilise ces blocs | Refusé avec « Ce parcours demande Labo Blocs 0.5.0 ou plus récent » | |
+
+## 28. Parcours « Simon Rétro Game » (12 exercices)
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 28.1 | Accueil de Labo Blocs : « Simon Rétro Game » en mode enseignant | 12 exercices ; le 12 est marqué « Défi » ; la console Simon apparaît dès l'exercice 3 | |
+| 28.2 | Exercices 1 à 4 avec la solution, puis un essai faux (LED sur D2) | Réussi ; l'essai faux donne une phrase en ambre qui nomme la LED bleue (D3) | |
+| 28.3 | Exercice 6 : changer la séquence (ex. 2, 4, 4, 1, 3) | Toujours réussi ; avec 3 couleurs seulement, la phrase cite le contenu de la liste | |
+| 28.4 | Exercice 8 : son d'erreur sur 262 Hz (la note du bleu) | « … un son d'erreur, différent des notes des couleurs … » | |
+| 28.5 | Exercice 11 : ma séquence de 6 couleurs, mes notes, mes sons, puis « Dans la carte » sur une Uno câblée D2–D10 | Réussi dans le simulateur ; même jeu sur la carte, débranchée de l'ordinateur | |
+| 28.6 | Exercice 12 (défi) : « Vérifier » plusieurs fois | Réussi à chaque fois (la séquence change à chaque essai) | |
+| 28.7 | Éditeur de parcours : enregistrer un nouveau parcours dans le dossier | `parcours/index.js` garde les autres parcours et ajoute le nouveau | |
