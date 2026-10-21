@@ -125,6 +125,9 @@ function construire() {
   cpSync(join(RACINE, 'site', 'img', 'logo.svg'), join(OUT, 'logo.svg'));
 
   for (const d of ['polices', 'blockly', 'LICENCES']) cpSync(join(RACINE, 'site', 'vendor', d), join(OUT, d), { recursive: true });
+  // Blockly partagé avec les projets utilisant les blocs standards et le générateur JavaScript.
+  for (const fichier of ['blocks_compressed.js', 'javascript_compressed.js'])
+    cpSync(join(RACINE, 'node_modules', 'blockly', fichier), join(OUT, 'blockly', fichier));
   // IA de la caméra (TensorFlow.js et MobileNet, ~12 Mo) : chargée seulement quand un exercice allume la caméra.
   cpSync(join(RACINE, 'site', 'vendor', 'vision'), join(OUT, 'vision'), { recursive: true });
   const date = new Date().toISOString().slice(0, 10);
