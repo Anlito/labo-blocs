@@ -72,6 +72,12 @@
           return `<span class="pb-hexa" style="background:${C().valeur}">${trous ? trou : hautBas(e.valeur)}</span>`;
         case 'comparaison':
           return `<span class="pb-hexa pb-grand" style="background:${C().bleu}">${expression(e.a)} ${trous ? trou : e.op} ${expression(e.b)}</span>`;
+        case 'liste_element':
+          return `<span class="pb-rond pb-grand" style="background:${C().liste}">élément n° ${expression(e.position)} de la liste <span class="pb-champ">${echapper(e.liste || '')}</span></span>`;
+        case 'liste_taille':
+          return `<span class="pb-rond" style="background:${C().liste}">nombre d’éléments de la liste <span class="pb-champ">${echapper(e.liste || '')}</span></span>`;
+        case 'parametre':
+          return `<span class="pb-rond" style="background:${C().fonction}">${echapper(e.parametre || '')}</span>`;
         default:
           return blocCarte(e) || '';
       }
@@ -106,6 +112,18 @@
           if (i.bloc === 'si_sinon') h += `<div class="pb-tete pb-milieu">sinon</div><div class="pb-corps">${pile(i.sinon)}</div>`;
           return h + '<div class="pb-pied"></div></div>';
         }
+        case 'liste_remplir':
+          return `<div class="pb-bloc" ${style(C().liste)}>remplir la liste <span class="pb-champ">${echapper(i.liste || '')}</span> avec ${pastille((i.valeurs || []).join(', '))}</div>`;
+        case 'liste_ajouter':
+          return `<div class="pb-bloc" ${style(C().liste)}>ajouter ${expression(i.valeur)} à la fin de la liste <span class="pb-champ">${echapper(i.liste || '')}</span></div>`;
+        case 'liste_remplacer':
+          return `<div class="pb-bloc" ${style(C().liste)}>remplacer l’élément n° ${expression(i.position)} de la liste <span class="pb-champ">${echapper(i.liste || '')}</span> par ${expression(i.valeur)}</div>`;
+        case 'liste_vider':
+          return `<div class="pb-bloc" ${style(C().liste)}>vider la liste <span class="pb-champ">${echapper(i.liste || '')}</span></div>`;
+        case 'appeler': {
+          const avec = (i.arguments || []).length ? ` avec ${expression(i.arguments[0])}` : '';
+          return `<div class="pb-bloc" ${style(C().fonction)}>appeler <span class="pb-champ">${echapper(i.fonction || '')}</span>${avec}</div>`;
+        }
         default:
           return blocCarte(i) || '';
       }
@@ -129,6 +147,12 @@
     if (fil('boucle')) h += chapeau('Répéter indéfiniment', fil('boucle').corps);
     for (const f of fils.filter((x) => x.quand === 'appui' || x.quand === 'relache')) {
       h += chapeau(`${image('bouton')} quand le bouton de la broche ${pastille(f.broche)} est ${f.quand === 'appui' ? 'appuyé' : 'relâché'}`, f.corps);
+    }
+    for (const f of A.versV1(programme || {}).fonctions || []) {
+      const avec = (f.parametres || []).length ? ` avec <span class="pb-champ">${echapper(f.parametres[0])}</span>` : '';
+      h +=
+        `<div class="pb-c pb-chapeau" style="--c:${C().fonction}"><div class="pb-tete">fonction <span class="pb-champ">${echapper(f.nom)}</span>${avec}</div>` +
+        `<div class="pb-corps">${pile(f.corps)}</div><div class="pb-pied"></div></div>`;
     }
     return h + '</div>';
   }

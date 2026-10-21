@@ -39,6 +39,8 @@
     evenements: 'M5 21V4M5 4h11l-2 4 2 4H5',
     boucles: 'M17 2l4 4-4 4M3 11V9a3 3 0 0 1 3-3h15M7 22l-4-4 4-4M21 13v2a3 3 0 0 1-3 3H3',
     calculs: 'M5 8h6M8 5v6M14 8h6M5 16h6M14 14h6M14 18h6',
+    listes: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01',
+    fonctions: 'M4 4h16v6H4zM7 10v4h10v-4M9 14v6h6v-6',
     son: 'M4 9h4l5-4v14l-5-4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11',
     puzzle: 'M10 4a2 2 0 114 0v2h4a1 1 0 011 1v4h-2a2 2 0 100 4h2v4a1 1 0 01-1 1h-4v-2a2 2 0 10-4 0v2H6a1 1 0 01-1-1v-4h2a2 2 0 100-4H5V7a1 1 0 011-1h4V4z',
     dossier: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',

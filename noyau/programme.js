@@ -8,11 +8,15 @@
 //             { quand: 'camera', etiquette: n° (0 = rien), front: 'voit' | 'plus', corps }  (caméra : jalon 6)
 //             { quand: 'touche', touche: 'haut' | 'espace' | 'a' | '0'…, front: 'appui' | 'relache', corps }
 //             { quand: 'joystick', direction: 'haut' | 'bas' | 'gauche' | 'droite' | 'centre', corps } ],
+//     fonctions?: [ { nom, parametres: ['couleur'], id, corps: [instruction…] } ],
 //     notes?: [ { texte, x, y, largeur?, hauteur? } ] }  (clavier ; notes : commentaires posés dans l'espace des blocs)
-// Tout bloc (instruction, expression, fil) peut porter « commentaire » : le texte de son commentaire Blockly.
+// Tout bloc (instruction, expression, fil, fonction) peut porter « commentaire » : le texte de son commentaire Blockly.
 // Instructions : led_etat, attendre, servo_angle, affecter, ajouter_a, si_alors, si_sinon, repeter_n, tant_que,
-//   repeter_jusqua, son ; expressions : nombre, variable, bouton_etat, valeur_haut_bas, comparaison, operation,
-//   logique, non, hasard (détail : noyau/code-octet.js). Chaque nœud venu de Blockly porte son « id ».
+//   repeter_jusqua, son, liste_remplir { liste, valeurs }, liste_ajouter, liste_remplacer, liste_vider,
+//   appeler { fonction, arguments } ; expressions : nombre, variable, bouton_etat, valeur_haut_bas, comparaison,
+//   operation, logique, non, hasard, liste_element { liste, position (1 = premier) }, liste_taille,
+//   parametre { parametre } (détail : noyau/code-octet.js). Chaque nœud venu de Blockly porte son « id ».
+// Un programme sans liste ni fonction s'écrit exactement comme avant : les anciennes sauvegardes se relisent.
 // L'ancien « programme simplifié » de l'atelier { demarrage, boucle } se lit aussi (versV1).
 
 (function (global) {
@@ -38,7 +42,23 @@
     hasard: { MIN: 1, MAX: 6 },
     reetalonner: { VALEUR: 0, DE_MIN: 0, DE_MAX: 1023, VERS_MIN: 0, VERS_MAX: 180 },
     operation: { A: 0, B: 0 },
+    liste_ajouter: { VALEUR: 1 },
+    liste_remplacer: { POSITION: 1, VALEUR: 0 },
+    liste_element: { POSITION: 1 },
+    fonction_appeler_param: { VALEUR: 1 },
   };
+  // Blocs Blockly qui définissent une fonction (posés seuls dans l'espace des blocs, comme « Au démarrage »).
+  const BLOCS_FONCTION = ['fonction_definir', 'fonction_definir_param'];
+
+  // « 1, 3, 2, 4 » → [1, 3, 2, 4] (virgules, points-virgules ou espaces ; les nombres à virgule s'écrivent avec un point).
+  function lireNombres(texte) {
+    return String(texte || '')
+      .split(/[;,\s]+/)
+      .filter((x) => x !== '')
+      .map(Number)
+      .filter((x) => Number.isFinite(x));
+  }
+  const ecrireNombres = (valeurs) => (valeurs || []).map((v) => String(Number(v) || 0)).join(', ');
 
   function entree(bloc, nom) {
     const e = bloc.inputs && bloc.inputs[nom];
@@ -60,9 +80,16 @@
         { quand: 'boucle', corps: (p && p.boucle) || [] },
       ],
     };
+    if (p && Array.isArray(p.fonctions) && p.fonctions.length) v1.fonctions = p.fonctions;
     if (p && Array.isArray(p.notes) && p.notes.length) v1.notes = p.notes;
     return v1;
   }
+
+  // Fils et fonctions d'un programme : tout ce qui contient des blocs.
+  const filsEtFonctions = (programme) => {
+    const v1 = versV1(programme);
+    return v1.fils.concat(v1.fonctions || []);
+  };
 
   // v1 → programme simplifié de l'atelier { demarrage, boucle } (outils des projets qui lisent encore ce format).
   // Les autres fils (« quand on appuie… ») sont gardés à part dans « fils ».
@@ -72,6 +99,7 @@
     const autres = p.fils.filter((f) => f.quand !== 'demarrage' && f.quand !== 'boucle');
     const r = { demarrage: corps('demarrage'), boucle: corps('boucle') };
     if (autres.length) r.fils = autres;
+    if (Array.isArray(p.fonctions) && p.fonctions.length) r.fonctions = p.fonctions;
     if (Array.isArray(p.notes) && p.notes.length) r.notes = p.notes;
     return r;
   }
@@ -155,6 +183,12 @@
           return Object.assign(e, { bloc: 'joystick_direction', direction: champ(bloc, 'DIRECTION') || 'haut' });
         case 'joystick_bouton':
           return Object.assign(e, { bloc: 'joystick_bouton' });
+        case 'liste_element':
+          return Object.assign(e, { bloc: 'liste_element', liste: champ(bloc, 'LISTE') || 'liste', position: expression(entree(bloc, 'POSITION'), bloc) });
+        case 'liste_taille':
+          return Object.assign(e, { bloc: 'liste_taille', liste: champ(bloc, 'LISTE') || 'liste' });
+        case 'parametre':
+          return Object.assign(e, { bloc: 'parametre', parametre: champ(bloc, 'PARAM') || '' });
         default:
           return blocCarte(bloc, e, ['valeur', 'condition']);
       }
@@ -197,10 +231,24 @@
           return Object.assign(i, { condition: expression(entree(b, 'CONDITION'), b), corps: pile(entree(b, 'DO')) });
         case 'son':
           return Object.assign(i, { broche: champ(b, 'BROCHE'), frequence: expression(entree(b, 'FREQUENCE'), b), duree: expression(entree(b, 'DUREE'), b) });
+        case 'liste_remplir':
+          return Object.assign(i, { liste: champ(b, 'LISTE') || 'liste', valeurs: lireNombres(champ(b, 'VALEURS')) });
+        case 'liste_ajouter':
+          return Object.assign(i, { liste: champ(b, 'LISTE') || 'liste', valeur: expression(entree(b, 'VALEUR'), b) });
+        case 'liste_remplacer':
+          return Object.assign(i, { liste: champ(b, 'LISTE') || 'liste', position: expression(entree(b, 'POSITION'), b), valeur: expression(entree(b, 'VALEUR'), b) });
+        case 'liste_vider':
+          return Object.assign(i, { liste: champ(b, 'LISTE') || 'liste' });
+        case 'fonction_appeler':
+          return Object.assign(i, { bloc: 'appeler', fonction: champ(b, 'FONCTION') || '', arguments: [] });
+        case 'fonction_appeler_param':
+          return Object.assign(i, { bloc: 'appeler', fonction: champ(b, 'FONCTION') || '', arguments: [expression(entree(b, 'VALEUR'), b)] });
         default:
           return blocCarte(b, i, ['instruction']);
       }
     }
+
+    const fonctions = [];
 
     for (const b of hauts) {
       if (b.type === 'demarrage' && !demarrage) {
@@ -217,6 +265,10 @@
         fils.push({ quand: 'touche', touche: champ(b, 'TOUCHE') || 'espace', front: champ(b, 'FRONT') === 'relache' ? 'relache' : 'appui', id: b.id, corps: pile(entree(b, 'DO')) });
       } else if (b.type === 'quand_camera') {
         fils.push({ quand: 'camera', etiquette: Number(champ(b, 'ETIQUETTE')) || 0, front: champ(b, 'FRONT') === 'plus' ? 'plus' : 'voit', id: b.id, corps: pile(entree(b, 'DO')) });
+      } else if (BLOCS_FONCTION.includes(b.type)) {
+        const parametres = b.type === 'fonction_definir_param' ? [champ(b, 'PARAM') || 'valeur'] : [];
+        fonctions.push(commenter({ nom: champ(b, 'NOM') || 'ma_fonction', parametres, id: b.id, corps: pile(entree(b, 'DO')) }, b));
+        continue;
       } else {
         horsProgramme.push(b.id);
         continue;
@@ -226,6 +278,7 @@
     // « Au démarrage » d'abord, comme sur la carte.
     fils.sort((a, b) => (a.quand === 'demarrage' ? -1 : b.quand === 'demarrage' ? 1 : 0));
     const programme = { format: FORMAT, version: VERSION, fils };
+    if (fonctions.length) programme.fonctions = fonctions;
     // Notes posées dans l'espace des blocs (clic droit dans le vide › « Ajouter un commentaire », ou le bouton).
     const notes = ((sauvegarde && sauvegarde.workspaceComments) || [])
       .filter((c) => typeof c.text === 'string' && c.text.trim())
@@ -303,6 +356,15 @@
           entreeNombre(bloc, 'VERS_MAX', e.vers2);
           return bloc;
         }
+        case 'liste_element': {
+          const bloc = { type: 'liste_element', id, fields: { LISTE: e.liste || 'liste' }, inputs: {} };
+          entreeNombre(bloc, 'POSITION', e.position);
+          return bloc;
+        }
+        case 'liste_taille':
+          return { type: 'liste_taille', id, fields: { LISTE: e.liste || 'liste' } };
+        case 'parametre':
+          return { type: 'parametre', id, fields: { PARAM: e.parametre || '' } };
         default:
           return versBlocCarte({ type: e.bloc, id, inputs: {} }, e);
       }
@@ -383,6 +445,28 @@
           entreeNombre(b, 'FREQUENCE', i.frequence);
           entreeNombre(b, 'DUREE', i.duree);
           break;
+        case 'liste_remplir':
+          b.fields = { LISTE: i.liste || 'liste', VALEURS: ecrireNombres(i.valeurs) };
+          break;
+        case 'liste_ajouter':
+          b.fields = { LISTE: i.liste || 'liste' };
+          entreeNombre(b, 'VALEUR', i.valeur);
+          break;
+        case 'liste_remplacer':
+          b.fields = { LISTE: i.liste || 'liste' };
+          entreeNombre(b, 'POSITION', i.position);
+          entreeNombre(b, 'VALEUR', i.valeur);
+          break;
+        case 'liste_vider':
+          b.fields = { LISTE: i.liste || 'liste' };
+          break;
+        case 'appeler':
+          b.fields = { FONCTION: i.fonction || '' };
+          if ((i.arguments || []).length) {
+            b.type = 'fonction_appeler_param';
+            entreeNombre(b, 'VALEUR', i.arguments[0]);
+          } else b.type = 'fonction_appeler';
+          break;
         default:
           return versBlocCarte(b, i);
       }
@@ -420,6 +504,17 @@
         : evenement
           ? { type: 'quand_bouton', id: f.id || nouvelId(), x: 24, y, fields: { BROCHE: f.broche, FRONT: f.quand } }
           : { type: f.quand, id: f.quand, x: 24, y, deletable: false };
+      const p = pile(f.corps);
+      if (p) b.inputs = { DO: { block: p } };
+      commenter(b, f);
+      blocs.push(b);
+      y += 76 + Math.max(1, compterBlocs(f.corps)) * 44 + 28;
+    }
+    // Fonctions : sous les autres blocs, une par une.
+    for (const f of v1.fonctions || []) {
+      const avec = (f.parametres || []).length > 0;
+      const b = { type: avec ? 'fonction_definir_param' : 'fonction_definir', id: f.id || nouvelId(), x: 24, y, fields: { NOM: f.nom || 'ma_fonction' } };
+      if (avec) b.fields.PARAM = f.parametres[0];
       const p = pile(f.corps);
       if (p) b.inputs = { DO: { block: p } };
       commenter(b, f);
@@ -464,11 +559,16 @@
     const voir = (x) => {
       if (!x || typeof x !== 'object') return;
       if (Array.isArray(x)) return x.forEach(voir);
-      if (x.bloc) types.push(x.bloc);
+      if (x.bloc === 'appeler') types.push((x.arguments || []).length ? 'fonction_appeler_param' : 'fonction_appeler');
+      else if (x.bloc) types.push(x.bloc);
       if (x.quand) types.push(x.quand === 'appui' || x.quand === 'relache' ? 'quand_bouton' : x.quand === 'camera' ? 'quand_camera' : x.quand === 'touche' ? 'quand_touche' : x.quand === 'joystick' ? 'quand_joystick' : x.quand);
       for (const v of Object.values(x)) if (v && typeof v === 'object') voir(v);
     };
     voir(versV1(programme).fils);
+    for (const f of versV1(programme).fonctions || []) {
+      types.push((f.parametres || []).length ? 'fonction_definir_param' : 'fonction_definir');
+      voir(f.corps);
+    }
     return types;
   }
 
@@ -492,7 +592,7 @@
       if (SORTE_DU_BLOC[x.bloc]) voir(SORTE_DU_BLOC[x.bloc], x.broche);
       if (x.quand === 'joystick' || CARTES().BLOCS_JOYSTICK.includes(x.bloc)) joystick = true;
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
-    })(programme ? versV1(programme).fils : []);
+    })(programme ? filsEtFonctions(programme) : []);
     if (joystick) composants.push(CARTES().nouveauJoystick(carte));
     const conflits = [];
     for (const c of composants) {
@@ -512,32 +612,51 @@
       .toLowerCase()
       .split(' '),
   );
-  function nomDeVariable(texte, existantes) {
+  // sorte : 'variable' (par défaut), 'liste', 'fonction' ou 'parametre' : seuls les mots des messages changent.
+  const MOTS_SORTE = {
+    variable: { un: 'ta variable', le: 'd’une variable', la: 'La variable', exemple: 'vitesse' },
+    liste: { un: 'ta liste', le: 'd’une liste', la: 'La liste', exemple: 'sequence' },
+    fonction: { un: 'ta fonction', le: 'd’une fonction', la: 'La fonction', exemple: 'allumer_couleur' },
+    parametre: { un: 'ton paramètre', le: 'd’un paramètre', la: 'Le paramètre', exemple: 'couleur' },
+  };
+  function nomDeVariable(texte, existantes, sorte) {
+    const m = MOTS_SORTE[sorte] || MOTS_SORTE.variable;
     const nom = String(texte || '')
       .trim()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[\s'’-]+/g, '_')
       .replace(/[^A-Za-z0-9_]/g, '');
-    if (!nom) return { ok: false, message: 'Écris un nom pour ta variable (par exemple : vitesse).' };
-    if (!/^[A-Za-z]/.test(nom)) return { ok: false, message: 'Le nom d’une variable commence par une lettre.' };
+    if (!nom) return { ok: false, message: `Écris un nom pour ${m.un} (par exemple : ${m.exemple}).` };
+    if (!/^[A-Za-z]/.test(nom)) return { ok: false, message: `Le nom ${m.le} commence par une lettre.` };
     if (nom.length > 16) return { ok: false, message: 'Ce nom est trop long : 16 lettres au plus.' };
     if (MOTS_RESERVES.has(nom.toLowerCase())) return { ok: false, message: `« ${nom} » est déjà un mot du langage de la carte : choisis un autre nom.` };
-    if ((existantes || []).some((v) => v.toLowerCase() === nom.toLowerCase())) return { ok: false, message: `La variable « ${nom} » existe déjà.` };
+    if ((existantes || []).some((v) => v.toLowerCase() === nom.toLowerCase())) return { ok: false, message: `${m.la} « ${nom} » existe déjà.` };
     return { ok: true, nom };
   }
 
-  // Noms des variables d'une sauvegarde Blockly (champs VAR), pour que les menus les connaissent avant le chargement.
-  function variablesDeSauvegarde(sauvegarde) {
-    const noms = new Set();
+  // Noms trouvés dans une sauvegarde Blockly, pour que les menus les connaissent avant le chargement :
+  //   { variables (champs VAR), listes (champs LISTE), fonctions (NOM des blocs « fonction », FONCTION des appels),
+  //     parametres (PARAM) }
+  function nomsDeSauvegarde(sauvegarde) {
+    const noms = { variables: new Set(), listes: new Set(), fonctions: new Set(), parametres: new Set() };
+    const garder = (ens, v) => typeof v === 'string' && v && ens.add(v);
     (function parcourir(x) {
       if (Array.isArray(x)) return x.forEach(parcourir);
       if (!x || typeof x !== 'object') return;
-      if (x.fields && typeof x.fields.VAR === 'string' && x.fields.VAR) noms.add(x.fields.VAR);
+      const f = x.fields;
+      if (f) {
+        garder(noms.variables, f.VAR);
+        garder(noms.listes, f.LISTE);
+        garder(noms.fonctions, f.FONCTION);
+        garder(noms.parametres, f.PARAM);
+        if (BLOCS_FONCTION.includes(x.type)) garder(noms.fonctions, f.NOM);
+      }
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
     })(sauvegarde);
-    return [...noms];
+    return { variables: [...noms.variables], listes: [...noms.listes], fonctions: [...noms.fonctions], parametres: [...noms.parametres] };
   }
+  const variablesDeSauvegarde = (sauvegarde) => nomsDeSauvegarde(sauvegarde).variables;
 
   // Le programme utilise-t-il la caméra (événement « quand la caméra… » ou bloc de la caméra) ?
   function utiliseCamera(programme) {
@@ -547,7 +666,7 @@
       if (Array.isArray(x)) return x.forEach(parcourir);
       if (x.quand === 'camera' || (typeof x.bloc === 'string' && x.bloc.indexOf('camera_') === 0) || (x.bloc === 'ext' && x.extension === 3)) oui = true;
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
-    })(programme ? versV1(programme).fils : []);
+    })(programme ? filsEtFonctions(programme) : []);
     return oui;
   }
 
@@ -559,11 +678,11 @@
       if (Array.isArray(x)) return x.forEach(parcourir);
       if (x.quand === 'touche' || x.bloc === 'touche_appuyee' || (x.bloc === 'ext' && x.extension === 4)) oui = true;
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
-    })(programme ? versV1(programme).fils : []);
+    })(programme ? filsEtFonctions(programme) : []);
     return oui;
   }
 
-  const api = { utiliseCamera, utiliseClavier, nomDeVariable, variablesDeSauvegarde, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  const api = { utiliseCamera, utiliseClavier, nomDeVariable, variablesDeSauvegarde, nomsDeSauvegarde, lireNombres, BLOCS_FONCTION, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

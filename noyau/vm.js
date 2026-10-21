@@ -407,6 +407,10 @@
       get variables() {
         return variables;
       },
+      // Contenu des listes (n° 1 = premier élément), dans l'ordre de l'en-tête.
+      get listes() {
+        return listes.map((l) => l.elements);
+      },
     };
   }
 

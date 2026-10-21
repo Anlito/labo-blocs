@@ -14,6 +14,20 @@
 //   { stable: { D6: 90 }, duree: 2 }
 //   { regler: { distance: 10 } }      capteur de la carte (mBot, micro:bit) réglé à cette valeur
 //   { regler: { camera: 2 } }         la caméra reconnaît l'étiquette n° 2 de l'exercice (0 = rien)
+// Listes et jeu (Simon : la séquence est écrite par l'élève, on ne la connaît pas à l'avance) :
+//   { liste: 'sequence', tailleMin: 4, tailleMax: 8, entre: [1, 4], delai: 0.3 }   ce que contient la liste
+//   { jouerListe: 'sequence', boutons: ['D2', 'D4', 'D6', 'D8'], tours: 'progressif' | 3 | 'complet', faute: false,
+//     calme: 0.7, attente: 15 }   joue comme un élève : attend que le programme écoute (plus aucune LED ni note
+//                                  pendant « calme » s), puis appuie sur le bouton de chaque élément (valeur 1 →
+//                                  1er bouton…). progressif : 1, puis 1 2, puis 1 2 3… (un nombre : jusqu'à ce tour) ; complet : toute la liste une
+//                                  fois. faute : le dernier appui est faux. grandit : la liste est relue à chaque tour
+//                                  (Simon au hasard qui s'allonge), « tours » tours.
+//   { entendre: 'D10', delai: 3, notes: 1, frequence: 440 }   le buzzer joue (au moins « notes » notes) dans le délai ;
+//     exactement: true (ni plus ni moins) ; aucune: true (silence) ; memeDepart: true (l'étape suivante part du même
+//     instant) ; sauf: [262, 330] ou 'couleurs' (notes jouées
+//     pendant qu'une seule LED est allumée : un son d'erreur doit en être différent)
+//   { allumage: 'D3', delai: 4 }   la LED s'allume dans le délai ; { allumage: { liste: 'sequence', numero: 1 },
+//                                  leds: [...] } : la LED de la couleur rangée à ce numéro de la liste
 // Toute vérification accepte « contexte » et « attendu » pour remplacer le début de la phrase.
 
 (function (global) {
@@ -374,6 +388,164 @@
       return null;
     }
 
+    // ----- Listes et jeu -----
+
+    const nombres = (l) => l.map(nombreFr).join(', ');
+    const laListe = (nom) => `la liste « ${nom} »`;
+
+    function liste(etape) {
+      const nom = etape.liste;
+      curseur += ms(etape.delai === undefined ? 0.3 : etape.delai);
+      sim.avancerJusqua(curseur);
+      const l = sim.listes[nom];
+      const dire = (attendu, observe) => ecart(phrase(contexte(etape), etape.attendu || attendu, observe, ''));
+      const [a, b] = etape.entre || [];
+      const quoi = etape.entre ? ` (des nombres de ${nombreFr(a)} à ${nombreFr(b)})` : '';
+      if (!l) return dire(`${laListe(nom)} devrait être remplie${quoi}`, `il n’y a pas de liste « ${nom} » : vérifie le nom choisi dans les blocs de liste`);
+      const contenu = l.length ? `elle en contient ${l.length} : ${nombres(l)}` : 'elle est vide';
+      if (etape.tailleMin && l.length < etape.tailleMin) {
+        return dire(`${laListe(nom)} devrait contenir au moins ${etape.tailleMin} nombres${quoi}`, contenu);
+      }
+      if (etape.tailleMax !== undefined && l.length > etape.tailleMax) {
+        return dire(`${laListe(nom)} devrait contenir ${etape.tailleMax} nombre${etape.tailleMax > 1 ? 's' : ''} au plus`, contenu);
+      }
+      if (etape.entre) {
+        const hors = l.find((x) => x < a || x > b || Math.round(x) !== x);
+        if (hors !== undefined) return dire(`${laListe(nom)} devrait contenir seulement des nombres entiers de ${nombreFr(a)} à ${nombreFr(b)}`, `elle contient ${nombreFr(hors)}`);
+      }
+      return null;
+    }
+
+    // Le programme « écoute » quand plus aucune LED ni note ne change pendant « calme » ms. Renvoie false si ça n'arrive
+    // pas avant « attente ».
+    const sorties = new Set(tous(exercice).filter((c) => c.type === 'led' || c.type === 'buzzer').map((c) => c.broche));
+    function attendreLeCalme(calme, attente) {
+      const fin = sim.t + attente;
+      let tranquille = 0;
+      while (tranquille < calme) {
+        if (sim.t >= fin) return false;
+        const avant = sim.journal.length;
+        sim.avancerJusqua(sim.t + 50);
+        const bouge = sim.journal.slice(avant).some((e) => sorties.has(e.broche) && e.type !== 'entree');
+        tranquille = bouge ? 0 : tranquille + 50;
+      }
+      return true;
+    }
+
+    function jouerListe(etape) {
+      const nom = etape.jouerListe;
+      const boutonsJeu = etape.boutons || [];
+      const calme = ms(etape.calme === undefined ? 0.7 : etape.calme);
+      const attente = ms(etape.attente === undefined ? 15 : etape.attente);
+      sim.avancerJusqua(Math.max(curseur, sim.t));
+      const dire = (observe) => ecart(phrase(etape.contexte || '', etape.attendu || 'le joueur devrait pouvoir répondre en appuyant sur les boutons', observe, ''));
+      const boutonDe = (v) => boutonsJeu[Math.round(v) - 1];
+      // La liste à jouer : lue au début, ou (« grandit ») à chaque tour, quand le programme a fini de montrer.
+      let l = [];
+      function lire() {
+        l = (sim.listes[nom] || []).slice();
+        if (!l.length) return `${laListe(nom)} est vide : il n’y a rien à jouer`;
+        const inconnu = l.find((v) => !boutonDe(v));
+        return inconnu === undefined ? null : `${laListe(nom)} contient ${nombreFr(inconnu)}, qui ne correspond à aucun bouton (de 1 à ${boutonsJeu.length})`;
+      }
+      const pasCalme = (t, k) => {
+        curseur = sim.t;
+        const ou = k === 0 ? (t === 0 ? 'au début du jeu' : `au tour ${t + 1}`) : `après l’appui n° ${k} du tour ${t + 1}`;
+        return dire(`${ou}, les LED ou le buzzer changent encore au bout de ${secondes(attente)} : le programme ne s’arrête pas pour attendre le joueur`);
+      };
+      let tours;
+      if (etape.grandit) {
+        tours = new Array(typeof etape.tours === 'number' ? etape.tours : 4).fill(0);
+      } else {
+        const pb = lire();
+        if (pb) return dire(pb);
+        tours = etape.tours === 'complet' ? [l.length] : l.map((_, k) => k + 1).slice(0, typeof etape.tours === 'number' ? etape.tours : l.length);
+      }
+      for (let t = 0; t < tours.length; t++) {
+        if (etape.grandit) {
+          if (!attendreLeCalme(calme, attente)) return pasCalme(t, 0);
+          const pb = lire();
+          if (pb) return dire(pb);
+          tours[t] = l.length;
+        }
+        const n = tours[t];
+        for (let k = 0; k < n; k++) {
+          if (!attendreLeCalme(calme, attente)) return pasCalme(t, k);
+          const derniere = t === tours.length - 1 && k === n - 1;
+          let v = l[k];
+          if (etape.faute && derniere) v = (Math.round(v) % boutonsJeu.length) + 1; // la couleur d'à côté
+          const b = boutonDe(v);
+          planifier(sim.t, b, 1);
+          planifier(sim.t + DUREE_APPUI, b, 0);
+          appuis.push(b);
+          relache = null;
+          sim.avancerJusqua(sim.t + DUREE_APPUI);
+        }
+      }
+      curseur = sim.t;
+      return null;
+    }
+
+    function entendre(etape) {
+      const b = etape.entendre;
+      const t0 = curseur;
+      const t1 = curseur + ms(etape.delai === undefined ? 3 : etape.delai);
+      sim.avancerJusqua(t1 + SEUIL);
+      // « memeDepart » : la vérification suivante part du même instant (ex. le son d'erreur, puis le retour au début).
+      curseur = etape.memeDepart ? t0 : t1;
+      // « sauf » : notes qui ne comptent pas (liste de fréquences, ou 'couleurs' : celles jouées pendant qu'une seule LED
+      // est allumée, c'est-à-dire les notes des couleurs ; un son d'erreur doit être différent).
+      const sauf = etape.sauf === 'couleurs' ? notesDesCouleurs(b) : etape.sauf || [];
+      const ecartee = (f) => sauf.some((x) => Math.abs(x - f) < 1);
+      const notes = sim.journal.filter((e) => e.type === 'son' && e.broche === b && e.valeur && e.t >= t0 && e.t <= t1 && (!etape.frequence || Math.abs(e.valeur - etape.frequence) < 1) && !ecartee(e.valeur));
+      const pendant = `dans les ${secondes(t1 - t0)}`;
+      const lesNotes = () => `${notes.length} note${notes.length > 1 ? 's' : ''} (${[...new Set(notes.map((e) => nombreFr(e.valeur)))].join(', ')} Hz)`;
+      const autre = etape.sauf ? ' différente des notes des couleurs' : '';
+      if (etape.aucune) {
+        if (!notes.length) return null;
+        return ecart(phrase(contexte(etape), etape.attendu || `le buzzer ${b} ne devrait pas jouer de note${autre} ${pendant}`, `il joue ${lesNotes()}`, ''));
+      }
+      const voulu = etape.notes || 1;
+      if (etape.exactement ? notes.length === voulu : notes.length >= voulu) return null;
+      const quoi = etape.frequence ? `la note ${nombreFr(etape.frequence)} Hz` : etape.exactement ? `${voulu} note${voulu > 1 ? 's' : ''}${autre}` : voulu > 1 ? `au moins ${voulu} notes${autre}` : `une note${autre}`;
+      const observe = !notes.length ? 'il reste silencieux' : etape.exactement && notes.length > voulu ? `il joue ${lesNotes()}` : `il joue seulement ${lesNotes()}`;
+      return ecart(phrase(contexte(etape), etape.attendu || `le buzzer ${b} devrait jouer ${quoi} ${pendant}`, observe, ''));
+    }
+
+    // Fréquences jouées pendant qu'une seule LED de l'exercice était allumée (les notes des couleurs d'un Simon).
+    function notesDesCouleurs(b) {
+      const leds = tous(exercice).filter((c) => c.type === 'led').map((c) => c.broche);
+      const f = new Set();
+      for (const e of sim.journal) {
+        if (e.type !== 'son' || e.broche !== b || !e.valeur) continue;
+        if (leds.filter((x) => valeurA(x, e.t)).length === 1) f.add(e.valeur);
+      }
+      return [...f];
+    }
+
+    function allumage(etape) {
+      let b = etape.allumage;
+      let quelle = '';
+      if (b && typeof b === 'object') {
+        const l = sim.listes[b.liste] || [];
+        const v = l[(b.numero || 1) - 1];
+        b = (etape.leds || [])[Math.round(v) - 1];
+        quelle = ` (la couleur n° ${b ? nombreFr(v) : '?'}, rangée en n° ${etape.allumage.numero || 1} de la liste)`;
+        if (!b) return ecart(phrase(contexte(etape), etape.attendu || `le programme devrait montrer l’élément n° ${etape.allumage.numero || 1} de ${laListe(etape.allumage.liste)}`, `cette place est vide`, ''));
+      }
+      const t0 = curseur;
+      const t1 = curseur + ms(etape.delai === undefined ? 4 : etape.delai);
+      sim.avancerJusqua(t1 + SEUIL);
+      const c = composant(exercice, b);
+      const allume = segments(b, t0, t1).find((s) => s.valeur && s.fin > t0);
+      if (allume) {
+        curseur = Math.max(t0, allume.debut);
+        return null;
+      }
+      curseur = t1;
+      return ecart(phrase(contexte(etape), etape.attendu || `${nomComposant(c)}${quelle} devrait s’allumer dans les ${secondes(t1 - t0)}`, `${pronom(c)} reste éteinte`, indiceBroche(b)));
+    }
+
     for (const etape of scenario.etapes) {
       let r = null;
       if ('attendre' in etape) {
@@ -401,6 +573,10 @@
       else if ('opposees' in etape) r = opposees(etape);
       else if ('impulsion' in etape) r = impulsion(etape);
       else if ('stable' in etape) r = stable(etape);
+      else if ('jouerListe' in etape) r = jouerListe(etape);
+      else if ('liste' in etape) r = liste(etape);
+      else if ('entendre' in etape) r = entendre(etape);
+      else if ('allumage' in etape) r = allumage(etape);
       else throw new Error('Étape de scénario inconnue : ' + JSON.stringify(etape));
       if (r) return r;
     }

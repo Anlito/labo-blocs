@@ -83,3 +83,13 @@ test('modes : parcours et exercice, le simulateur toujours là', () => {
   p.modes = ['simulateur', 'live'];
   assert.equal(controler(p).length, 2);
 });
+
+test('liste des parcours (parcours/index.js) : apostrophes simples ou doubles ; illisible → null, jamais vidée', () => {
+  const { idsIndexParcours } = require('../noyau/parcours.js');
+  assert.deepStrictEqual(idsIndexParcours("definirIndexParcours(['distributeur', 'labyrinthe']);"), ['distributeur', 'labyrinthe']);
+  assert.deepStrictEqual(idsIndexParcours('// liste\ndefinirIndexParcours(["simon"]);\n'), ['simon']);
+  assert.deepStrictEqual(idsIndexParcours('definirIndexParcours([]);'), []);
+  assert.strictEqual(idsIndexParcours('definirIndexParcours(LISTE);'), null);
+  assert.strictEqual(idsIndexParcours('rien'), null);
+  assert.deepStrictEqual(idsIndexParcours(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'parcours', 'index.js'), 'utf8')).length, 7);
+});

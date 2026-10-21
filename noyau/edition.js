@@ -272,13 +272,54 @@
         { nom: 'duree', type: 'secondes', libelle: 'observer pendant' },
       ],
     },
+    // Listes et jeu (Simon) : la séquence est celle de l'élève, lue dans sa liste pendant le test.
+    {
+      cle: 'liste',
+      nom: 'Vérifier le contenu d’une liste',
+      champs: [
+        { nom: 'liste', type: 'nom', libelle: 'liste' },
+        { nom: 'tailleMin', type: 'entier', libelle: 'nombres au moins', facultatif: true },
+        { nom: 'entre', type: 'valeurs', libelle: 'nombres entre (ex. 1 ; 4)', facultatif: true },
+        { nom: 'delai', type: 'secondes', libelle: 'regarder au bout de', facultatif: true, defaut: 0.3 },
+      ],
+    },
+    {
+      cle: 'jouerListe',
+      nom: 'Jouer la séquence d’une liste avec les boutons',
+      champs: [
+        { nom: 'jouerListe', type: 'nom', libelle: 'liste' },
+        { nom: 'boutons', type: 'broches', libelle: 'bouton de 1, 2, 3… (ex. D2 ; D4)' },
+        { nom: 'tours', type: 'tours', libelle: 'tours' },
+        { nom: 'faute', type: 'case', libelle: 'le dernier appui est faux' },
+        { nom: 'calme', type: 'secondes', libelle: 'appuyer après un calme de', facultatif: true, defaut: 0.7 },
+      ],
+    },
+    {
+      cle: 'entendre',
+      nom: 'Vérifier que le buzzer joue',
+      champs: [
+        { nom: 'entendre', type: 'sortie', libelle: 'buzzer' },
+        { nom: 'delai', type: 'secondes', libelle: 'dans les', facultatif: true, defaut: 3 },
+        { nom: 'notes', type: 'entier', libelle: 'notes au moins', facultatif: true },
+        { nom: 'frequence', type: 'entier', libelle: 'note (Hz)', facultatif: true },
+      ],
+    },
+    {
+      cle: 'allumage',
+      nom: 'Vérifier qu’une LED s’allume',
+      champs: [
+        { nom: 'allumage', type: 'allumage', libelle: 'LED' },
+        { nom: 'leds', type: 'broches', libelle: 'LED de 1, 2, 3… (pour une liste)', facultatif: true },
+        { nom: 'delai', type: 'secondes', libelle: 'dans les', facultatif: true, defaut: 4 },
+      ],
+    },
   ];
   // Pour les vérifications : début de phrase montré à l'élève à la place du début automatique.
   const CHAMPS_PHRASE = [
     { nom: 'contexte', type: 'texte', libelle: 'situation (ex. « au démarrage »)', facultatif: true },
     { nom: 'attendu', type: 'texte', libelle: 'ce qui est attendu, dit à l’élève', facultatif: true },
   ];
-  const VERIFICATIONS = ['verifier', 'stable', 'impulsion', 'sequence', 'opposees'];
+  const VERIFICATIONS = ['verifier', 'stable', 'impulsion', 'sequence', 'opposees', 'liste', 'jouerListe', 'entendre', 'allumage'];
 
   // Capteurs qu'un scénario peut régler : ceux de la carte, plus la caméra si l'exercice en a une (étiquettes).
   function capteursExercice(exercice, carte) {
@@ -312,6 +353,7 @@
     const sortie = composants.find((c) => c.type !== 'bouton') || { type: 'led', broche: 'D2' };
     const autre = composants.filter((c) => c.type !== 'bouton')[1] || { broche: 'D3' };
     const valeurSortie = sortie.type === 'servo' ? 90 : sortie.type === 'moteur' ? 50 : 1;
+    const nomListe = ((exercice && exercice.listes) || ['sequence'])[0];
     switch (cle) {
       case 'attendre':
         return { attendre: 1 };
@@ -334,6 +376,14 @@
         return { sequence: sortie.broche, valeurs: sortie.type === 'servo' ? [0, 90] : [1, 0], intervalle: 1, duree: 6 };
       case 'opposees':
         return { opposees: [sortie.broche, autre.broche], duree: 6 };
+      case 'liste':
+        return { liste: nomListe, tailleMin: 4 };
+      case 'jouerListe':
+        return { jouerListe: nomListe, boutons: composants.filter((c) => c.type === 'bouton').map((c) => c.broche) };
+      case 'entendre':
+        return { entendre: (composants.find((c) => c.type === 'buzzer') || sortie).broche, delai: 3 };
+      case 'allumage':
+        return { allumage: (composants.find((c) => c.type === 'led') || sortie).broche, delai: 4 };
       default:
         throw new Error('Étape inconnue : ' + cle);
     }
@@ -374,6 +424,20 @@
         return `${debut}érifier que ${c(etape.sequence)} passe par ${(etape.valeurs || []).map(nombreFr).join(', ')} toutes les ${nombreFr(etape.intervalle)} s`;
       case 'opposees':
         return `${debut}érifier que ${c(etape.opposees[0])} et ${c(etape.opposees[1])} s’allument en alternance`;
+      case 'liste': {
+        const quoi = [etape.tailleMin ? `au moins ${etape.tailleMin} nombres` : '', etape.entre ? `entre ${nombreFr(etape.entre[0])} et ${nombreFr(etape.entre[1])}` : ''].filter(Boolean).join(', ');
+        return `${debut}érifier que la liste « ${etape.liste} » contient ${quoi || 'des nombres'}`;
+      }
+      case 'jouerListe': {
+        const tours = etape.tours === 'complet' ? 'toute la liste d’un coup' : typeof etape.tours === 'number' ? `tour par tour, jusqu’au tour ${etape.tours}` : 'tour par tour (1, puis 1 2, puis 1 2 3…)';
+        return `Jouer la séquence de la liste « ${etape.jouerListe} » avec ${(etape.boutons || []).join(', ')}, ${tours}${etape.faute ? ', en se trompant au dernier appui' : ''}`;
+      }
+      case 'entendre':
+        return `${debut}érifier que le buzzer ${etape.entendre} joue ${etape.frequence ? `la note ${nombreFr(etape.frequence)} Hz` : etape.notes > 1 ? `au moins ${etape.notes} notes` : 'une note'} dans les ${nombreFr(etape.delai === undefined ? 3 : etape.delai)} s`;
+      case 'allumage': {
+        const quelle = etape.allumage && typeof etape.allumage === 'object' ? `la LED de la couleur n° ${etape.allumage.numero || 1} de la liste « ${etape.allumage.liste} »` : c(etape.allumage);
+        return `${debut}érifier que ${quelle} s’allume dans les ${nombreFr(etape.delai === undefined ? 4 : etape.delai)} s`;
+      }
       default:
         return 'Étape inconnue';
     }
@@ -388,7 +452,7 @@
     const simple = P.versSimplifie(sansIds);
     // Un commentaire sur « Au démarrage » ou « Répéter indéfiniment » ne tient que dans le programme v1.
     const commentaireDeFil = Array.isArray(sansIds.fils) && sansIds.fils.some((f) => f.commentaire);
-    return simple && !simple.fils && !commentaireDeFil ? simple : sansIds;
+    return simple && !simple.fils && !simple.fonctions && !commentaireDeFil ? simple : sansIds;
   }
 
   // L'exercice tel que l'élève le recevra (paramètres remplacés), dans son parcours.
