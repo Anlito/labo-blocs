@@ -272,7 +272,23 @@
     d.modifieLe = maintenant();
   }
 
+  // Une simulation de caméra ne fournit aucun exemple d'apprentissage.
+  function verifierApprentissage(d, exercice) {
+    const r = exercice.apprentissage;
+    if (!r) return {ok:true};
+    const camera = lireCamera(d);
+    const noms = camera.etiquettes || exercice.camera?.etiquettes || [];
+    const minimum = Math.max(0,Number(r.etiquettes)||0);
+    if (noms.length < minimum) return {ok:false,message:`Crée au moins ${minimum} étiquettes pour tes personnages dans « Caméra et IA ».`};
+    const photos = Math.max(1,Number(r.photos)||10);
+    for (const nom of ['Rien', ...noms.slice(0,minimum)]) {
+      if ((camera.exemples?.[nom]||[]).filter(e=>e && typeof e.f==='string' && e.f.length>0).length < photos)
+        return {ok:false,message:`Ajoute au moins ${photos} photos pour « ${nom} ». Les boutons « Faire comme si » ne remplacent pas l’apprentissage.`};
+    }
+    return {ok:true};
+  }
   const api = {
+    verifierApprentissage,
     lireCamera,
     noterCamera,
     noterTermine,

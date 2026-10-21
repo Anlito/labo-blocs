@@ -355,6 +355,9 @@
       '<p class="ed-aide">Sépare les noms par des virgules. Avec des étiquettes, l’élève a un panneau « Caméra et IA » : il prend des photos de chaque étiquette (et de « Rien »). Coche ensuite les blocs de la catégorie « Caméra ». La caméra est dans l’ordinateur : simulateur et « En direct » seulement (pas « Dans la carte »). Dans les scénarios, « Régler » la caméra fait comme si elle reconnaissait une étiquette.</p>' +
       '</div>' +
       // Composants
+      `<label>Apprentissage IA : nombre minimal d’étiquettes des personnages<input type="number" min="0" max="8" class="champ-apprentissage" data-apprentissage="etiquettes" value="${e.apprentissage?.etiquettes ?? ''}" placeholder="aucune exigence"></label>` +
+      `<label>Apprentissage IA : photos minimales par étiquette (fond vide compris)<input type="number" min="1" max="100" class="champ-apprentissage" data-apprentissage="photos" value="${e.apprentissage?.photos ?? ''}" placeholder="aucune exigence"></label>` +
+      `<label>Reprendre le programme de l’exercice (identifiant)<input class="champ-reprise" value="${echapper(e.reprendreProgramme || '')}" placeholder="ex. theatre-05"></label>` +
       '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
       '<div class="carte ed-carte ed-carte-composants">' +
@@ -491,6 +494,15 @@
         else delete e.variablesLibres;
         modifie();
         chargerSolution();
+      } else if (t.matches('.champ-apprentissage')) {
+        const photos = zone.querySelector('[data-apprentissage="photos"]').value;
+        const etiquettes = zone.querySelector('[data-apprentissage="etiquettes"]').value;
+        if (photos) e.apprentissage={etiquettes:Math.min(8,Math.max(0,Number(etiquettes)||0)),photos:Math.min(100,Math.max(1,Number(photos)||10))};
+        else delete e.apprentissage;
+        modifie();
+      } else if (t.matches('.champ-reprise')) {
+        if(t.value.trim())e.reprendreProgramme=t.value.trim();else delete e.reprendreProgramme;
+        modifie();
       } else if (t.matches('.champ-camera') || t.matches('.champ-camera-libres')) {
         const champ = $('.champ-camera', zone);
         const noms = [...new Set(champ.value.split(',').map((x) => x.trim().replace(/\s+/g, ' ')).filter(Boolean))].slice(0, 8);

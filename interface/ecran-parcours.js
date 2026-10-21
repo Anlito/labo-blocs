@@ -41,7 +41,7 @@
           const courant = ex.id === reprendre.id && etat !== 'reussi' && etat !== 'verrouille';
           const e = courant ? { mot: 'En cours', icone: 'lecture' } : ETATS[etat];
           const motEtat = ex.libre && etat === 'reussi' ? 'Terminé' : e.mot;
-          const prefixe = ex.defi ? 'Défi facultatif' : ex.libre ? 'Exercice libre' : '';
+          const prefixe = ex.apprentissage ? 'Apprentissage de l’IA' : ex.defi ? 'Défi facultatif' : ex.libre ? 'Exercice libre' : '';
           const mot = prefixe ? (etat === 'verrouille' ? prefixe + ' · verrouillé' : prefixe + ' · ' + motEtat.toLowerCase()) : motEtat;
           const classes = ['carte-exercice', 'etat-' + etat, courant ? 'courant' : '', ex.defi ? 'defi' : ''].join(' ');
           return (

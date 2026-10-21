@@ -514,3 +514,11 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .blocklyDessinMatrice .dessin-actions button:hover { filter: brightness(0.96); }
 /* Joystick : ses trois broches, qui passent à la ligne dans la colonne étroite */
 .broches-joystick { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; font-weight: 400; }
+
+/* Exercices d’apprentissage : la même charte, avec la caméra au premier plan. */
+.ecran-exercice.apprentissage-ia {grid-template-columns:minmax(20rem,1fr) minmax(22rem,1fr);}
+.ecran-exercice.apprentissage-ia .consigne {grid-column:1;grid-row:1 / 3;}
+.ecran-exercice.apprentissage-ia .colonne-programme,
+.ecran-exercice.apprentissage-ia .colonne-aide,
+.ecran-exercice.apprentissage-ia .simulateur {display:none;}
+.ecran-exercice.apprentissage-ia .colonne-test {grid-column:2;grid-row:1 / 3;}

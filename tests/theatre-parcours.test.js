@@ -1,0 +1,30 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const {lireParcours}=require('./outils/parcours.js');
+const {controler,preparer}=require('../noyau/parcours.js');
+const {valider}=require('../noyau/validation.js');
+const S=require('../noyau/sauvegarde.js');
+const paquet=preparer(lireParcours('theatre-ombre'));
+test('Théâtre : six exercices, entraînement partagé et solutions vérifiées',()=>{
+  assert.deepEqual(controler(paquet),[]);
+  assert.equal(paquet.exercices.length,6);
+  assert.equal(paquet.exercices[5].reprendreProgramme,'theatre-05');
+  for(const e of paquet.exercices.filter(e=>!e.libre))assert.equal(valider(e,e.solutionReference).reussi,true,e.id);
+  const mauvais={demarrage:[],boucle:[{bloc:'led_etat',broche:'D9',etat:1}]};
+  assert.equal(valider(paquet.exercices[5],mauvais).reussi,false,'Le programme final doit gérer les deux personnages et le fond vide.');
+});
+test('Apprentissage : impossible de valider sans photos, exemples conservés entre exercices',()=>{
+  const d=S.creerSauvegarde({eleves:['Test'],classe:'3B'},{parcours:paquet});
+  S.relierParcours(d,paquet);
+  assert.equal(S.verifierApprentissage(d,paquet.exercices[0]).ok,false);
+  const photos=Array.from({length:10},()=>({f:'AAAAAA==',v:''}));
+  S.noterCamera(d,{modele:'mobilenet_v2_050_224',etiquettes:[],exemples:{Rien:photos}});
+  assert.equal(S.verifierApprentissage(d,paquet.exercices[0]).ok,true);
+  assert.equal(S.verifierApprentissage(d,paquet.exercices[1]).ok,false);
+  S.noterCamera(d,{modele:'mobilenet_v2_050_224',etiquettes:['Loup','Roi'],exemples:{Rien:photos,Loup:photos,Roi:photos}});
+  assert.equal(S.verifierApprentissage(d,paquet.exercices[1]).ok,true);
+  S.noterTermine(d,paquet.exercices[0],{});
+  S.noterOuverture(d,paquet.exercices[1].id);
+  const lu=S.lireSauvegarde(JSON.stringify(d));assert(lu.ok);
+  assert.deepEqual(S.lireCamera(lu.donnees).etiquettes,['Loup','Roi']);
+  assert.equal(S.lireCamera(lu.donnees).exemples.Rien.length,10);
+});

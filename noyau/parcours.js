@@ -43,8 +43,8 @@
   }
 
   function empreinte(exercice) {
-    const { consigne, composants, blocsAutorises, scenarios, solutionReference } = exercice;
-    return hacher(canonique({ consigne, composants, blocsAutorises, scenarios, solutionReference }));
+    const { consigne, composants, blocsAutorises, scenarios, solutionReference, apprentissage, camera } = exercice;
+    return hacher(canonique({ consigne, composants, blocsAutorises, scenarios, solutionReference, ...(apprentissage ? {apprentissage,camera} : {}) }));
   }
 
   function comparerVersions(a, b) {

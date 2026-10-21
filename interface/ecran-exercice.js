@@ -188,6 +188,7 @@
       fermerBulle();
       // Exercice libre : une copie dont les composants suivent le programme de l'élève.
       etat.exercice = ex.libre ? Object.assign({}, ex, { composants: [] }) : ex;
+      ecran.classList.toggle('apprentissage-ia', !!ex.apprentissage);
       $('.consigne-numero', ecran).textContent = (ex.defi ? 'Défi · ' : '') + 'Exercice ' + ex.numero;
       $('.titre-exercice', ecran).textContent = ex.titre;
       document.title = `Exercice ${ex.numero} · ${ex.titre} — ${A.projet.titre}`;
@@ -197,7 +198,8 @@
       const statutAvant = avant.statut;
       // Étiquettes de la caméra d'abord : les menus des blocs de la caméra les proposent au chargement.
       if (panneauCamera) panneauCamera.ouvrir(ex, {});
-      editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme);
+      const precedent = ex.reprendreProgramme && A.progressionExercice(D, ex.reprendreProgramme).programme;
+      editeur.charger(ex, programme ? (programme.blocks ? programme : A.versBlockly(programme)) : avant.programme || (precedent && JSON.parse(JSON.stringify(precedent))));
       const libres = ex.libre ? composantsLibres() : null;
       if (libres) etat.exercice.composants = libres.composants;
       dessinerComposants(libres && libres.conflits);
@@ -733,6 +735,8 @@
     const suivantDe = (ex) => exercices.slice(exercices.findIndex((x) => x.id === ex.id) + 1).find((x) => A.estDebloque(D, paquet, x.id, opts));
 
     function verifier() {
+      const apprentissage=A.verifierApprentissage(D,etat.exercice);
+      if(!apprentissage.ok){session.message(apprentissage.message);return;}
       fermerBulle();
       aides.fermer();
       const { programme, horsProgramme, incomplets } = editeur.lire();
@@ -805,6 +809,8 @@
     function terminer() {
       fermerBulle();
       aides.fermer();
+      const apprentissage = A.verifierApprentissage(D, etat.exercice);
+      if (!apprentissage.ok) { session.message(apprentissage.message); return; }
       const { programme } = editeur.lire();
       const ex = etat.exercice;
       A.noterProgramme(D, ex.id, editeur.sauvegarder());
@@ -814,8 +820,8 @@
       const suivant = suivantDe(ex);
       resultat.className = 'resultat reussi';
       resultat.innerHTML =
-        `<div class="resultat-message">${A.icone('coche', { epaisseur: 2.8 })}<div><strong>Ton programme est enregistré.</strong>` +
-        '<span>C’est un exercice libre : ton professeur regardera ce que tu as inventé. Tu peux encore le modifier.</span>' +
+        `<div class="resultat-message">${A.icone('coche', { epaisseur: 2.8 })}<div><strong>${ex.apprentissage ? 'Ton entraînement est enregistré.' : 'Ton programme est enregistré.'}</strong>` +
+        (ex.apprentissage ? '<span>Les exemples de ton équipe seront réutilisés dans les exercices suivants. Teste aussi la reconnaissance avec la webcam.</span>' : '<span>C’est un exercice libre : ton professeur regardera ce que tu as inventé. Tu peux encore le modifier.</span>') +
         (suivant ? `<span>L’exercice ${echapper(suivant.numero)} est ouvert.</span>` : '') +
         (session.handle || lecture ? '' : '<span class="resultat-note">Pense à enregistrer ton travail dans le dossier de ton équipe.</span>') +
         '</div></div><div class="resultat-actions">' +
@@ -871,6 +877,7 @@
     function quitter() {
       if (etat.exercice) A.noterProgramme(D, etat.exercice.id, editeur.sauvegarder());
       arreter();
+      if (panneauCamera) panneauCamera.fermer();
       aides.fermer();
     }
 

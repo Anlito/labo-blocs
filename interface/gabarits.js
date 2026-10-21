@@ -170,7 +170,8 @@
   </dialog>
 </div>`;
 
-  const GABARITS = { bandeau: BANDEAU, exercice: EXERCICE };
+  const PARCOURS = "<div class=\"ecran ecran-parcours\" hidden>\n  <div class=\"parcours-contenu\">\n    <div class=\"parcours-tete\">\n      <div>\n        <h1>Ton parcours de programmation</h1>\n        <p>Réussis un exercice pour ouvrir le suivant. Le défi est facultatif.</p>\n      </div>\n      <button type=\"button\" class=\"btn-principal btn-continuer\"></button>\n    </div>\n    <div class=\"parcours-avancement\">\n      <strong class=\"parcours-compte\"></strong>\n      <div class=\"barre\" role=\"img\"><span></span></div>\n      <span class=\"pilule-revoir\" hidden><span data-icone=\"alerte\" data-epaisseur=\"2.6\"></span><span class=\"revoir-texte\"></span></span>\n    </div>\n    <div class=\"parcours-grille\"></div>\n    <div class=\"parcours-legende\">\n      <span><i class=\"leg leg-reussi\"></i>Réussi</span>\n      <span><i class=\"leg leg-courant\"></i>En cours</span>\n      <span><i class=\"leg leg-revoir\"></i>À revérifier</span>\n      <span><i class=\"leg leg-verrou\"></i>Verrouillé</span>\n      <span><i class=\"leg leg-defi\"></i>Défi facultatif</span>\n    </div>\n  </div>\n</div>";
+  const GABARITS = { bandeau: BANDEAU, exercice: EXERCICE, parcours: PARCOURS };
 
   // Remplace chaque élément <… data-gabarit="nom"> de la racine par son gabarit.
   function poserGabarits(racine) {
