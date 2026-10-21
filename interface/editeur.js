@@ -58,6 +58,36 @@
       }
     }
     ws.registerButtonCallback('creerVariable', creerVariable);
+    function creerListe() {
+      let message = 'Nom de ta nouvelle liste (par exemple : sequence, notes) :';
+      for (;;) {
+        const texte = global.prompt(message, '');
+        if (texte === null) return;
+        const r = A.nomDeVariable(texte, A.listesConnues.concat(A.variablesConnues), 'liste');
+        if (r.ok) {
+          A.listesConnues = A.listesConnues.concat(r.nom);
+          ws.updateToolbox(A.palette(exerciceCourant.blocsAutorises, exerciceCourant.composants, optionsPalette()));
+          return;
+        }
+        message = r.message + ' Nouveau nom :';
+      }
+    }
+    ws.registerButtonCallback('creerListe', creerListe);
+
+    // Une fonction (ou son paramètre) change de nom : ses appels (et les blocs du paramètre) suivent.
+    function renommer(e) {
+      const def = ws.getBlockById(e.blockId);
+      if (!def || !A.BLOCS_DEFINITION_FONCTION.includes(def.type) || (e.name !== 'NOM' && e.name !== 'PARAM')) return;
+      const suivre = e.name === 'NOM' ? ['fonction_appeler', 'fonction_appeler_param'] : ['parametre'];
+      const champ = e.name === 'NOM' ? 'FONCTION' : 'PARAM';
+      const portee = e.name === 'NOM' ? ws.getAllBlocks(false) : def.getDescendants(false);
+      for (const b of portee) {
+        if (!suivre.includes(b.type) || b.getFieldValue(champ) !== e.oldValue) continue;
+        const f = b.getField(champ);
+        f.getOptions(false); // le menu se recalcule avec le nouveau nom
+        f.setValue(e.newValue);
+      }
+    }
 
     function charger(exercice, sauvegarde) {
       enChargement = true;
@@ -70,7 +100,11 @@
       try {
         const depart = sauvegarde || A.versBlockly(exercice.blocsDepart || { demarrage: [], boucle: [] });
         const fournies = Array.isArray(exercice.variables) ? exercice.variables : ['CHOIX'];
-        A.variablesConnues = [...new Set(fournies.concat(A.variablesDeSauvegarde(depart)))];
+        const noms = A.nomsDeSauvegarde(depart);
+        A.variablesConnues = [...new Set(fournies.concat(noms.variables))];
+        A.listesConnues = [...new Set((Array.isArray(exercice.listes) ? exercice.listes : []).concat(noms.listes))];
+        A.fonctionsConnues = noms.fonctions;
+        A.parametresConnus = noms.parametres;
         ws.updateToolbox(A.palette(exercice.blocsAutorises, exercice.composants, optionsPalette()));
         ws.clear();
         Blockly.serialization.workspaces.load(depart, ws);
@@ -79,6 +113,9 @@
       } finally {
         Blockly.Events.enable();
       }
+      // Les noms de la sauvegarde ont servi au chargement ; ensuite, les menus suivent les blocs posés.
+      A.fonctionsConnues = [];
+      A.parametresConnus = [];
       ws.clearUndo();
       ws.setScale(0.9 * echelle());
       ws.scroll(0, 0);
@@ -153,7 +190,7 @@
       for (const b of ws.getAllBlocks(false)) b.getSvgRoot().classList.remove('bloc-hors-programme');
       horsProgramme = [];
       for (const b of ws.getTopBlocks(false)) {
-        if (b.type === 'demarrage' || b.type === 'boucle' || b.type === 'quand_bouton' || b.type === 'quand_camera' || b.type === 'quand_touche' || b.type === 'quand_joystick' || b.isInsertionMarker()) continue;
+        if (b.type === 'demarrage' || b.type === 'boucle' || b.type === 'quand_bouton' || b.type === 'quand_camera' || b.type === 'quand_touche' || b.type === 'quand_joystick' || A.BLOCS_DEFINITION_FONCTION.includes(b.type) || b.isInsertionMarker()) continue;
         if (b.isDragging && b.isDragging()) continue;
         horsProgramme.push(b.id);
         b.getSvgRoot().classList.add('bloc-hors-programme');
@@ -170,6 +207,7 @@
         if (deplacementVue) rappels.zoom(Math.round((ws.scale / echelle()) * 100));
         return;
       }
+      if (e.type === Blockly.Events.BLOCK_CHANGE && e.element === 'field') renommer(e);
       majHorsProgramme();
       rappels.modifie();
     });

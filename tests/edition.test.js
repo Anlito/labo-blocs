@@ -93,6 +93,10 @@ test('étapes : chaque sorte a une valeur de départ et une phrase', () => {
     'Vérifier que la LED D9 est allumée pendant 5 s, puis plus',
     'Vérifier que la LED D9 passe par 1, 0 toutes les 1 s',
     'Vérifier que la LED D9 et la LED D10 s’allument en alternance',
+    'Vérifier que la liste « sequence » contient au moins 4 nombres',
+    'Jouer la séquence de la liste « sequence » avec D3, tour par tour (1, puis 1 2, puis 1 2 3…)',
+    'Vérifier que le buzzer D9 joue une note dans les 3 s',
+    'Vérifier que la LED D9 s’allume dans les 4 s',
   ]);
   assert.equal(E.decrireEtape({ contexte: 'au démarrage', verifier: { D9: 0 } }, ex), 'Au démarrage, vérifier que la LED D9 est éteinte');
 });

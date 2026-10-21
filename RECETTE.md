@@ -376,3 +376,19 @@ l'Uno et **P0, P1, P2** sur la micro:bit. Le bouton (SW) va à la masse, avec la
 | 26.7 | « Dans la carte » (Uno), puis niveau 3 (code Arduino) | Le programme marche débranché de l'ordinateur ; le code montre `positionJoystick(A0)` et `pinMode(2, INPUT_PULLUP)` | |
 | 26.8 | **micro:bit** (VRx → P0, VRy → P1, SW → P2, 3V, GND), En direct puis Dans la carte | Même chose. Attention : un programme qui joue une note sur la micro:bit envoie aussi le son sur P0 (axe X) | |
 | 26.9 | Exercice libre (Uno ou micro:bit) avec les blocs du joystick | « Composants » : Joystick X A0 Y A1 bouton D2 (ou P0, P1, P2), ajouté tout seul dès qu'un bloc du joystick est posé | |
+
+## 27. Listes, fonctions et console Simon (moteur 0.5.0)
+
+Projet Simon Rétro Game : 4 boutons D2 / D4 / D6 / D8 (vers la masse), 4 LED D3 / D5 / D7 / D9, buzzer passif D10.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 27.1 | Éditeur de parcours : un exercice Uno avec ces 9 composants ; cocher les catégories « Listes » et « Fonctions » ; « Listes données aux élèves » : `sequence` ; cocher « Console Simon » | La palette de l'aperçu a « Listes » (bouton « Créer une liste ») et « Fonctions » ; l'aperçu montre la console ronde à 4 touches | |
+| 27.2 | Solution : « remplir la liste sequence avec 1, 3, 2, 4 », une fonction « allumer avec couleur » (si couleur = 1 → LED D3 + note…), et une boucle qui l'appelle avec « élément n° i de la liste » | Les blocs se posent ; le menu de « appeler … avec … » propose « allumer » ; le bloc « couleur » est dans la palette | |
+| 27.3 | Renommer la fonction (taper « montrer couleur ») | Le nom devient `montrer_couleur` ; tous les appels suivent | |
+| 27.4 | Scénarios : « Vérifier le contenu d'une liste » (sequence, 4 nombres au moins, entre 1 ; 4), « Jouer la séquence … » (D2 ; D4 ; D6 ; D8), « Vérifier que le buzzer joue » ; puis un 2e scénario avec « le dernier appui est faux » et « Vérifier qu'une LED s'allume » › « 1re couleur de la liste » | « Tester » : la solution passe. Une liste de 2 nombres donne, en ambre : « … la liste « sequence » devrait contenir au moins 4 nombres … Dans ton programme, elle en contient 2 : … » | |
+| 27.5 | Élève, simulateur : « Lancer », puis appuyer sur les touches de la console (souris, doigt, ou Tab + Espace) | La touche montrée s'allume (vive, entourée, « ● »), la note s'entend ; « Son : coupé » arrête le son | |
+| 27.6 | Niveau 3 (code Arduino) | `struct Liste`, `element(sequence, i)` avec `l.elements[i - 1]`, `void allumer(float couleur)` après `loop()` | |
+| 27.7 | **Vraie Uno câblée D2–D10** : « Dans la carte », puis jouer | Même jeu que dans le simulateur, débranché de l'ordinateur ; même note par couleur | |
+| 27.8 | Une ancienne sauvegarde (Distributeur, Labyrinthe) | S'ouvre comme avant, rien ne change | |
+| 27.9 | Un module 0.4.0 (projet pas encore mis à jour) reçoit un parcours qui utilise ces blocs | Refusé avec « Ce parcours demande Labo Blocs 0.5.0 ou plus récent » | |

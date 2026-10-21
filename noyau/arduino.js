@@ -37,6 +37,7 @@
     const servos = new Set();
     const sons = new Set();
     const variables = new Set();
+    const listes = new Set();
     let hasard = false;
     let modulo = false;
     let reetalonner = false;
@@ -52,12 +53,16 @@
       if (x.bloc === 'servo_angle') servos.add(numero(x.broche));
       if (x.bloc === 'son') sons.add(numero(x.broche));
       if (x.bloc === 'variable' || x.bloc === 'affecter' || x.bloc === 'ajouter_a') variables.add(nomC(x.variable));
+      if (typeof x.bloc === 'string' && x.bloc.indexOf('liste_') === 0) listes.add(nomC(x.liste));
       if (x.bloc === 'hasard') hasard = true;
       if (x.bloc === 'operation' && x.op === 'mod') modulo = true;
       if (x.bloc === 'reetalonner') reetalonner = true;
       if (x.quand === 'joystick' || K().BLOCS_JOYSTICK.includes(x.bloc)) joystickUtilise = true;
       for (const v of Object.values(x)) if (v && typeof v === 'object') parcourir(v);
-    })(v1.fils);
+    })(v1.fils.concat(v1.fonctions || []));
+    const fonctions = v1.fonctions || [];
+    // Les fonctions de l'élève gardent leur nom, sans toucher aux noms déjà pris par le programme écrit ici.
+    const nomFonction = (nom) => (/^(setup|loop|attendre|bouton|reste|reetalonner|element|remplacer|ajouter|vider|positionJoystick|quand\d*|quandJoystick\d*)$/.test(nomC(nom)) ? 'f_' + nomC(nom) : nomC(nom));
 
     const lignes = [];
     const carte = {};
@@ -96,6 +101,12 @@
           return J ? directionC(e.direction) : 'false';
         case 'joystick_bouton':
           return J ? `(digitalRead(${numero(J.bouton)}) == LOW)` : 'false';
+        case 'liste_element':
+          return `element(${nomC(e.liste)}, ${expression(e.position)})`;
+        case 'liste_taille':
+          return `${nomC(e.liste)}.taille`;
+        case 'parametre':
+          return nomC(e.parametre);
         default:
           return '0';
       }
@@ -156,7 +167,9 @@
             ajouter(`${r}}`);
             break;
           case 'repeter_n': {
-            const c = 'ijklmn'[Math.min(profondeur, 5)];
+            // Compteur : i, j, k… sans prendre le nom d'une variable du programme (elle serait cachée dans la boucle).
+            const libres = [...'ijklmn'].filter((x) => !variables.has(x));
+            const c = libres[profondeur] || `compteur${profondeur + 1}`;
             profondeur++;
             ajouter(`${r}for (int ${c} = 0; ${c} < ${expression(i.fois)}; ${c}++) {`);
             instructions(i.corps, retrait + 2);
@@ -169,6 +182,24 @@
             ajouter(`${r}while (${i.bloc === 'tant_que' ? expression(i.condition) : `!${expression(i.condition)}`}) {`);
             instructions(i.corps, retrait + 2);
             ajouter(`${r}}`);
+            break;
+          case 'liste_remplir': {
+            const l = nomC(i.liste);
+            ajouter(`${r}vider(${l});`);
+            for (const v of i.valeurs || []) ajouter(`${r}ajouter(${l}, ${nombre(v)});`);
+            break;
+          }
+          case 'liste_ajouter':
+            ajouter(`${r}ajouter(${nomC(i.liste)}, ${expression(i.valeur)});`);
+            break;
+          case 'liste_remplacer':
+            ajouter(`${r}remplacer(${nomC(i.liste)}, ${expression(i.position)}, ${expression(i.valeur)});`);
+            break;
+          case 'liste_vider':
+            ajouter(`${r}vider(${nomC(i.liste)});`);
+            break;
+          case 'appeler':
+            ajouter(`${r}${nomFonction(i.fonction)}(${(i.arguments || []).map(expression).join(', ')});`);
             break;
           default:
             lignes.length = avantCommentaire; // bloc qui n'a pas d'équivalent ici : son commentaire non plus
@@ -199,6 +230,39 @@
     for (const n of trier(servos)) ajouter(`Servo servo${n};`);
     for (const v of trier(variables)) ajouter(`float ${v} = 0;`);
     if (servos.size || variables.size) ajouter('');
+    if (listes.size) {
+      // Mêmes places que dans la carte : les 48 nombres sont partagés entre les listes.
+      const places = Math.floor(48 / listes.size);
+      ajouter(`// Une liste : ${places} nombres au plus, et combien sont rangés (taille).`);
+      ajouter(`// Dans les blocs, le premier élément est le n° 1 ; en C++, c'est la case [0] : d'où les « - 1 » plus bas.`);
+      ajouter('struct Liste {');
+      ajouter(`  float elements[${places}];`);
+      ajouter('  int taille;');
+      ajouter('};');
+      for (const l of trier(listes)) ajouter(`Liste ${l} = { {}, 0 };`);
+      ajouter('');
+      ajouter('// Élément n° n (1 = le premier) ; 0 si cette place est vide.');
+      ajouter('float element(Liste &l, float n) {');
+      ajouter('  int i = round(n);');
+      ajouter('  if (i < 1 || i > l.taille) return 0;');
+      ajouter('  return l.elements[i - 1];');
+      ajouter('}');
+      ajouter('void remplacer(Liste &l, float n, float valeur) {');
+      ajouter('  int i = round(n);');
+      ajouter('  if (i >= 1 && i <= l.taille) l.elements[i - 1] = valeur;');
+      ajouter('}');
+      ajouter('// Une liste pleine ne change plus.');
+      ajouter('void ajouter(Liste &l, float valeur) {');
+      ajouter(`  if (l.taille < ${places}) {`);
+      ajouter('    l.elements[l.taille] = valeur;');
+      ajouter('    l.taille = l.taille + 1;');
+      ajouter('  }');
+      ajouter('}');
+      ajouter('void vider(Liste &l) {');
+      ajouter('  l.taille = 0;');
+      ajouter('}');
+      ajouter('');
+    }
     ajouter('// « attendre » en secondes (les nombres à virgule sont acceptés).');
     ajouter('void attendre(float secondes) {');
     ajouter('  if (secondes > 0) delay((unsigned long)(secondes * 1000.0));');
@@ -226,6 +290,12 @@
       ajouter('  if (b == a) return c;');
       ajouter('  return floor(c + (v - a) * (d - c) / (b - a) + 0.5);');
       ajouter('}');
+      ajouter('');
+    }
+    if (fonctions.length) {
+      // Annonce des fonctions : chacune peut en appeler une autre écrite plus bas.
+      ajouter('// Les fonctions du programme (écrites plus bas).');
+      for (const f of fonctions) ajouter(`void ${nomFonction(f.nom)}(${(f.parametres || []).map((p) => 'float ' + nomC(p)).join(', ')});`);
       ajouter('');
     }
     evenements.forEach((f, k) => {
@@ -295,6 +365,15 @@
     // Un tour de boucle dure au moins 1 ms, comme dans le simulateur.
     ajouter('  delay(1);');
     ajouter('}');
+    for (const f of fonctions) {
+      ajouter('');
+      const debut = lignes.length + 1;
+      commentaire(f, '');
+      ajouter(`void ${nomFonction(f.nom)}(${(f.parametres || []).map((p) => 'float ' + nomC(p)).join(', ')}) {`);
+      instructions(f.corps, 2);
+      ajouter('}');
+      if (f.id !== undefined) carte[f.id] = [debut, lignes.length];
+    }
     return { code: lignes.join('\n') + '\n', lignes: carte };
   }
 

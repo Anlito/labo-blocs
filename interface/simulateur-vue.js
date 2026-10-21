@@ -249,6 +249,72 @@
   }
 
 
+  // ---------- Console Simon ----------
+
+  // Quatre touches de couleur : la n° k est la k-ième LED et le k-ième bouton des composants de l'exercice
+  // (bleu, vert, jaune, rouge, comme le standard D2 à D10 du Simon). Une touche s'appuie à la souris, au doigt
+  // ou au clavier ; allumée, elle est vive, entourée et marquée « ● » (jamais la couleur seule).
+  const COULEURS_SIMON = [
+    ['Bleu', '#3B82F6'],
+    ['Vert', '#23C17A'],
+    ['Jaune', '#FFCF3F'],
+    ['Rouge', '#FF5566'],
+  ];
+  function htmlSimon(touches, avecSon) {
+    return (
+      '<div class="simon-console" role="group" aria-label="Console Simon">' +
+      '<div class="simon-touches">' +
+      touches
+        .map(
+          (t, k) =>
+            `<button type="button" class="simon-touche simon-touche-${k + 1}" data-k="${k}" style="--simon:${COULEURS_SIMON[k][1]}" aria-pressed="false" ` +
+            `aria-label="Touche ${COULEURS_SIMON[k][0].toLowerCase()} : bouton ${t.bouton || '?'}, LED ${t.led || '?'} ; maintenir pour appuyer">` +
+            `<span class="simon-nom">${COULEURS_SIMON[k][0]}</span><span class="simon-etat" aria-hidden="true"></span></button>`,
+        )
+        .join('') +
+      '<span class="simon-centre" aria-hidden="true">SIMON</span></div>' +
+      (avecSon ? '<button type="button" class="simon-son" aria-pressed="true">Son : activé</button>' : '') +
+      '</div>'
+    );
+  }
+
+  // Son du buzzer, joué par l'ordinateur (WebAudio) : une note carrée, douce, comme un buzzer piézo.
+  let sonPrecedent = null; // celui de la vue précédente : coupé quand un autre exercice s'ouvre
+  function creerSon() {
+    if (sonPrecedent) sonPrecedent.couper();
+    let audio = null;
+    let note = 0;
+    return (sonPrecedent = {
+      couper() {
+        if (audio) audio.ctx.close();
+        audio = null;
+        note = 0;
+      },
+      jouer(frequence) {
+        const f = Math.round(Number(frequence) || 0);
+        if (f === note) return;
+        note = f;
+        const Contexte = global.AudioContext || global.webkitAudioContext;
+        if (!Contexte) return;
+        if (!audio && f) {
+          const ctx = new Contexte();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'square';
+          gain.gain.value = 0;
+          osc.connect(gain).connect(ctx.destination);
+          osc.start();
+          audio = { ctx, osc, gain };
+        }
+        if (!audio) return;
+        if (audio.ctx.state === 'suspended') audio.ctx.resume();
+        const t = audio.ctx.currentTime;
+        if (f) audio.osc.frequency.setValueAtTime(f, t);
+        audio.gain.gain.setTargetAtTime(f ? 0.06 : 0, t, 0.005);
+      },
+    });
+  }
+
   // ---------- micro:bit et mBot (jalon 3) ----------
 
   // Réglage d'un capteur : curseur + valeur écrite (jamais la couleur seule).
@@ -559,8 +625,33 @@
     if (!vueDeCarte) racine.querySelector('.simu-carte').innerHTML = `<div class="simu-carte-dessin">${dessinCarte(composants, recadrer)}</div>`;
     // Illustration du projet (distributeur : exercices 8 et 13) : à droite des cartes des composants.
     const distributeur = exercice.illustration === 'distributeur';
-    racine.querySelector('.simu-distributeur').innerHTML = distributeur ? dessinDistributeur() : '';
+    // Console Simon (illustration « simon ») : touches = LED et boutons des composants, dans leur ordre.
+    const simon = exercice.illustration === 'simon';
+    const ledsSimon = composants.filter((c) => c.type === 'led').slice(0, 4);
+    const boutonsSimon = composants.filter((c) => c.type === 'bouton').slice(0, 4);
+    const touches = simon ? [0, 1, 2, 3].map((k) => ({ led: (ledsSimon[k] || {}).broche, bouton: (boutonsSimon[k] || {}).broche })) : [];
+    const buzzer = composants.find((c) => c.type === 'buzzer');
+    racine.querySelector('.simu-distributeur').innerHTML = distributeur ? dessinDistributeur() : simon ? htmlSimon(touches, !!buzzer) : '';
     racine.querySelector('.simu-milieu').classList.toggle('avec-distributeur', distributeur);
+    racine.querySelector('.simu-milieu').classList.toggle('avec-simon', simon);
+    // Le son du buzzer : joué d'office avec la console Simon (bouton « Son » pour le couper).
+    const son = buzzer ? creerSon() : null;
+    let sonActif = simon;
+    const boutonSon = racine.querySelector('.simon-son');
+    if (boutonSon) {
+      boutonSon.addEventListener('click', () => {
+        sonActif = !sonActif;
+        boutonSon.setAttribute('aria-pressed', sonActif ? 'true' : 'false');
+        boutonSon.textContent = sonActif ? 'Son : activé' : 'Son : coupé';
+        if (!sonActif) son.jouer(0);
+      });
+    }
+    const touchesSimon = [...racine.querySelectorAll('.simon-touche')];
+    for (const el of touchesSimon) {
+      const t = touches[Number(el.dataset.k)];
+      if (t.bouton) poussoir(el, (valeur) => rappels.appuyerBouton(t.bouton, valeur));
+      else el.disabled = true;
+    }
     const grille = racine.querySelector('.simu-composants');
     grille.classList.toggle('compact', compact);
     grille.innerHTML = composants.map((c) => carteComposant(c, compact)).join('');
@@ -658,6 +749,15 @@
         maj(k, (cle in etats ? etats[cle] : etats[c.broche]) || 0);
       });
       majDistributeur(etats, enMarche);
+      touchesSimon.forEach((el, k) => {
+        const t = touches[k];
+        const allumee = !!(t.led && etats[t.led]);
+        const appuyee = !!(t.bouton && etats[t.bouton]);
+        el.classList.toggle('allumee', allumee);
+        el.setAttribute('aria-pressed', appuyee ? 'true' : 'false');
+        el.querySelector('.simon-etat').textContent = allumee ? '●' : '';
+      });
+      if (son) son.jouer(sonActif && enMarche ? etats[buzzer.broche] : 0);
       if (vueDeCarte) vueDeCarte.afficher(sim || null);
     }
 

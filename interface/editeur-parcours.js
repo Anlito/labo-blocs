@@ -334,6 +334,9 @@
         .join('')}</select></label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="niveauVerrouille"${e.niveauVerrouille ? ' checked' : ''}${e.niveau ? '' : ' disabled'}> Niveau imposé (évaluation)</label>` +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="defi"${e.defi ? ' checked' : ''}> Défi facultatif</label>` +
+      (e.illustration && e.illustration !== 'simon'
+        ? ''
+        : `<label class="ed-case"><input type="checkbox" class="champ-simon"${e.illustration === 'simon' ? ' checked' : ''}> Console Simon dans le simulateur (touches = 4 premières LED et 4 premiers boutons, dans l’ordre bleu, vert, jaune, rouge ; son du buzzer joué)</label>`) +
       '</div>' +
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="libre"${e.libre ? ' checked' : ''}> Exercice libre : l’élève invente son programme avec les blocs proposés ; le simulateur montre les composants qu’il utilise ; pas de solution ni de test, il clique « J’ai terminé » ; pas de niveau calculé</label>` +
       `<label class="ed-champ-competence">Compétence évaluée<select class="champ" data-champ="competence">${A.COMPETENCES.map((c) => `<option value="${c.code}"${A.competenceDe(e) === c.code ? ' selected' : ''}>${c.code} · ${echapper(c.libelle)}</option>`).join('')}</select></label>` +
@@ -384,6 +387,9 @@
       `<label class="ed-case"><input type="checkbox" class="champ" data-champ="variablesLibres"${e.variablesLibres ? ' checked' : ''}> Les élèves créent leurs propres variables (bouton « Créer une variable » dans la palette)</label>` +
       '<p class="ed-aide">Sépare les noms par des virgules. Laisse vide si les élèves doivent créer toutes leurs variables. Les blocs de variables se cochent ci-dessus (Variables).</p>' +
       '<p class="ed-message ed-ecart ed-message-variables" hidden></p>' +
+      `<label>Listes données aux élèves<input class="champ-listes" value="${echapper((Array.isArray(e.listes) ? e.listes : []).join(', '))}" placeholder="aucune"></label>` +
+      '<p class="ed-aide">Ex. « sequence ». Dès qu’un bloc de liste est coché, les élèves peuvent aussi créer leurs listes (bouton « Créer une liste »).</p>' +
+      '<p class="ed-message ed-ecart ed-message-listes" hidden></p>' +
       '</div></div>' +
       // Indices
       '<div class="carte ed-carte">' +
@@ -452,6 +458,11 @@
         dessinerFormulaire();
         dessinerScenarios();
         dessinerApercu();
+      } else if (t.matches('.champ-simon')) {
+        if (t.checked) e.illustration = 'simon';
+        else delete e.illustration;
+        modifie();
+        dessinerApercu();
       } else if (t.matches('[data-champ="niveauVerrouille"], [data-champ="defi"]')) {
         if (t.checked) e[t.dataset.champ] = true;
         else delete e[t.dataset.champ];
@@ -485,6 +496,22 @@
         e.variables = noms;
         t.value = noms.join(', ');
         const m = $('.ed-message-variables', zone);
+        m.textContent = pb.join(' ');
+        m.hidden = !pb.length;
+        modifie();
+        chargerSolution();
+      } else if (t.matches('.champ-listes')) {
+        const noms = [];
+        const pb = [];
+        for (const brut of t.value.split(/[,;]+/).map((x) => x.trim()).filter(Boolean)) {
+          const r = A.nomDeVariable(brut, noms, 'liste');
+          if (r.ok) noms.push(r.nom);
+          else pb.push(r.message);
+        }
+        if (noms.length) e.listes = noms;
+        else delete e.listes;
+        t.value = noms.join(', ');
+        const m = $('.ed-message-listes', zone);
         m.textContent = pb.join(' ');
         m.hidden = !pb.length;
         modifie();
@@ -747,7 +774,7 @@
     const solution = A.appliquerParametres(blocs || { demarrage: [], boucle: [] }, etat.paquet.parametres || {});
     A.carteCourante = carteDuParcours();
     A.etiquettesCamera = ['Rien'].concat((e.camera && e.camera.etiquettes) || []);
-    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres }, A.versBlockly(solution));
+    etat.editeur.charger({ blocsAutorises: e.blocsAutorises, composants: e.composants, carte: carteDuParcours(), variables: e.variables, variablesLibres: e.variablesLibres, listes: e.listes }, A.versBlockly(solution));
     majMessageSolution();
   }
 
@@ -833,6 +860,25 @@
       }
       case 'texte':
         return `<label class="ed-champ ed-facultatif">${libelle}<input class="ed-moyen" value="${echapper(v || '')}" ${att()}></label>`;
+      // Listes et jeu (Simon).
+      case 'nom':
+        return `<label class="ed-champ">${libelle}<input class="ed-moyen" value="${echapper(v || '')}" ${att()}></label>`;
+      case 'broches':
+        return `<label class="ed-champ${champ.facultatif ? ' ed-facultatif' : ''}">${libelle}<input class="ed-moyen" value="${echapper((v || []).join(' ; '))}" ${att()}></label>`;
+      case 'tours': {
+        const choix = [['progressif', 'tour par tour (1, puis 1 2…)'], ['complet', 'toute la liste d’un coup']];
+        const valeur = typeof v === 'number' ? 'progressif' : v || 'progressif';
+        return `<label class="ed-champ">${libelle}<select ${att()}>${choix.map(([o, t]) => `<option value="${o}"${o === valeur ? ' selected' : ''}>${t}</option>`).join('')}</select></label>`;
+      }
+      case 'case':
+        return `<label class="ed-champ ed-case"><input type="checkbox" ${v ? 'checked' : ''} ${att()}> ${echapper(champ.libelle)}</label>`;
+      case 'allumage': {
+        // Une LED de l'exercice, ou « la couleur n° 1 de la liste … » (retour au début d'un Simon).
+        const listes = (Array.isArray(e.listes) && e.listes.length ? e.listes : ['sequence']).map((l) => [`liste:${l}`, `1re couleur de la liste « ${l} »`]);
+        const valeur = v && typeof v === 'object' ? `liste:${v.liste}` : v;
+        const options = sorties(e).filter((c) => c.type === 'led').map((c) => [c.broche, `LED ${c.broche}`]).concat(listes);
+        return `<label class="ed-champ">${libelle}<select ${att()}>${options.map(([o, t]) => `<option value="${echapper(o)}"${o === valeur ? ' selected' : ''}>${echapper(t)}</option>`).join('')}</select></label>`;
+      }
       default:
         return '';
     }
@@ -927,8 +973,23 @@
       else if (t.type === 'number') {
         if (t.value === '') delete etape[champ];
         else etape[champ] = nombre(t.value);
-      } else if (champ === 'valeurs') {
-        etape.valeurs = t.value.split(/[;\s]+/).filter(Boolean).map(nombre).filter((x) => !Number.isNaN(x));
+      } else if (champ === 'valeurs' || champ === 'entre') {
+        const valeurs = t.value.split(/[;\s]+/).filter(Boolean).map(nombre).filter((x) => !Number.isNaN(x));
+        if (champ === 'entre' && valeurs.length !== 2) delete etape.entre;
+        else etape[champ] = valeurs;
+      } else if (champ === 'boutons' || champ === 'leds') {
+        const broches = t.value.split(/[;,\s]+/).filter(Boolean).map((x) => x.toUpperCase());
+        if (broches.length) etape[champ] = broches;
+        else delete etape[champ];
+      } else if (t.type === 'checkbox') {
+        if (t.checked) etape[champ] = true;
+        else delete etape[champ];
+      } else if (champ === 'tours') {
+        if (t.value === 'progressif') delete etape.tours;
+        else etape.tours = t.value;
+      } else if (champ === 'allumage') {
+        etape.allumage = t.value.indexOf('liste:') === 0 ? { liste: t.value.slice(6), numero: 1 } : t.value;
+        if (typeof etape.allumage === 'object' && !etape.leds) etape.leds = sorties(ex()).filter((c) => c.type === 'led').map((c) => c.broche);
       } else if (champ === 'contexte' || champ === 'attendu') {
         if (t.value.trim()) etape[champ] = t.value.trim();
         else delete etape[champ];

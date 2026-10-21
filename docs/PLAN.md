@@ -527,3 +527,26 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      5 ré-étalonner un axe (1023, 0) → (0, 180), 6 les deux axes, 7 **final** 60° à 120° (feu vert pour le plateau et
      l'envoi dans la carte), 8 **défi** 80° à 100° + bouton SW → plateau à plat. Les exercices 6 à 8 partent du
      programme de l'exercice précédent (on modifie, on ne repart pas de zéro).
+42. **Listes et fonctions (21/10/2026)**, pour le projet Simon Rétro Game (brief `BRIEF-CLAUDE-CODE-simon-labo-blocs.md`).
+   Décisions de Thomas : listes numérotées **à partir de 1** ; séquence **écrite par l'élève** (défi final au hasard) ;
+   buzzer D10 **passif** (notes). Le compilateur et les cartes savaient déjà faire (jalon 0) : **aucun nouvel ordre**.
+   - Catégorie **Listes** : `liste_remplir` (« remplir la liste … avec 1, 3, 2, 4 » : vider puis ajouter), `liste_ajouter`,
+     `liste_remplacer`, `liste_vider`, `liste_element` (n° 1 = premier, hors de la liste = 0), `liste_taille`. Bouton
+     « Créer une liste » dès qu'un bloc de liste est proposé ; listes données par l'exercice (`listes: ['sequence']`).
+     Places : les 48 de la carte partagées entre les listes (4 listes au plus) ; une liste pleine ne grossit plus.
+   - Catégorie **Fonctions** : `fonction_definir` / `fonction_definir_param` (posés seuls, comme « Au démarrage » ; nom et
+     paramètre nettoyés comme un nom de variable), `fonction_appeler` / `fonction_appeler_param` (menu des fonctions
+     posées), `parametre` (seulement dans sa fonction). Renommer une fonction renomme ses appels. Programme v1 :
+     `fonctions: [{ nom, parametres, corps }]`, appel `{ bloc: 'appeler', fonction, arguments }`. Contrôles en phrases :
+     fonction absente, valeur attendue ou non, deux fonctions de même nom, fonction qui s'appelle elle-même.
+   - Simulateur : listes notées dans le journal (`type: 'liste'`, contenu entier) et dans `sim.listes`.
+   - Code Arduino : `struct Liste` + `element()` / `ajouter()` / `remplacer()` / `vider()` (les « - 1 » du n° 1 → case
+     [0] sont visibles), fonctions annoncées puis écrites après `loop()`. Corrigé au passage : le compteur de
+     « répéter … fois » ne prend plus le nom d'une variable de l'élève (`i` → `j`).
+   - Vérification : étapes `liste` (contenu), `jouerListe` (joue la séquence de l'élève avec les boutons, tour par tour
+     ou d'un coup, en attendant que le programme écoute ; `faute` : dernier appui faux), `entendre` (le buzzer joue),
+     `allumage` (une LED, ou la LED de la couleur n° 1 de la liste : retour au début). Éditeur de parcours : ces étapes,
+     « Listes données aux élèves », case « Console Simon ».
+   - Simulateur : `illustration: 'simon'` → console à 4 touches (4 premières LED et 4 premiers boutons, bleu, vert,
+     jaune, rouge), son du buzzer joué par l'ordinateur (WebAudio, bouton « Son »).
+   - Moteur **0.5.0**. Tests : `tests/listes-fonctions.test.js` (Simon complet joué et vérifié dans le simulateur).

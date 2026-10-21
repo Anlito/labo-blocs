@@ -18,6 +18,8 @@
     valeur: '#BCDAEB',
     servo: '#E78AB3',
     variable: '#EC8780',
+    liste: '#7FCBB8',
+    fonction: '#B5D36F',
     extension: '#C3B1E1', // blocs d'une carte ou d'une extension (mBot, micro:bit…) : lilas, pictogramme puzzle
   };
 
@@ -387,6 +389,122 @@
       style: 'bleu',
       tooltip: 'Un nombre. Les nombres à virgule s’écrivent avec un point : 0.5',
     },
+    // Listes : le premier élément est le n° 1. Le menu LISTE est remplacé par celui des listes connues (definirBlocs).
+    {
+      type: 'liste_remplir',
+      message0: 'remplir la liste %1 avec %2',
+      args0: [
+        { type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] },
+        { type: 'field_input', name: 'VALEURS', text: '1, 2, 3' },
+      ],
+      previousStatement: null,
+      nextStatement: null,
+      style: 'liste',
+      tooltip: 'Vide la liste, puis y range ces nombres dans l’ordre. Sépare les nombres par des virgules : 1, 3, 2, 4',
+    },
+    {
+      type: 'liste_ajouter',
+      message0: 'ajouter %1 à la fin de la liste %2',
+      args0: [
+        { type: 'input_value', name: 'VALEUR', check: 'Number' },
+        { type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'liste',
+      tooltip: 'Range un nombre de plus, après le dernier. Une liste pleine ne change plus.',
+    },
+    {
+      type: 'liste_remplacer',
+      message0: 'remplacer l’élément n° %1 de la liste %2 par %3',
+      args0: [
+        { type: 'input_value', name: 'POSITION', check: 'Number' },
+        { type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] },
+        { type: 'input_value', name: 'VALEUR', check: 'Number' },
+      ],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'liste',
+      tooltip: 'Change un élément de la liste. Le premier élément est le n° 1.',
+    },
+    {
+      type: 'liste_vider',
+      message0: 'vider la liste %1',
+      args0: [{ type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] }],
+      previousStatement: null,
+      nextStatement: null,
+      style: 'liste',
+      tooltip: 'Enlève tous les éléments : la liste n’a plus rien.',
+    },
+    {
+      type: 'liste_element',
+      message0: 'élément n° %1 de la liste %2',
+      args0: [
+        { type: 'input_value', name: 'POSITION', check: 'Number' },
+        { type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] },
+      ],
+      inputsInline: true,
+      output: 'Number',
+      style: 'liste',
+      tooltip: 'Le nombre rangé à cette place. Le premier élément est le n° 1. Une place vide donne 0.',
+    },
+    {
+      type: 'liste_taille',
+      message0: 'nombre d’éléments de la liste %1',
+      args0: [{ type: 'field_dropdown', name: 'LISTE', options: [['liste', 'liste']] }],
+      output: 'Number',
+      style: 'liste',
+      tooltip: 'Combien de nombres sont rangés dans la liste.',
+    },
+    // Fonctions : un bloc posé seul, comme « Au démarrage », qu'on appelle par son nom.
+    {
+      type: 'fonction_definir',
+      message0: 'fonction %1 %2 %3',
+      args0: [{ type: 'field_input', name: 'NOM', text: 'ma_fonction' }, { type: 'input_dummy' }, { type: 'input_statement', name: 'DO' }],
+      style: 'fonction',
+      tooltip: 'Un groupe de blocs avec un nom. Il s’exécute chaque fois qu’un bloc « appeler » l’appelle.',
+    },
+    {
+      type: 'fonction_definir_param',
+      message0: 'fonction %1 avec %2 %3 %4',
+      args0: [
+        { type: 'field_input', name: 'NOM', text: 'ma_fonction' },
+        { type: 'field_input', name: 'PARAM', text: 'valeur' },
+        { type: 'input_dummy' },
+        { type: 'input_statement', name: 'DO' },
+      ],
+      style: 'fonction',
+      tooltip: 'Un groupe de blocs avec un nom et une valeur reçue à chaque appel (le paramètre), utilisable à l’intérieur.',
+    },
+    {
+      type: 'fonction_appeler',
+      message0: 'appeler %1',
+      args0: [{ type: 'field_dropdown', name: 'FONCTION', options: [['?', '?']] }],
+      previousStatement: null,
+      nextStatement: null,
+      style: 'fonction',
+      tooltip: 'Exécute tous les blocs de cette fonction, puis continue ici.',
+    },
+    {
+      type: 'fonction_appeler_param',
+      message0: 'appeler %1 avec %2',
+      args0: [{ type: 'field_dropdown', name: 'FONCTION', options: [['?', '?']] }, { type: 'input_value', name: 'VALEUR', check: 'Number' }],
+      inputsInline: true,
+      previousStatement: null,
+      nextStatement: null,
+      style: 'fonction',
+      tooltip: 'Exécute la fonction en lui donnant cette valeur, puis continue ici.',
+    },
+    {
+      type: 'parametre',
+      message0: '%1',
+      args0: [{ type: 'field_dropdown', name: 'PARAM', options: [['?', '?']] }],
+      output: 'Number',
+      style: 'fonction',
+      tooltip: 'La valeur reçue par la fonction. Ce bloc se place seulement dans la fonction qui a ce paramètre.',
+    },
   ];
 
   // Blocs des cartes (mBot, micro:bit), décrits dans noyau/cartes.js.
@@ -422,6 +540,8 @@
     { nom: 'Boucles', cle: 'boucles', couleur: COULEURS.decision, blocs: ['repeter_n', 'tant_que', 'repeter_jusqua'] },
     { nom: 'Calculs', cle: 'calculs', couleur: COULEURS.bleu, blocs: ['operation', 'hasard', 'reetalonner'] },
     { nom: 'Variables', cle: 'variables', couleur: COULEURS.variable, blocs: ['affecter', 'ajouter_a', 'variable', 'nombre'] },
+    { nom: 'Listes', cle: 'listes', couleur: COULEURS.liste, blocs: ['liste_remplir', 'liste_ajouter', 'liste_remplacer', 'liste_vider', 'liste_element', 'liste_taille'] },
+    { nom: 'Fonctions', cle: 'fonctions', couleur: COULEURS.fonction, blocs: ['fonction_definir', 'fonction_definir_param', 'fonction_appeler', 'fonction_appeler_param', 'parametre'] },
     // Une carte à la fois : la palette d'un exercice ne montre que les blocs autorisés.
     ...(A.CATEGORIES_CARTES || []).map((c) => ({ nom: c.nom, cle: c.cle, couleur: COULEURS.extension, icone: c.cle === 'camera' || c.cle === 'clavier' ? c.cle : 'puzzle', carte: c.carte, blocs: c.cle === 'camera' ? ['quand_camera'].concat(c.blocs) : c.cle === 'clavier' ? ['quand_touche'].concat(c.blocs) : c.blocs })),
   ];
@@ -443,6 +563,10 @@
     comparaison: { inputs: { B: { shadow: { type: 'nombre', fields: { NUM: 0 } } } } },
     hasard: { inputs: { MIN: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, MAX: { shadow: { type: 'nombre', fields: { NUM: 6 } } } } },
     reetalonner: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, DE_MIN: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, DE_MAX: { shadow: { type: 'nombre', fields: { NUM: 1023 } } }, VERS_MIN: { shadow: { type: 'nombre', fields: { NUM: 0 } } }, VERS_MAX: { shadow: { type: 'nombre', fields: { NUM: 180 } } } } },
+    liste_ajouter: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
+    liste_remplacer: { inputs: { POSITION: { shadow: { type: 'nombre', fields: { NUM: 1 } } }, VALEUR: { shadow: { type: 'nombre', fields: { NUM: 0 } } } } },
+    liste_element: { inputs: { POSITION: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
+    fonction_appeler_param: { inputs: { VALEUR: { shadow: { type: 'nombre', fields: { NUM: 1 } } } } },
   };
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) {
     if (!d.entrees) continue;
@@ -463,19 +587,58 @@
   const BLOCS_VARIABLE = ['affecter', 'ajouter_a', 'variable'];
   const optionsVariables = () => (A.variablesConnues.length ? A.variablesConnues.map((n) => [n, n]) : [['?', '?']]);
 
+  // Listes connues (même principe que les variables) : celles de l'exercice, de la sauvegarde, et celles créées.
+  A.listesConnues = [];
+  const BLOCS_LISTE = ['liste_remplir', 'liste_ajouter', 'liste_remplacer', 'liste_vider', 'liste_element', 'liste_taille'];
+  const optionsListes = () => (A.listesConnues.length ? A.listesConnues.map((n) => [n, n]) : [['?', '?']]);
+
+  // Fonctions et paramètres : ceux des blocs « fonction » posés dans l'espace des blocs, plus ceux de la sauvegarde
+  // en cours de chargement (A.fonctionsConnues, A.parametresConnus : un appel peut être relu avant sa fonction).
+  A.fonctionsConnues = [];
+  A.parametresConnus = [];
+  const BLOCS_FONCTION = ['fonction_definir', 'fonction_definir_param'];
+  function definitions(champ) {
+    const bloc = champ && champ.getSourceBlock && champ.getSourceBlock();
+    let ws = bloc && bloc.workspace;
+    if (ws && ws.isFlyout && ws.targetWorkspace) ws = ws.targetWorkspace;
+    if (!ws && global.Blockly && global.Blockly.getMainWorkspace) ws = global.Blockly.getMainWorkspace();
+    return ws ? ws.getTopBlocks(false).filter((b) => BLOCS_FONCTION.includes(b.type) && !b.isInFlyout) : [];
+  }
+  const menuDe = (noms) => {
+    const uniques = [...new Set(noms.filter(Boolean))];
+    return uniques.length ? uniques.map((n) => [n, n]) : [['?', '?']];
+  };
+  // avecParametre : true pour « appeler … avec … », false pour « appeler … ».
+  const optionsFonctions = (avecParametre) =>
+    function () {
+      const vivantes = definitions(this).filter((d) => (d.type === 'fonction_definir_param') === avecParametre);
+      return menuDe(vivantes.map((d) => d.getFieldValue('NOM')).concat(A.fonctionsConnues));
+    };
+  const optionsParametres = function () {
+    const vivantes = definitions(this).filter((d) => d.type === 'fonction_definir_param');
+    return menuDe(vivantes.map((d) => d.getFieldValue('PARAM')).concat(A.parametresConnus));
+  };
+  // Nom tapé dans un bloc « fonction » : nettoyé comme un nom de variable (« allumer couleur » → « allumer_couleur »).
+  const validerNom = (sorte) => (texte) => {
+    const r = A.nomDeVariable ? A.nomDeVariable(texte, [], sorte) : { ok: true, nom: texte };
+    return r.ok ? r.nom : null;
+  };
+
   // Palette d'un exercice : seulement ses blocs autorisés ; une catégorie vide n'apparaît pas.
   //   options : { variables (noms proposés), creerVariables (bouton « Créer une variable ») }
   function palette(blocsAutorises, composants, options) {
     const o = options || {};
     const variables = o.variables || A.variablesConnues;
+    const listes = o.listes || A.listesConnues;
     const autorises = new Set(blocsAutorises || []);
     // Les blocs de la palette ne donnent pas la broche de l'exercice : l'élève la choisit en lisant la consigne.
     void composants;
     const contenu = [];
     for (const cat of CATEGORIES) {
-      // Blocs de variables : seulement s'il y a au moins une variable (sinon l'élève commence par en créer une).
-      const blocs = cat.blocs.filter((t) => autorises.has(t) && (!BLOCS_VARIABLE.includes(t) || variables.length));
-      const bouton = cat.cle === 'variables' && o.creerVariables;
+      // Blocs de variables (de listes) : seulement s'il y en a au moins une (sinon l'élève commence par en créer une).
+      const blocs = cat.blocs.filter((t) => autorises.has(t) && (!BLOCS_VARIABLE.includes(t) || variables.length) && (!BLOCS_LISTE.includes(t) || listes.length));
+      // « Créer une liste » : dès que l'exercice propose un bloc de liste.
+      const bouton = (cat.cle === 'variables' && o.creerVariables) || (cat.cle === 'listes' && cat.blocs.some((t) => autorises.has(t)));
       if (!blocs.length && !bouton) continue;
       contenu.push({
         kind: 'category',
@@ -488,10 +651,11 @@
           label: 'blocklyToolboxCategoryLabel cat-libelle',
           selected: 'blocklyToolboxSelected cat-choisie',
         },
-        contents: (bouton ? [{ kind: 'button', text: 'Créer une variable', callbackKey: 'creerVariable' }] : []).concat(blocs.map((type) => {
+        contents: (bouton ? [cat.cle === 'listes' ? { kind: 'button', text: 'Créer une liste', callbackKey: 'creerListe' } : { kind: 'button', text: 'Créer une variable', callbackKey: 'creerVariable' }] : []).concat(blocs.map((type) => {
           const forme = JSON.parse(JSON.stringify(FORMES_PALETTE[type] || {}));
-          // Variable de départ : la dernière créée (ou la première de l'exercice).
+          // Variable de départ : la dernière créée (ou la première de l'exercice). Même chose pour les listes.
           if (BLOCS_VARIABLE.includes(type)) forme.fields = Object.assign({}, forme.fields, { VAR: variables[variables.length - 1] });
+          if (BLOCS_LISTE.includes(type)) forme.fields = Object.assign({}, forme.fields, { LISTE: listes[listes.length - 1] });
           // Broche de départ : la première de la carte (D2 sur l'Uno, P0 sur la micro:bit), jamais celle de l'exercice.
           const sorte = SORTE_BROCHE[type];
           if (sorte && forme.fields && forme.fields.BROCHE) {
@@ -687,6 +851,43 @@
         entree.insertFieldAt(rang, new Blockly.FieldDropdown(optionsVariables), 'VAR');
       };
     }
+    // Menus des listes, des fonctions et des paramètres, et noms tapés dans les blocs « fonction ».
+    const remplacerMenu = (bloc, nom, champNeuf) => {
+      const champ = bloc.getField(nom);
+      const entree = champ.getParentInput();
+      const rang = entree.fieldRow.indexOf(champ);
+      entree.removeField(nom);
+      entree.insertFieldAt(rang, champNeuf, nom);
+    };
+    for (const type of BLOCS_LISTE) {
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        remplacerMenu(this, 'LISTE', new Blockly.FieldDropdown(optionsListes));
+      };
+    }
+    for (const [type, avec] of [['fonction_appeler', false], ['fonction_appeler_param', true]]) {
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        remplacerMenu(this, 'FONCTION', new Blockly.FieldDropdown(optionsFonctions(avec)));
+      };
+    }
+    {
+      const init = Blockly.Blocks.parametre.init;
+      Blockly.Blocks.parametre.init = function () {
+        init.call(this);
+        remplacerMenu(this, 'PARAM', new Blockly.FieldDropdown(optionsParametres));
+      };
+    }
+    for (const type of BLOCS_FONCTION) {
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        this.getField('NOM').setValidator(validerNom('fonction'));
+        if (this.getField('PARAM')) this.getField('PARAM').setValidator(validerNom('parametre'));
+      };
+    }
     // Menus de broches selon la carte de l'exercice.
     for (const [type, sorte] of [['led_etat', 'led'], ['bouton_etat', 'bouton'], ['quand_bouton', 'bouton'], ['servo_angle', 'servo'], ['son', 'buzzer']]) {
       const init = Blockly.Blocks[type].init;
@@ -720,6 +921,7 @@
     const blockStyles = {};
     for (const [cle, c] of Object.entries(COULEURS)) blockStyles[cle] = style(c);
     blockStyles.debut.hat = 'cap';
+    blockStyles.fonction.hat = 'cap'; // le bloc « fonction » (posé seul) ; les appels ont un bloc au-dessus
     const categoryStyles = {};
     for (const cat of CATEGORIES) categoryStyles[cat.cle] = { colour: cat.couleur };
     A.themeBlockly = Blockly.Theme.defineTheme('atelier', {
@@ -782,6 +984,17 @@
     ajouter_a: 'ajouter à une variable',
     variable: 'valeur d’une variable',
     nombre: 'nombre',
+    liste_remplir: 'remplir la liste avec …',
+    liste_ajouter: 'ajouter … à la fin de la liste',
+    liste_remplacer: 'remplacer l’élément n° … de la liste',
+    liste_vider: 'vider la liste',
+    liste_element: 'élément n° … de la liste',
+    liste_taille: 'nombre d’éléments de la liste',
+    fonction_definir: 'fonction … (sans valeur)',
+    fonction_definir_param: 'fonction … avec un paramètre',
+    fonction_appeler: 'appeler une fonction',
+    fonction_appeler_param: 'appeler une fonction avec une valeur',
+    parametre: 'valeur du paramètre (dans sa fonction)',
   };
   const NOMS_BLOCS = Object.assign({}, NOMS_BLOCS_BASE);
   for (const [type, d] of Object.entries(A.BLOCS_CARTES || {})) NOMS_BLOCS[type] = d.texte.replace(/%[A-Z]+/g, '…').replace(/\s+/g, ' ');
@@ -793,5 +1006,5 @@
   };
   const BROCHES_COMPOSANTS = { led: BROCHES_LED, bouton: BROCHES_BOUTON, servo: BROCHES_SERVO, buzzer: BROCHES_NUMERIQUES };
 
-  Object.assign(A, { definirBlocs, palette, CATEGORIES, COULEURS_BLOCS: COULEURS, NOMS_BLOCS, BROCHES_COMPOSANTS, brochesDe });
+  Object.assign(A, { definirBlocs, palette, BLOCS_DEFINITION_FONCTION: BLOCS_FONCTION, CATEGORIES, COULEURS_BLOCS: COULEURS, NOMS_BLOCS, BROCHES_COMPOSANTS, brochesDe });
 })(this);

@@ -6,7 +6,8 @@
 //     boutonsVersMasse, parametres, exercices: [ { id (stable, jamais réutilisé), numero, titre, defi, consigne,
 //     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, libre
 //     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), variables
-//     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), … } ],
+//     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), listes (noms des
+//     listes données aux élèves ; « Créer une liste » dès qu'un bloc de liste est proposé), … } ],
 //     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
@@ -19,7 +20,7 @@
   const P = typeof module === 'object' && module.exports ? require('./programme.js') : global.LaboBlocs;
 
   const FORMAT = 'labo-blocs/parcours';
-  const VERSION_MOTEUR = '0.4.0';
+  const VERSION_MOTEUR = '0.5.0';
 
   // JSON aux clés triées : deux objets égaux donnent toujours le même texte.
   function canonique(x) {
@@ -83,6 +84,9 @@
       if (e.modes && !modesValides(e.modes)) pb.push(`Exercice ${e.numero || i + 1} : modes inconnus (simulateur, direct, carte ; le simulateur est obligatoire).`);
       if (e.variables !== undefined && !(Array.isArray(e.variables) && e.variables.every((v) => typeof v === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,15}$/.test(v)))) {
         pb.push(`Exercice ${e.numero || i + 1} : noms de variables invalides (lettres sans accent, chiffres, « _ »).`);
+      }
+      if (e.listes !== undefined && !(Array.isArray(e.listes) && e.listes.every((v) => typeof v === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,15}$/.test(v)))) {
+        pb.push(`Exercice ${e.numero || i + 1} : noms de listes invalides (lettres sans accent, chiffres, « _ »).`);
       }
     }
     // Classes et dossier de l'équipe (réglages facultatifs du parcours, pour le site de Labo Blocs).

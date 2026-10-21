@@ -31,10 +31,11 @@
 
     const sim = {
       t: 0,
-      journal: [], // { t, broche, valeur, type: 'led' | 'servo' | 'pwm' | 'son' | 'entree' | 'variable' }
+      journal: [], // { t, broche, valeur, type: 'led' | 'servo' | 'pwm' | 'son' | 'entree' | 'variable' | 'liste' }
       sorties: {}, // broche → valeur (LED 0/1, servo en degrés)
       entrees: {}, // broche → 0/1 (boutons : 1 = appuyé)
       variables: {},
+      listes: {}, // nom → nombres (le n° 1 est le premier)
       blocEnCours: null,
       blocsEnCours: [],
       initiales: {},
@@ -212,6 +213,14 @@
           sim.variables[n] = v;
         }
       });
+      // Listes : le contenu entier est noté à chaque changement (la vérification relit la séquence de l'élève).
+      (compile.noms.listes || []).forEach((n, i) => {
+        const v = (vm.listes[i] || []).slice();
+        const avant = sim.listes[n];
+        if (avant && avant.length === v.length && avant.every((x, k) => x === v[k])) return;
+        sim.listes[n] = v;
+        sim.journal.push({ t: sim.t, broche: n, valeur: v.slice(), type: 'liste' });
+      });
     }
     // Bloc en cours de chaque fil : celui de la dernière instruction exécutée (un fil qui attend est encore dans
     // son bloc « attendre » ; un fil pas encore parti montre son premier bloc).
@@ -302,7 +311,7 @@
     const brut = [{ debut: 0, valeur: initiale || 0 }];
     for (const e of journal) {
       if (e.t > t1) break;
-      if (e.broche !== broche || e.type === 'variable' || e.type === 'son') continue;
+      if (e.broche !== broche || e.type === 'variable' || e.type === 'son' || e.type === 'liste') continue;
       const dernier = brut[brut.length - 1];
       if (e.t === dernier.debut) dernier.valeur = e.valeur;
       else brut.push({ debut: e.t, valeur: e.valeur });

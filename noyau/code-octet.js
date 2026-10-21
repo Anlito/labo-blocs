@@ -6,6 +6,9 @@
 // Entrée : un programme v1 (voir docs/PLAN.md §3) ou un programme simplifié de l'atelier { demarrage, boucle }.
 //   { fils: [ { quand: 'demarrage' | 'boucle' | 'appui' | 'relache', broche?, corps: [...] } ],
 //     fonctions: [ { nom, parametres: [...], corps: [...] } ], listes: [ { nom, capacite } ] }
+// Listes : le premier élément est le n° 1 (comme dans les blocs). Sans « capacite », les 48 places de la carte sont
+// partagées entre les listes du programme (1 liste : 48 nombres, 2 listes : 24…).
+// Fonctions : les paramètres sont des variables cachées ; une fonction ne s'appelle pas elle-même (même par une autre).
 // Options : { composants: [{ type, broche }], boutonsVersMasse: true }
 // Sortie : { octets: Uint8Array, erreurs: [], carte: [[adresse, idBloc], …] (pour surligner le bloc en cours),
 //           noms: { variables: [nom par n°], broches: { n°: nom écrit dans le programme } } }
@@ -17,6 +20,8 @@
   const CARTES = () => (typeof module === 'object' && module.exports ? require('./cartes.js') : global.LaboBlocs);
 
   const FORMAT = 1;
+  const MAX_LISTES = 4; // comme la carte (vm.c : LB_MAX_LISTES, LB_MAX_ELEMENTS)
+  const PLACES_LISTES = 48;
   const BROCHE = { sortie: 1, boutonMasse: 2, boutonHaut: 3, servo: 4, son: 5, analogique: 6, pwm: 7 };
   const FIL = { demarrage: 0, boucle: 1, appui: 2, relache: 3 };
   const OP = {
@@ -64,6 +69,7 @@
         { quand: 'demarrage', corps: (p && p.demarrage) || [] },
         { quand: 'boucle', corps: (p && p.boucle) || [] },
       ],
+      fonctions: (p && p.fonctions) || [],
     };
   }
 
@@ -112,12 +118,14 @@
     };
     const cachee = (etiquette) => variable(`\u0000${etiquette}${cachees++}`);
     const liste = (nom) => {
-      if (!listes.has(nom)) listes.set(nom, { n: listes.size, capacite: 16 });
-      return listes.get(nom).n;
+      const n = String(nom || 'liste');
+      if (!listes.has(n)) listes.set(n, { n: listes.size, capacite: 0, remplie: 0 });
+      return listes.get(n).n;
     };
     for (const l of prog.listes || []) {
-      liste(l.nom || l);
-      if (l.capacite) listes.get(l.nom).capacite = l.capacite;
+      const nom = typeof l === 'string' ? l : l.nom;
+      liste(nom);
+      if (l.capacite) listes.get(String(nom)).capacite = l.capacite;
     }
     for (const v of prog.variables || []) variable(v);
 
@@ -198,6 +206,13 @@
           return o8(OP.HASARD);
         case 'temps':
           return o8(OP.TEMPS);
+        case 'parametre':
+          if (portee && portee.has(e.parametre)) {
+            o8(OP.LIRE_VAR);
+            return o8(portee.get(e.parametre));
+          }
+          erreurs.push(`Le bloc « ${e.parametre} » se place seulement dans la fonction qui a ce paramètre.`);
+          return nombre(0);
         case 'liste_element':
           expression(e.position);
           o8(OP.LISTE_LIRE);
@@ -233,8 +248,15 @@
     function appel(e) {
       const f = fonctions.get(e.fonction);
       if (!f) {
-        erreurs.push('Fonction inconnue : ' + e.fonction);
+        erreurs.push(`La fonction « ${e.fonction} » n’existe pas : pose son bloc « fonction » dans l’espace des blocs.`);
         return nombre(0);
+      }
+      if ((e.arguments || []).length !== f.parametres.length) {
+        erreurs.push(
+          f.parametres.length
+            ? `La fonction « ${e.fonction} » attend une valeur : utilise le bloc « appeler … avec … ».`
+            : `La fonction « ${e.fonction} » n’attend pas de valeur : utilise le bloc « appeler … » sans valeur.`,
+        );
       }
       (e.arguments || []).forEach((a, i) => {
         expression(a);
@@ -360,6 +382,21 @@
         case 'liste_vider':
           o8(OP.LISTE_VIDER);
           return o8(liste(i.liste));
+        case 'liste_remplir': {
+          // « remplir la liste avec 1, 3, 2 » : vider, puis ajouter chaque nombre (aucun nouvel ordre pour les cartes).
+          const n = liste(i.liste);
+          const valeurs = Array.isArray(i.valeurs) ? i.valeurs : [];
+          const l = listes.get(String(i.liste || 'liste'));
+          l.remplie = Math.max(l.remplie, valeurs.length);
+          o8(OP.LISTE_VIDER);
+          o8(n);
+          for (const v of valeurs) {
+            nombre(v);
+            o8(OP.LISTE_AJOUTER);
+            o8(n);
+          }
+          return;
+        }
         case 'appeler':
           appel({ fonction: i.fonction, arguments: i.arguments });
           return o8(OP.DEPILER);
@@ -379,8 +416,14 @@
 
     // Fonctions : paramètres = variables cachées (pas d'appel récursif).
     for (const f of prog.fonctions || []) {
-      fonctions.set(f.nom, { parametres: (f.parametres || []).map((p) => variable(`\u0000${f.nom}:${p}`)), adresse: 0, corps: f.corps });
+      if (fonctions.has(f.nom)) {
+        erreurs.push(`Deux fonctions s’appellent « ${f.nom} » : donne-leur des noms différents.`);
+        continue;
+      }
+      fonctions.set(f.nom, { parametres: (f.parametres || []).map((p) => variable(`\u0000${f.nom}:${p}`)), noms: f.parametres || [], adresse: 0, corps: f.corps, id: f.id });
     }
+    const boucle = fonctionQuiSAppelle(prog.fonctions || []);
+    if (boucle) erreurs.push(`La fonction « ${boucle} » s’appelle elle-même (directement ou par une autre fonction) : la carte ne sait pas le faire.`);
 
     const fils = [];
     let cameras = 0;
@@ -442,17 +485,26 @@
       suite(f.corps);
       o8(OP.FIN);
     }
-    for (const [nom, f] of fonctions) {
+    for (const f of fonctions.values()) {
       f.adresse = code.length;
+      if (f.id !== undefined) carte.push([code.length, f.id]);
       // Dans le corps, un paramètre se lit par son nom.
-      const noms = prog.fonctions.find((x) => x.nom === nom).parametres || [];
-      portee = new Map(noms.map((p, i) => [p, f.parametres[i]]));
+      portee = new Map(f.noms.map((p, i) => [p, f.parametres[i]]));
       suite(f.corps);
       nombre(0);
       o8(OP.RETOUR);
       portee = null;
     }
     for (const a of appelsAResoudre) boucher(a.position, fonctions.get(a.nom).adresse);
+
+    // Places des listes : celles qui n'ont pas de capacité se partagent ce qui reste des 48 places de la carte.
+    const libres = [...listes.values()].filter((l) => !l.capacite);
+    const reste = Math.max(0, PLACES_LISTES - [...listes.values()].reduce((t, l) => t + l.capacite, 0));
+    for (const l of libres) l.capacite = Math.min(255, Math.floor(reste / libres.length));
+    if (listes.size > MAX_LISTES) erreurs.push(`Trop de listes : ${MAX_LISTES} au plus.`);
+    for (const [nom, l] of listes) {
+      if (l.remplie > l.capacite) erreurs.push(`La liste « ${nom} » garde ${l.capacite} nombres au plus : enlève des nombres.`);
+    }
 
     // En-tête.
     const tete = [];
@@ -493,15 +545,44 @@
     if (fils.length > maxFils) erreurs.push(`Trop de blocs « quand… » : ${maxFils} au plus, avec « Au démarrage » et « Répéter indéfiniment ».`);
     const nomsVariables = [];
     for (const [nom, n] of variables) nomsVariables[n] = nom;
+    const nomsListes = [];
+    for (const [nom, l] of listes) nomsListes[l.n] = nom;
     return {
       octets,
       erreurs,
       carte,
-      noms: { variables: nomsVariables, broches: nomsBroches },
+      noms: { variables: nomsVariables, broches: nomsBroches, listes: nomsListes },
       variables: variables.size,
       fils: fils.length,
       broches: broches.size,
     };
+  }
+
+  // Nom d'une fonction qui finit par s'appeler elle-même (directement ou par d'autres fonctions), ou null.
+  function fonctionQuiSAppelle(fonctions) {
+    const appels = new Map();
+    for (const f of fonctions) {
+      const noms = new Set();
+      (function voir(x) {
+        if (!x || typeof x !== 'object') return;
+        if (Array.isArray(x)) return x.forEach(voir);
+        if ((x.bloc === 'appeler' || x.bloc === 'appel') && x.fonction) noms.add(x.fonction);
+        for (const v of Object.values(x)) if (v && typeof v === 'object') voir(v);
+      })(f.corps);
+      appels.set(f.nom, noms);
+    }
+    for (const depart of appels.keys()) {
+      const vus = new Set();
+      const pile = [...appels.get(depart)];
+      while (pile.length) {
+        const n = pile.pop();
+        if (n === depart) return depart;
+        if (vus.has(n) || !appels.has(n)) continue;
+        vus.add(n);
+        pile.push(...appels.get(n));
+      }
+    }
+    return null;
   }
 
   function crc16(crc, octet) {
