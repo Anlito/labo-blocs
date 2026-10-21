@@ -1,11 +1,37 @@
 # Labo Blocs
 
+<!-- suivi-maintenance:debut -->
+## État du projet et améliorations documentées — 21 octobre 2026
+
+- Le module commun est publié à /module/ et les parcours à /parcours/. Le distributeur, le Labyrinthe et le Théâtre les chargent en ligne ; leurs dépôts n’embarquent plus ces copies.
+- Le parcours Théâtre d’ombre augmenté est ajouté à la liste et à l’éditeur : six exercices d’IA et de programmation, caméra partagée, contrôle des photos enregistrées et reprise du programme précédent pour l’exercice final.
+- Les exercices d’apprentissage mettent la caméra au premier plan. Leurs exigences (photos et étiquettes) ainsi que la reprise d’un programme se modifient dans l’éditeur.
+- Les niveaux, blocs, simulateur et mode En direct sont les mêmes que pour les autres parcours. La reconnaissance IA nécessite l’ordinateur ; l’Arduino reçoit les commandes par USB.
+- Points d’entrée : parcours/theatre-ombre/parcours.js, interface/theatre-parcours.js, interface/ecran-exercice.js, interface/editeur-parcours.js et noyau/sauvegarde.js.
+- Les sources de l’ancien éditeur du Théâtre sous integrations/theatre servent à la compatibilité historique. Le parcours élève courant utilise le moteur et les écrans communs.
+- Validations antérieures : 139 tests logiciels Labo Blocs et parcours navigateur complet du Théâtre avec données d’essai. Les vérifications matérielles restent distinctes.
+
+### Référence locale et maintenance
+
+Dossier de travail de référence : **Documents/labo-blocs**. Dépôt : [Anlito/labo-blocs](https://github.com/Anlito/labo-blocs). La branche principale est **main**. Les copies temporaires d’un chat ou les worktrees servent au travail intermédiaire ; elles ne remplacent pas ce dossier.
+
+À chaque intervention :
+
+1. Vérifier les modifications locales et la version publiée avant de commencer ; sauvegarder le travail non enregistré.
+2. Décrire dans ce README les améliorations, les vérifications, les limites et les opérations restantes.
+3. Publier les changements autorisés, puis synchroniser le dossier local de référence avec le même commit.
+4. Contrôler le commit local, le commit distant et les fichiers restants avant d’annoncer que le projet est à jour. Signaler explicitement tout décalage ou travail conservé hors publication.
+
+Cette règle permet de reprendre le projet dans un autre outil local sans perdre les dernières améliorations. Une publication du site ne met pas automatiquement à jour les dossiers du PC.
+
+<!-- suivi-maintenance:fin -->
+
 Outil de programmation par blocs pour les projets de technologie du collège (5e, 4e, 3e) : parcours d'exercices
 avec correction automatique, indices, simulateur, mode en direct et envoi du programme dans la carte
 (Arduino Uno, mBot mCore, micro:bit). Remplace Vittascience / mBlock. Un seul style de blocs et un seul
 fonctionnement pour tous les projets : celui de l'atelier du distributeur de céréales.
 
-Fonctionne hors ligne depuis un dossier réseau, sans compte ; Chrome et Edge (Firefox : téléchargement de secours).
+L’application Labo Blocs peut être utilisée depuis ses fichiers locaux. Les projets raccordés au module central en ligne nécessitent Internet. Chrome et Edge sont recommandés (Firefox : téléchargement de secours).
 
 ## Documents
 
