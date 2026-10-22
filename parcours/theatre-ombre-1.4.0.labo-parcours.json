@@ -1,0 +1,553 @@
+{
+  "format": "labo-blocs/parcours",
+  "version": 1,
+  "id": "theatre-ombre",
+  "titre": "Théâtre d’ombre augmenté",
+  "versionParcours": "1.4.0",
+  "date": "2026-10-22",
+  "moteurMinimum": "0.5.0",
+  "carte": "uno",
+  "modes": [
+    "simulateur",
+    "direct"
+  ],
+  "boutonsVersMasse": true,
+  "parametres": {},
+  "cheminSauvegarde": [
+    "{classe}",
+    "COMMUN",
+    "TECHNOLOGIE",
+    "THEATRE IA",
+    "{equipe}"
+  ],
+  "fiches": {
+    "apprendre": {
+      "titre": "Apprendre par exemples",
+      "lignes": [
+        "« Rien » signifie le fond vide. Une étiquette est le nom donné à une catégorie d’images. Les exemples sont analysés sur cet ordinateur et restent dans le fichier de l’équipe. Les photos de test doivent varier des photos d’apprentissage."
+      ]
+    },
+    "arduino": {
+      "titre": "La carte et les LED",
+      "lignes": [
+        "L’ordinateur exécute le programme. En direct, la carte reçoit les commandes par USB. Installe le programme de carte Labo Blocs depuis le panneau de connexion si nécessaire. Débranche l’USB avant de modifier le câblage ; une LED nécessite une résistance."
+      ]
+    },
+    "direct": {
+      "titre": "IA, programme et Arduino",
+      "lignes": [
+        "La webcam acquiert les images, l’IA reconnaît l’étiquette, les conditions choisissent la sortie et l’Arduino pilote la LED. Sans ordinateur connecté, la reconnaissance ne fonctionne pas. Le simulateur vérifie la logique ; la webcam et le montage réel se testent en direct."
+      ]
+    }
+  },
+  "lexique": [],
+  "exercices": [
+    {
+      "id": "theatre-01",
+      "numero": "1",
+      "titre": "Apprendre le fond vide",
+      "consigne": "Objectif : apprendre à l’IA à reconnaître le théâtre vide, sans personnage.\n1. Dans « Caméra et IA », clique sur « Allumer la caméra ».\n2. Utilise l’étiquette « Rien », déjà créée automatiquement : ne la recrée pas.\n3. Laisse le théâtre vide et clique sur « + 10 photos » pour « Rien ». Varie légèrement l’éclairage ou le cadrage.\n4. Clique sur « J’ai terminé », puis sur « Enregistrer » pour garder les photos dans le fichier de ton équipe.\nAucun bloc de programmation n’est demandé dans cet exercice.",
+      "defi": false,
+      "composants": [],
+      "camera": {
+        "etiquettes": []
+      },
+      "blocsAutorises": [],
+      "blocsDepart": null,
+      "scenarios": [],
+      "indices": [],
+      "competence": "C9",
+      "libre": true,
+      "apprentissage": {
+        "etiquettes": 0,
+        "photos": 10
+      },
+      "modes": [
+        "simulateur"
+      ],
+      "aSavoir": "apprendre"
+    },
+    {
+      "id": "theatre-02",
+      "numero": "2",
+      "titre": "Créer les étiquettes des deux personnages",
+      "consigne": "Crée deux étiquettes portant les noms de tes personnages (par exemple Loup et Roi). Pour chaque personnage, prends au moins 10 photos en changeant légèrement sa position et sa distance. Garde aussi les exemples du fond vide.\nPrésente ensuite les personnages dans un autre ordre : le nom reconnu doit être le bon. Si l’IA hésite, complète les photos. « Faire comme si » teste un programme ; cela n’entraîne pas l’IA.\nL’étiquette « Rien » existe déjà : ne l’ajoute pas à la liste des personnages. Aucun bloc n’est demandé. Clique sur « J’ai terminé », puis « Enregistrer ».",
+      "defi": false,
+      "composants": [],
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      },
+      "blocsAutorises": [],
+      "blocsDepart": null,
+      "scenarios": [],
+      "indices": [],
+      "competence": "C9",
+      "libre": true,
+      "apprentissage": {
+        "etiquettes": 2,
+        "photos": 10
+      },
+      "modes": [
+        "simulateur"
+      ],
+      "aSavoir": "apprendre"
+    },
+    {
+      "id": "theatre-03",
+      "numero": "3",
+      "titre": "Commander une première LED",
+      "consigne": "Sans utiliser l’IA, branche une LED avec sa résistance sur D9 et GND, câble USB débranché. Le programme allume la LED pendant 1 seconde, puis l’éteint.\nVérifie d’abord dans le simulateur. Ensuite, choisis « En direct », connecte l’Arduino Uno et installe le programme de carte Labo Blocs si l’outil le demande. Lance ton programme et observe la LED réelle. La connexion USB reste nécessaire.",
+      "defi": false,
+      "composants": [
+        {
+          "type": "led",
+          "broche": "D9"
+        }
+      ],
+      "blocsAutorises": [
+        "led_etat",
+        "attendre"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Une seconde de lumière",
+          "etapes": [
+            {
+              "verifier": {
+                "D9": 1
+              }
+            },
+            {
+              "attendre": 1.2
+            },
+            {
+              "verifier": {
+                "D9": 0
+              }
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Place les trois actions sous « Au démarrage ».",
+        "Allumer D9, attendre 1 seconde, puis éteindre D9."
+      ],
+      "competence": "C9",
+      "aideLed": true,
+      "niveau": 1,
+      "solutionReference": {
+        "demarrage": [
+          {
+            "bloc": "led_etat",
+            "broche": "D9",
+            "etat": 1
+          },
+          {
+            "bloc": "attendre",
+            "duree": 1
+          },
+          {
+            "bloc": "led_etat",
+            "broche": "D9",
+            "etat": 0
+          }
+        ],
+        "boucle": []
+      },
+      "aSavoir": "arduino"
+    },
+    {
+      "id": "theatre-04",
+      "numero": "4",
+      "titre": "Un personnage commande sa LED",
+      "defi": false,
+      "consigne": "Réutilise l’IA de ton équipe. Quand la caméra reconnaît ton premier personnage (étiquette n° 1), la LED D9 s’allume. Quand il disparaît, elle s’éteint. Le second personnage ne doit pas allumer cette LED.\nVérifie ton programme, puis teste-le avec la webcam et l’Arduino en mode « En direct ». Garde l’ordinateur connecté : c’est lui qui reconnaît le personnage.",
+      "composants": [
+        {
+          "type": "led",
+          "broche": "D9"
+        }
+      ],
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      },
+      "blocsAutorises": [
+        "quand_camera",
+        "led_etat"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Le premier personnage",
+          "etapes": [
+            {
+              "verifier": {
+                "D9": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 1
+              }
+            },
+            {
+              "verifier": {
+                "D9": 1
+              }
+            },
+            {
+              "regler": {
+                "camera": 0
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 2
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0
+              }
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Deux événements : quand la caméra reconnaît ton premier personnage, et quand elle ne le reconnaît plus.",
+        "Blocs : deux « quand la caméra … », chacun avec un « contrôler la LED »."
+      ],
+      "solutionReference": {
+        "format": "labo-blocs/programme",
+        "version": 1,
+        "fils": [
+          {
+            "quand": "demarrage",
+            "corps": []
+          },
+          {
+            "quand": "boucle",
+            "corps": []
+          },
+          {
+            "quand": "camera",
+            "etiquette": 1,
+            "front": "voit",
+            "corps": [
+              {
+                "bloc": "led_etat",
+                "broche": "D9",
+                "etat": 1
+              }
+            ]
+          },
+          {
+            "quand": "camera",
+            "etiquette": 1,
+            "front": "plus",
+            "corps": [
+              {
+                "bloc": "led_etat",
+                "broche": "D9",
+                "etat": 0
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C9",
+      "niveau": 1,
+      "aSavoir": "direct"
+    },
+    {
+      "id": "theatre-05",
+      "numero": "5",
+      "titre": "Deux personnages, deux éclairages",
+      "defi": false,
+      "consigne": "Branche une deuxième LED sur D10 et GND. Le premier personnage allume uniquement D9 ; le deuxième allume uniquement D10. Avec le fond vide, les deux LED sont éteintes.\nConstruis cette version avec « Répéter indéfiniment » et les conditions « si… alors… sinon ». Teste aussi un passage direct du premier au deuxième personnage, sans montrer le fond vide.",
+      "composants": [
+        {
+          "type": "led",
+          "broche": "D9"
+        },
+        {
+          "type": "led",
+          "broche": "D10"
+        }
+      ],
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      },
+      "blocsAutorises": [
+        "camera_reconnait",
+        "si_sinon",
+        "led_etat"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Les deux personnages",
+          "etapes": [
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 1
+              }
+            },
+            {
+              "verifier": {
+                "D9": 1,
+                "D10": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 2
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 1
+              }
+            },
+            {
+              "regler": {
+                "camera": 0
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 0
+              }
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "La carte regarde sans arrêt ce que reconnaît la caméra : personnage 1, personnage 2, ou fond vide.",
+        "Blocs : deux « si … alors … sinon » l’un dans l’autre, avec « la caméra reconnaît … »."
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "camera_reconnait",
+              "etiquette": "1"
+            },
+            "alors": [
+              {
+                "bloc": "led_etat",
+                "broche": "D9",
+                "etat": 1
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D10",
+                "etat": 0
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "si_sinon",
+                "condition": {
+                  "bloc": "camera_reconnait",
+                  "etiquette": "2"
+                },
+                "alors": [
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D9",
+                    "etat": 0
+                  },
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D10",
+                    "etat": 1
+                  }
+                ],
+                "sinon": [
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D9",
+                    "etat": 0
+                  },
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D10",
+                    "etat": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C9",
+      "niveau": 2,
+      "aSavoir": "direct"
+    },
+    {
+      "id": "theatre-06",
+      "numero": "6",
+      "titre": "Programme final : animer le Théâtre d’ombre",
+      "defi": false,
+      "consigne": "Reprends ton programme de l’exercice 5 et utilise-le pour raconter votre histoire d’environ une minute. Chaque personnage doit commander le bon éclairage ; le fond vide éteint les deux LED.\n1. Vérifie le programme : les tests contrôlent les éclairages, y compris les changements de personnage.\n2. En mode « En direct », allume la webcam, connecte l’Arduino et lance le programme. Présentez les personnages sans toucher à l’ordinateur pendant la scène.\n3. Testez l’histoire complète, puis enregistrez le fichier de l’équipe. La présentation d’une minute et le montage réel sont à montrer au professeur.\nFacultatif : ajoute de courtes temporisations ou un buzzer sur D8 (bloc « jouer une note »). Le niveau 3 permet de lire la traduction Arduino ; la reconnaissance reste dans l’ordinateur.",
+      "composants": [
+        {
+          "type": "led",
+          "broche": "D9"
+        },
+        {
+          "type": "led",
+          "broche": "D10"
+        },
+        {
+          "type": "buzzer",
+          "broche": "D8"
+        }
+      ],
+      "camera": {
+        "etiquettes": [],
+        "etiquettesLibres": true
+      },
+      "blocsAutorises": [
+        "camera_reconnait",
+        "si_sinon",
+        "led_etat",
+        "quand_camera",
+        "attendre",
+        "son"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Les deux personnages",
+          "etapes": [
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 1
+              }
+            },
+            {
+              "verifier": {
+                "D9": 1,
+                "D10": 0
+              }
+            },
+            {
+              "regler": {
+                "camera": 2
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 1
+              }
+            },
+            {
+              "regler": {
+                "camera": 0
+              }
+            },
+            {
+              "verifier": {
+                "D9": 0,
+                "D10": 0
+              }
+            }
+          ]
+        }
+      ],
+      "indices": [
+        "Vérifie chaque cas : personnage 1, personnage 2, fond vide, puis changement direct de personnage.",
+        "La caméra reconnaît les étiquettes dans l’ordre de leur création. D9 correspond à la première, D10 à la deuxième."
+      ],
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": [
+          {
+            "bloc": "si_sinon",
+            "condition": {
+              "bloc": "camera_reconnait",
+              "etiquette": "1"
+            },
+            "alors": [
+              {
+                "bloc": "led_etat",
+                "broche": "D9",
+                "etat": 1
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D10",
+                "etat": 0
+              }
+            ],
+            "sinon": [
+              {
+                "bloc": "si_sinon",
+                "condition": {
+                  "bloc": "camera_reconnait",
+                  "etiquette": "2"
+                },
+                "alors": [
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D9",
+                    "etat": 0
+                  },
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D10",
+                    "etat": 1
+                  }
+                ],
+                "sinon": [
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D9",
+                    "etat": 0
+                  },
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D10",
+                    "etat": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "competence": "C9",
+      "niveau": 2,
+      "aSavoir": "direct",
+      "reprendreProgramme": "theatre-05"
+    }
+  ]
+}
