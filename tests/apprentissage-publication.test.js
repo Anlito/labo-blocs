@@ -7,7 +7,9 @@ const parcours=()=>lireTousLesParcours().parcours.find(p=>p.id==='theatre-ombre'
 
 test('le parcours éditable du Théâtre se publie sans bloc dans les deux entraînements IA',()=>{
  const p=parcours();
- assert.equal(p.versionParcours,'1.2.0');
+ // La version change à chaque publication depuis l'éditeur : on vérifie seulement qu'elle est bien formée
+ // (une version figée ici bloquait la mise en ligne de Labo Blocs à chaque nouvelle publication du parcours).
+ assert.match(p.versionParcours, /^\d+\.\d+\.\d+$/);
  assert.deepEqual(controlerPublication(p),[]);
  for(const e of p.exercices.slice(0,2)){
   assert.deepEqual(e.blocsAutorises,[]);
