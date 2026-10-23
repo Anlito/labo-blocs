@@ -1,0 +1,273 @@
+{
+  "format": "labo-blocs/parcours",
+  "version": 1,
+  "id": "escape-lab-microbit",
+  "titre": "Escape Lab (micro:bit)",
+  "versionParcours": "1.1.0",
+  "date": "2026-10-23",
+  "moteurMinimum": "0.5.0",
+  "carte": "microbit",
+  "modes": [
+    "simulateur",
+    "direct",
+    "carte"
+  ],
+  "boutonsVersMasse": true,
+  "parametres": {},
+  "fiches": {},
+  "lexique": [],
+  "exercices": [
+    {
+      "id": "escape-lab-microbit-1",
+      "numero": "1",
+      "titre": "Programme 1",
+      "defi": false,
+      "consigne": "Programme de ton énigme : la carte lit au moins un capteur et commande au moins un actionneur.",
+      "composants": [],
+      "blocsAutorises": [
+        "led_etat",
+        "son",
+        "attendre",
+        "bouton_etat",
+        "valeur_haut_bas",
+        "servo_angle",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "repeter_n",
+        "tant_que",
+        "repeter_jusqua",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre",
+        "quand_touche",
+        "touche_appuyee",
+        "mb_nombre",
+        "mb_image",
+        "mb_texte",
+        "mb_dessin",
+        "mb_pixel",
+        "mb_effacer",
+        "mb_bouton",
+        "mb_logo",
+        "mb_geste",
+        "mb_acceleration",
+        "mb_temperature",
+        "mb_lumiere",
+        "mb_note"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true,
+      "variablesLibres": true
+    },
+    {
+      "id": "escape-lab-microbit-2",
+      "numero": "2",
+      "titre": "Programme 2",
+      "defi": false,
+      "consigne": "Programme de ton énigme : la carte lit au moins un capteur et commande au moins un actionneur.",
+      "composants": [],
+      "blocsAutorises": [
+        "led_etat",
+        "son",
+        "attendre",
+        "bouton_etat",
+        "valeur_haut_bas",
+        "servo_angle",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "repeter_n",
+        "tant_que",
+        "repeter_jusqua",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre",
+        "quand_touche",
+        "touche_appuyee",
+        "mb_nombre",
+        "mb_image",
+        "mb_texte",
+        "mb_dessin",
+        "mb_pixel",
+        "mb_effacer",
+        "mb_bouton",
+        "mb_logo",
+        "mb_geste",
+        "mb_acceleration",
+        "mb_temperature",
+        "mb_lumiere",
+        "mb_note"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true,
+      "variablesLibres": true
+    },
+    {
+      "id": "escape-lab-microbit-3",
+      "numero": "3",
+      "titre": "Programme 3",
+      "defi": false,
+      "consigne": "Programme de ton énigme : la carte lit au moins un capteur et commande au moins un actionneur.",
+      "composants": [],
+      "blocsAutorises": [
+        "led_etat",
+        "son",
+        "attendre",
+        "bouton_etat",
+        "valeur_haut_bas",
+        "servo_angle",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "repeter_n",
+        "tant_que",
+        "repeter_jusqua",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre",
+        "quand_touche",
+        "touche_appuyee",
+        "mb_nombre",
+        "mb_image",
+        "mb_texte",
+        "mb_dessin",
+        "mb_pixel",
+        "mb_effacer",
+        "mb_bouton",
+        "mb_logo",
+        "mb_geste",
+        "mb_acceleration",
+        "mb_temperature",
+        "mb_lumiere",
+        "mb_note"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true,
+      "variablesLibres": true
+    },
+    {
+      "id": "escape-lab-microbit-4",
+      "numero": "4",
+      "titre": "Programme 4",
+      "defi": false,
+      "consigne": "Programme de ton énigme : la carte lit au moins un capteur et commande au moins un actionneur.",
+      "composants": [],
+      "blocsAutorises": [
+        "led_etat",
+        "son",
+        "attendre",
+        "bouton_etat",
+        "valeur_haut_bas",
+        "servo_angle",
+        "si_alors",
+        "si_sinon",
+        "comparaison",
+        "logique",
+        "non",
+        "repeter_n",
+        "tant_que",
+        "repeter_jusqua",
+        "operation",
+        "hasard",
+        "affecter",
+        "ajouter_a",
+        "variable",
+        "nombre",
+        "quand_touche",
+        "touche_appuyee",
+        "mb_nombre",
+        "mb_image",
+        "mb_texte",
+        "mb_dessin",
+        "mb_pixel",
+        "mb_effacer",
+        "mb_bouton",
+        "mb_logo",
+        "mb_geste",
+        "mb_acceleration",
+        "mb_temperature",
+        "mb_lumiere",
+        "mb_note"
+      ],
+      "blocsDepart": null,
+      "scenarios": [
+        {
+          "nom": "Scénario 1",
+          "etapes": []
+        }
+      ],
+      "indices": [
+        "",
+        ""
+      ],
+      "aSavoir": null,
+      "solutionReference": {
+        "demarrage": [],
+        "boucle": []
+      },
+      "libre": true,
+      "variablesLibres": true
+    }
+  ]
+}
