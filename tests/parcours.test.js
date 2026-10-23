@@ -91,5 +91,5 @@ test('liste des parcours (parcours/index.js) : apostrophes simples ou doubles ; 
   assert.deepStrictEqual(idsIndexParcours('definirIndexParcours([]);'), []);
   assert.strictEqual(idsIndexParcours('definirIndexParcours(LISTE);'), null);
   assert.strictEqual(idsIndexParcours('rien'), null);
-  assert.deepStrictEqual(idsIndexParcours(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'parcours', 'index.js'), 'utf8')).length, 7);
+  assert.deepStrictEqual(idsIndexParcours(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'parcours', 'index.js'), 'utf8')).length, 9);
 });
