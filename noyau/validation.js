@@ -80,21 +80,25 @@
     return c.nom ? `${mot} ${c.nom} (${c.broche})` : `${mot} ${c.broche}`;
   }
 
-  const pronom = (c) => (c.type === 'led' ? 'elle' : 'il');
+  const pronom = (c) => (c.type === 'led' || c.type === 'led_rgb' ? 'elle' : 'il');
 
   function etatLed(v) {
     return v ? 'allumée' : 'éteinte';
   }
+  // LED RVB du mBot : « allumée en bleu », « éteinte » (jamais la couleur seule à l'écran).
+  const etatLedRvb = (v) => (v ? `allumée en ${CARTES().nomCouleur(v)}` : 'éteinte');
 
   // « être allumée », « être à 90° »
   function etreA(c, v) {
     if (c.type === 'moteur') return v ? `tourner à ${nombreFr(v)} %` : 'être arrêté';
+    if (c.type === 'led_rgb') return `être ${etatLedRvb(v)}`;
     return c.type === 'servo' ? `être à ${nombreFr(v)}°` : `être ${etatLed(v)}`;
   }
   // « reste éteinte », « reste à 0° », « est allumée »
   function constat(c, v, reste) {
     const verbe = reste ? 'reste' : 'est';
     if (c.type === 'moteur') return v ? `il tourne à ${nombreFr(v)} %` : `il ${verbe} arrêté`;
+    if (c.type === 'led_rgb') return `elle ${verbe} ${etatLedRvb(v)}`;
     return c.type === 'servo' ? `${pronom(c)} ${verbe} à ${nombreFr(v)}°` : `${pronom(c)} ${verbe} ${etatLed(v)}`;
   }
 
@@ -501,15 +505,18 @@
       const pendant = `dans les ${secondes(t1 - t0)}`;
       const lesNotes = () => `${notes.length} note${notes.length > 1 ? 's' : ''} (${[...new Set(notes.map((e) => nombreFr(e.valeur)))].join(', ')} Hz)`;
       const autre = etape.sauf ? ' différente des notes des couleurs' : '';
+      // Buzzer de la carte (mBot) : « le buzzer » ; buzzer branché : « le buzzer D10 ».
+      const integre = tous(exercice).find((c) => c.type === 'buzzer' && c.broche === b && c.libelle);
+      const buzzer = integre ? integre.libelle : `le buzzer ${b}`;
       if (etape.aucune) {
         if (!notes.length) return null;
-        return ecart(phrase(contexte(etape), etape.attendu || `le buzzer ${b} ne devrait pas jouer de note${autre} ${pendant}`, `il joue ${lesNotes()}`, ''));
+        return ecart(phrase(contexte(etape), etape.attendu || `${buzzer} ne devrait pas jouer de note${autre} ${pendant}`, `il joue ${lesNotes()}`, ''));
       }
       const voulu = etape.notes || 1;
       if (etape.exactement ? notes.length === voulu : notes.length >= voulu) return null;
       const quoi = etape.frequence ? `la note ${nombreFr(etape.frequence)} Hz` : etape.exactement ? `${voulu} note${voulu > 1 ? 's' : ''}${autre}` : voulu > 1 ? `au moins ${voulu} notes${autre}` : `une note${autre}`;
       const observe = !notes.length ? 'il reste silencieux' : etape.exactement && notes.length > voulu ? `il joue ${lesNotes()}` : `il joue seulement ${lesNotes()}`;
-      return ecart(phrase(contexte(etape), etape.attendu || `le buzzer ${b} devrait jouer ${quoi} ${pendant}`, observe, ''));
+      return ecart(phrase(contexte(etape), etape.attendu || `${buzzer} devrait jouer ${quoi} ${pendant}`, observe, ''));
     }
 
     // Fréquences jouées pendant qu'une seule LED de l'exercice était allumée (les notes des couleurs d'un Simon).

@@ -95,3 +95,20 @@ test('« J’ai terminé » : exercice fait, le suivant s’ouvre ; aucun niveau
   assert.deepStrictEqual(evaluerEquipe(d, seul).competences, []);
   assert.strictEqual(evaluerEquipe(d, seul).note, null);
 });
+
+test('« ouvert après » : des défis libres s’ouvrent tous dès que l’exercice désigné est réussi', () => {
+  const ex = (id, autres) => Object.assign({}, libre, { id, numero: id, titre: id }, autres);
+  const brut = Object.assign({}, paquetLibre, {
+    exercices: [ex('e1'), ex('e2'), ex('d1', { ouvertApres: 'e2' }), ex('d2', { ouvertApres: 'e2' }), ex('d3', { ouvertApres: 'e2' })],
+  });
+  assert.deepStrictEqual(controler(brut), []);
+  const paquet = preparer(brut);
+  const d = S.creerSauvegarde({ eleves: ['Léa'], classe: '3B' }, { parcours: paquet });
+  S.noterTermine(d, paquet.exercices[0], programme([]));
+  assert.deepStrictEqual(['d1', 'd2', 'd3'].map((id) => S.estDebloque(d, paquet, id)), [false, false, false]);
+  S.noterTermine(d, paquet.exercices[1], programme([]));
+  assert.deepStrictEqual(['d1', 'd2', 'd3'].map((id) => S.estDebloque(d, paquet, id)), [true, true, true]);
+  // Un exercice désigné qui n'est pas avant lui est refusé.
+  const faux = Object.assign({}, brut, { exercices: [ex('e1', { ouvertApres: 'e2' }), ex('e2')] });
+  assert.match(controler(faux).join(' '), /ouvert après/);
+});

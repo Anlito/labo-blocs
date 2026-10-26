@@ -352,7 +352,7 @@
     const bouton = (composants.find((c) => c.type === 'bouton') || {}).broche || 'D2';
     const sortie = composants.find((c) => c.type !== 'bouton') || { type: 'led', broche: 'D2' };
     const autre = composants.filter((c) => c.type !== 'bouton')[1] || { broche: 'D3' };
-    const valeurSortie = sortie.type === 'servo' ? 90 : sortie.type === 'moteur' ? 50 : 1;
+    const valeurSortie = sortie.type === 'servo' ? 90 : sortie.type === 'moteur' ? 50 : sortie.type === 'led_rgb' ? 0xff0000 : 1;
     const nomListe = ((exercice && exercice.listes) || ['sequence'])[0];
     switch (cle) {
       case 'attendre':
@@ -398,6 +398,7 @@
       const comp = trouver(b);
       if (comp && comp.type === 'servo') return `${c(b)} est à ${nombreFr(v)}°`;
       if (comp && comp.type === 'moteur') return v ? `${c(b)} tourne à ${nombreFr(v)} %` : `${c(b)} est arrêté`;
+      if (comp && comp.type === 'led_rgb') return `${c(b)} est ${v ? 'allumée en ' + K().nomCouleur(v) : 'éteinte'}`;
       const f = comp && comp.feminin ? 'e' : '';
       return `${c(b)} est ${v ? (comp && comp.type === 'bouton' ? 'appuyé' + f : 'allumée') : comp && comp.type === 'bouton' ? 'relâché' + f : 'éteinte'}`;
     };

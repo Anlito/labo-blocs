@@ -224,12 +224,15 @@
   };
 
   // Déblocage : un exercice s'ouvre quand le précédent est réussi. Un défi est facultatif : l'exercice qui le suit
-  // ne dépend que du dernier exercice qui n'est pas un défi.
+  // ne dépend que du dernier exercice qui n'est pas un défi. « ouvertApres » : l'exercice s'ouvre dès que l'exercice
+  // désigné (placé avant lui) est réussi, ex. des défis à faire dans l'ordre qu'on veut une fois les exercices finis.
   function estDebloque(d, paquet, id, options) {
     if (options && options.toutDebloquer) return true;
     const liste = paquet.exercices;
     const i = liste.findIndex((e) => e.id === id);
     if (i <= 0) return i === 0;
+    const apres = liste[i].ouvertApres;
+    if (apres && liste.some((e, k) => k < i && e.id === apres)) return reussi(d, apres);
     if (liste[i].defi) return reussi(d, liste[i - 1].id);
     for (let k = i - 1; k >= 0; k--) if (!liste[k].defi) return reussi(d, liste[k].id);
     return true;
