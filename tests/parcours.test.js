@@ -91,5 +91,8 @@ test('liste des parcours (parcours/index.js) : apostrophes simples ou doubles ; 
   assert.deepStrictEqual(idsIndexParcours('definirIndexParcours([]);'), []);
   assert.strictEqual(idsIndexParcours('definirIndexParcours(LISTE);'), null);
   assert.strictEqual(idsIndexParcours('rien'), null);
-  assert.deepStrictEqual(idsIndexParcours(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'parcours', 'index.js'), 'utf8')).length, 9);
+  // La liste du dépôt se lit en entier (elle grandit à chaque parcours ajouté) : chaque parcours y est une seule fois.
+  const ids = idsIndexParcours(require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'parcours', 'index.js'), 'utf8'));
+  assert.ok(ids.length >= 10 && ids.includes('distributeur') && ids.includes('mbot-challenge'));
+  assert.strictEqual(new Set(ids).size, ids.length);
 });
