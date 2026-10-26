@@ -683,28 +683,42 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     verifier(await p.$eval('.resultat', (e) => e.classList.contains('reussi')), 'la solution de l’exercice au clavier ne réussit pas');
     const modes = await p.$$eval('.btn-mode', (l) => l.filter((b) => !b.hidden).map((b) => b.dataset.mode));
     verifier(modes.join() === 'simulateur,direct', 'modes : ' + modes.join());
-    // Petit écran (zone des blocs basse) : la longue liste des touches sort de la zone, elle n'est pas coupée.
+    // Petit écran (zone des blocs basse) : la longue liste des touches sort de la zone, elle n'est ni coupée ni cachée
+    // par les outils du bas (zoom, « Commentaire »), qu'elle s'ouvre vers le haut ou vers le bas.
     await p.evaluate(() => (document.querySelector('.resultat').hidden = true));
-    await p.setViewport({ width: 1280, height: 620 });
-    await pause(300);
-    const champ = await p.evaluate(() => {
-      const ws = Blockly.getMainWorkspace();
-      const b = ws.getAllBlocks(false).find((x) => x.type === 'touche_appuyee');
-      ws.centerOnBlock(b.id);
-      const r = b.getField('TOUCHE').getSvgRoot().getBoundingClientRect();
-      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
-    });
-    await p.mouse.click(champ.x, champ.y);
-    await pause(500);
-    const liste = await p.evaluate(() => {
-      const d = document.querySelector('.blocklyDropDownDiv');
-      const r = d.getBoundingClientRect();
-      const visibles = [r.top + 8, r.bottom - 8].map((y) => d.contains(document.elementFromPoint(r.left + r.width / 2, y)));
-      return { hauteur: Math.round(r.height), visibles };
-    });
-    await p.keyboard.press('Escape');
+    const ouvrirListe = async (hauteur, place) => {
+      await p.setViewport({ width: 1280, height: hauteur });
+      await pause(300);
+      const champ = await p.evaluate((place) => {
+        const ws = Blockly.getMainWorkspace();
+        const f = ws.getAllBlocks(false).find((x) => x.type === 'touche_appuyee').getField('TOUCHE');
+        const zone = document.querySelector('.editeur').getBoundingClientRect();
+        const r = f.getSvgRoot().getBoundingClientRect();
+        ws.scroll(ws.scrollX, ws.scrollY + (zone.top + zone.height * place - r.y));
+        const n = f.getSvgRoot().getBoundingClientRect();
+        return { x: n.x + n.width / 2, y: n.y + n.height / 2 };
+      }, place);
+      await p.mouse.click(champ.x, champ.y);
+      await pause(500);
+      const liste = await p.evaluate((y) => {
+        const d = document.querySelector('.blocklyDropDownDiv');
+        const r = d.getBoundingClientRect();
+        let caches = 0;
+        for (let h = r.top + 8; h < r.bottom - 4; h += 20) for (const x of [r.left + 10, r.left + r.width / 2, r.right - 10]) if (!d.contains(document.elementFromPoint(x, h))) caches++;
+        return { hauteur: Math.round(r.height), sens: r.top > y ? 'bas' : 'haut', caches };
+      }, champ.y);
+      await p.keyboard.press('Escape');
+      await pause(200);
+      return liste;
+    };
+    const versHaut = await ouvrirListe(620, 0.5);
+    const versBas = await ouvrirListe(800, 0.2);
     await p.setViewport({ width: 1366, height: 768 });
-    verifier(liste.hauteur > 150 && liste.visibles.every(Boolean), 'liste des touches coupée : ' + JSON.stringify(liste));
+    const liste = versHaut;
+    verifier(
+      versHaut.hauteur > 150 && versHaut.sens === 'haut' && !versHaut.caches && versBas.sens === 'bas' && !versBas.caches,
+      'liste des touches coupée ou cachée : ' + JSON.stringify({ versHaut, versBas }),
+    );
     // En direct (câble) : la flèche haut fait partir l'ordre des moteurs, rien d'autre (le clavier reste dans l'ordinateur).
     await p.click('.btn-mode[data-mode="direct"]');
     await p.click('.panneau-carte [data-action="connecter"]');
@@ -721,7 +735,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const clavierEnvoye = await p.evaluate(() => carteVirtuelle.extensions.some((x) => /^X 4 /.test(x)));
     verifier(avance === 'X 1 1 50 50' && arret === 'X 1 1 0 0' && !clavierEnvoye, `${avance} / ${arret} / clavier envoyé : ${clavierEnvoye}`);
     await p.close();
-    return `palette : catégorie Clavier ; simulateur : flèche haut tenue → « ${haut.moteur} » (« ${haut.clavier} »), relâchée → « ${lache} » ; vérification réussie ; liste des touches entière sur un petit écran (${liste.hauteur} px) ; modes ${modes.join(', ')} ; en direct : « ${avance} » puis « ${arret} »`;
+    return `palette : catégorie Clavier ; simulateur : flèche haut tenue → « ${haut.moteur} » (« ${haut.clavier} »), relâchée → « ${lache} » ; vérification réussie ; liste des touches entière sur un petit écran, vers le haut et vers le bas (${liste.hauteur} px) ; modes ${modes.join(', ')} ; en direct : « ${avance} » puis « ${arret} »`;
   });
 
   await critere('Joystick (Uno A0, A1, D2) : manche tiré dans le simulateur, vérification « Régler : joystick », axes relus en direct', async () => {

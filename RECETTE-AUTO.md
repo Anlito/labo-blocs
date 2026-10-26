@@ -1,6 +1,6 @@
 # Recette automatique — jalons 1 à 5
 
-26/10/2026 12:44:29 · chromium · page ouverte en file:// · 40/40 critères
+26/10/2026 13:10:53 · chromium · page ouverte en file:// · 40/40 critères
 
 | Critère | Résultat | Détail |
 |---|---|---|
@@ -26,7 +26,7 @@
 | Simulateur · micro:bit (écran, bouton A, capteurs) et mBot (moteurs, distance) | ✔ | micro:bit : bouton A tenu → cœur (16 points) et LED P0 allumée ; mBot : « 50 % en avant », obstacle à 10 cm → « arrêté », vérification réussie |
 | Afficheur LED du mBot (port 4) : dessin à cliquer, simulateur, nombre ; envoyé en direct au robot (0.3) | ✔ | palette : catégorie Afficheur ; grille : 2 points allumés → « 01000000000000000000000000000080 » ; simulateur : « Afficheur : 2 points allumés », puis « Afficheur : 36 points allumés » (3,14) ; en direct : X 1 10 1 0 0 0 · X 1 11 0 0 0 32768 · X 1 12 314 |
 | micro:bit : dessin 5 × 5 à cliquer, montré par l’écran du simulateur, envoyé en direct (0.3) | ✔ | grille de 25 points → « 1000000000001000000000001 » ; simulateur : « Écran de la micro:bit : 3 points allumés » ; en direct : « X 2 15 4097 512 » |
-| Clavier de l’ordinateur : le mBot piloté aux flèches (simulateur, vérification, En direct) | ✔ | palette : catégorie Clavier ; simulateur : flèche haut tenue → « 50 % en avant » (« Clavier de l’ordinateur : touche appuyée : flèche haut. »), relâchée → « arrêté » ; vérification réussie ; liste des touches entière sur un petit écran (310 px) ; modes simulateur, direct ; en direct : « X 1 1 50 50 » puis « X 1 1 0 0 » |
+| Clavier de l’ordinateur : le mBot piloté aux flèches (simulateur, vérification, En direct) | ✔ | palette : catégorie Clavier ; simulateur : flèche haut tenue → « 50 % en avant » (« Clavier de l’ordinateur : touche appuyée : flèche haut. »), relâchée → « arrêté » ; vérification réussie ; liste des touches entière sur un petit écran, vers le haut et vers le bas (310 px) ; modes simulateur, direct ; en direct : « X 1 1 50 50 » puis « X 1 1 0 0 » |
 | Joystick (Uno A0, A1, D2) : manche tiré dans le simulateur, vérification « Régler : joystick », axes relus en direct | ✔ | palette : catégorie Joystick ; manche tiré vers le haut → « X : 0 · Y : 100 · bouton relâché », D9 « ● Allumée (HAUT) » ; lâché → « X : 0 · Y : 0 · bouton relâché » ; bouton du joystick → D10 allumée ; vérification réussie ; en direct : RA 14 / RA 15 relus, D9 allumée |
 | Un même exercice : simulateur, puis En direct, puis Dans la carte (Uno, exercice 7) | ✔ | simulateur : réussi ; en direct : boutons D3 D4 surveillés, appui sur le vrai D3 → LED D9 allumée (carte et écran), signe de vie tenu 3,5 s, « Arrêter » → W, OFF ; dans la carte : 61 octets envoyés |
 | En direct · mBot par la clé 2.4G : moteurs, ultrasons relus, envoi par la clé ; installation au câble | ✔ | par la clé : « X 1 1 50 50 », obstacle à 8 cm → « X 1 1 0 0 » (tableau : arrêté, curseur 8 verrouillé) ; envoi par la clé ; page d’essai de la clé : « La clé et le robot se parlent : « PONG v2 0.3 mcore 0 1012 »… » ; robot neuf : « Le robot répond mal par la clé 2.4G : il n’a sans doute pas … » |
