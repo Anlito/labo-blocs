@@ -807,7 +807,7 @@
   // Composants branchés + ce qui est sur la carte (boutons A et B, logo, moteurs du mBot).
   const tousComposants = (e) => (e.composants || []).concat(A.composantsCarte(carteDuParcours()), A.composantsClavier(e), A.composantsJoystick(e.composants));
   function sorties(e) {
-    return tousComposants(e).filter((c) => c.type !== 'bouton' && c.type !== 'joystick');
+    return tousComposants(e).filter((c) => c.type !== 'bouton' && c.type !== 'joystick' && c.type !== 'buzzer');
   }
   function boutons(e) {
     return tousComposants(e).filter((c) => c.type === 'bouton');
@@ -826,6 +826,13 @@
   function valeurEtat(c, v, attrs) {
     if (c && c.type === 'servo') return `<input type="number" class="ed-petit" min="0" max="180" step="1" value="${v}" ${attrs} aria-label="angle en degrés"> °`;
     if (c && c.type === 'moteur') return `<input type="number" class="ed-petit" min="-100" max="100" step="1" value="${v}" ${attrs} aria-label="vitesse en % (négative : en arrière)"> %`;
+    // LED RVB du mBot : une couleur de la palette des blocs (valeur 0xRRVVBB).
+    if (c && c.type === 'led_rgb') {
+      return `<select ${attrs}>${Object.entries(A.COULEURS_LED).map(([nom, [r, g, b]]) => {
+        const rgb = (r << 16) | (g << 8) | b;
+        return `<option value="${rgb}"${rgb === Number(v) ? ' selected' : ''}>${nom === 'eteinte' ? 'éteinte' : 'allumée en ' + nom}</option>`;
+      }).join('')}</select>`;
+    }
     return `<select ${attrs}><option value="1"${v ? ' selected' : ''}>${c && c.type === 'bouton' ? 'appuyé' : 'allumée'}</option><option value="0"${v ? '' : ' selected'}>${c && c.type === 'bouton' ? 'relâché' : 'éteinte'}</option></select>`;
   }
 
@@ -1055,7 +1062,7 @@
           const objet = etape[t.dataset.champ];
           const libre = sorties(e).find((c) => !(c.broche in objet));
           if (!libre) return message('Tous les composants de sortie sont déjà dans cette vérification.');
-          objet[libre.broche] = libre.type === 'servo' ? 90 : libre.type === 'moteur' ? 50 : 1;
+          objet[libre.broche] = libre.type === 'servo' ? 90 : libre.type === 'moteur' ? 50 : libre.type === 'led_rgb' ? 0xff0000 : 1;
           break;
         }
         case 'retirer-etat':

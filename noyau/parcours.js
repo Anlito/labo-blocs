@@ -7,7 +7,8 @@
 //     composants, blocsAutorises, blocsDepart, scenarios, indices (2 écrits), aSavoir, solutionReference, libre
 //     (exercice libre : composants déduits du programme de l'élève, pas de solution, « J'ai terminé »), variables
 //     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), listes (noms des
-//     listes données aux élèves ; « Créer une liste » dès qu'un bloc de liste est proposé), … } ],
+//     listes données aux élèves ; « Créer une liste » dès qu'un bloc de liste est proposé), ouvertApres (id d'un exercice
+//     placé avant : celui-ci s'ouvre dès que cet exercice est réussi, sans attendre les précédents), … } ],
 //     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
@@ -92,6 +93,9 @@
       // Exercice libre : ni solution ni scénario (l'élève fait ce qu'il veut avec les blocs proposés).
       if (!e.libre && !e.solutionReference) pb.push(`${nom} : pas de solution de référence.`);
       if (!e.libre && !(e.scenarios || []).length) pb.push(`${nom} : pas de scénario de test.`);
+      if (e.ouvertApres !== undefined && !(paquet.exercices || []).slice(0, i).some((x) => x.id === e.ouvertApres)) {
+        pb.push(`${nom} : « ouvert après » doit désigner un exercice placé avant lui.`);
+      }
     }
     if (!(paquet.exercices || []).length) pb.push('Le parcours n’a aucun exercice.');
     // Modes proposés (parcours, ou exercice qui en choisit d'autres) : le simulateur reste toujours (« Vérifier »).

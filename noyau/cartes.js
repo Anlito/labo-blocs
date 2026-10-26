@@ -869,6 +869,10 @@
       { type: 'bouton', broche: 'bouton', libelle: 'le bouton de la carte', integre: true },
       { type: 'moteur', broche: 'moteur gauche', libelle: 'le moteur gauche', integre: true },
       { type: 'moteur', broche: 'moteur droit', libelle: 'le moteur droit', integre: true },
+      // LED RVB de la carte : valeur 0xRRVVBB, dite par son nom de couleur (« allumée en bleu »).
+      { type: 'led_rgb', broche: 'LED gauche', libelle: 'la LED gauche', integre: true },
+      { type: 'led_rgb', broche: 'LED droite', libelle: 'la LED droite', integre: true },
+      { type: 'buzzer', broche: 'D8', libelle: 'le buzzer', integre: true },
     ],
   };
   const composantsCarte = (carte) => (COMPOSANTS_CARTE[carte] || []).map((c) => Object.assign({}, c));
