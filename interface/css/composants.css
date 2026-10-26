@@ -19,6 +19,9 @@ button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 /* Les listes déroulantes des blocs (dans la zone avec Blockly 13) peuvent en sortir : sur un petit écran, la zone est
    basse et coupait une longue liste (les touches du clavier). Les coins arrondis sont gardés par le dessin lui-même. */
 .editeur .injectionDiv { overflow: visible; }
+/* Liste ouverte : la zone des blocs passe devant les outils du bas (zoom, « Commentaire »), qui cachaient les derniers
+   choix d'une liste ouverte vers le bas. */
+.editeur-blockly:has(.blocklyShowingDropDownDiv) { z-index: 31; }
 .editeur .blocklySvg { border-radius: calc(1rem - 1px); }
 .editeur-etiquettes { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 20; }
 .etiquette-bloc {
