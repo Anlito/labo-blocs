@@ -1177,13 +1177,21 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     const cartes = await p.$$eval('.el-carte', (l) => l.map((a) => [a.querySelector('strong').textContent, a.getAttribute('href')]));
     const porte = !!(await p.$('.porte-professeur'));
     verifier(cartes.length >= 3 && cartes.some((c) => /mBot/.test(c[0])) && !porte, JSON.stringify({ cartes, porte }));
+    // Fenêtre basse : la page défile à la molette jusqu'au dernier parcours.
+    await p.setViewport({ width: 1366, height: 500 });
+    await p.mouse.move(600, 300);
+    await p.mouse.wheel({ deltaY: 5000 });
+    await pause(400);
+    const dernier = await p.$$eval('.el-carte', (l) => Math.round(l[l.length - 1].getBoundingClientRect().bottom));
+    verifier(dernier <= 500, `dernier parcours hors de la fenêtre (bas à ${dernier} px pour 500 px) : la page ne défile pas`);
+    await p.setViewport({ width: 1366, height: 768 });
     await p.evaluate(() => [...document.querySelectorAll('.el-carte')].find((a) => /micro:bit/.test(a.textContent)).click());
     await pause(1200);
     const titre = await p.title();
     const formulaire = await visible(p, '.formulaire-equipe');
     verifier(/micro:bit/.test(titre) && formulaire && !(await p.$('.porte-professeur')), `${titre} · formulaire ${formulaire}`);
     await p.close();
-    return `${cartes.length} parcours (${cartes.map((c) => c[0]).join(', ')}) ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code`;
+    return `${cartes.length} parcours (${cartes.map((c) => c[0]).join(', ')}), la page défile jusqu’au dernier ; « Découverte de la micro:bit » ouvre l’accueil de l’équipe, sans code`;
   });
 
   await critere('Dossier de l’équipe : l’élève choisit le dossier du projet, Labo Blocs crée toujours le dossier de l’équipe', async () => {
