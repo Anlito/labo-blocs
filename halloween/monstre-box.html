@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#120a1c">
+<title>Monstre Box – Halloween</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; background: #120a1c; color: #f3e9ff; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { min-height: 100vh; padding: 16px 14px 28px; max-width: 560px; margin: 0 auto; user-select: none; -webkit-user-select: none; }
+  h1 { margin: 4px 0 2px; font-size: 26px; text-align: center; letter-spacing: .5px; }
+  .astuce { margin: 0 0 16px; text-align: center; font-size: 14px; color: #c8b5dd; }
+
+  #micro {
+    width: 100%; border: 3px solid #ff8a1f; border-radius: 22px; padding: 18px 12px;
+    background: #2a1636; color: #fff; font-size: 22px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  #micro .emoji { font-size: 40px; }
+  #micro.actif { background: #ff8a1f; color: #1a0d00; animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 10px rgba(255,138,31,.25); } }
+  #niveau { height: 8px; border-radius: 4px; background: #2a1636; margin: 8px 4px 0; overflow: hidden; }
+  #niveau div { height: 100%; width: 0; background: #7dff6b; transition: width .06s linear; }
+  #message { min-height: 20px; margin: 8px 2px 14px; font-size: 14px; color: #ffd27a; text-align: center; }
+
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .pad button {
+    aspect-ratio: 1 / 1; border: 0; border-radius: 18px; cursor: pointer;
+    background: linear-gradient(160deg, #3b1f4f, #24122f); color: #f3e9ff;
+    box-shadow: 0 4px 0 #0b0611; font-size: 14px; font-weight: 600;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    transition: transform .06s;
+  }
+  .pad button .emoji { font-size: 38px; line-height: 1; }
+  .pad button:active, .pad button.joue { transform: translateY(3px); box-shadow: 0 1px 0 #0b0611; background: linear-gradient(160deg, #6a2f8a, #3b1f4f); }
+
+  .bas { display: flex; gap: 10px; margin-top: 14px; align-items: center; }
+  #stop { flex: 0 0 auto; border: 0; border-radius: 14px; padding: 14px 16px; background: #3a3a46; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; }
+  .volume { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .volume input { flex: 1; accent-color: #ff8a1f; }
+</style>
+</head>
+<body>
+
+<h1>🎃 Monstre Box</h1>
+<p class="astuce">Connecte ton enceinte Bluetooth au téléphone, puis appuie !</p>
+
+<button id="micro" type="button" aria-pressed="false">
+  <span class="emoji">🎤</span><span id="micro-texte">Voix de monstre : ARRÊT</span>
+</button>
+<div id="niveau" aria-hidden="true"><div></div></div>
+<p id="message" role="status"></p>
+
+<div class="pad" id="pad"></div>
+
+<div class="bas">
+  <button id="stop" type="button">⏹ Stop sons</button>
+  <label class="volume">🔊 <input id="volume" type="range" min="0" max="1.5" step="0.05" value="1" aria-label="Volume"></label>
+</div>
+
+<script>
+"use strict";
+
+/* ===================== Moteur audio ===================== */
+let ctx = null, sortie = null, reverb = null, busSons = null, bruitBlanc = null;
+
+function audio() {
+  if (!ctx) {
+    ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10; comp.ratio.value = 6;
+    sortie = ctx.createGain();
+    sortie.gain.value = Number(document.getElementById("volume").value);
+    sortie.connect(comp); comp.connect(ctx.destination);
+    reverb = ctx.createConvolver();
+    reverb.buffer = impulsion(3.2, 2.2);
+    reverb.connect(sortie);
+    nouveauBus();
+    // bruit blanc réutilisable (2 s)
+    bruitBlanc = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const d = bruitBlanc.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  if (ctx.state === "suspended") ctx.resume();
+  return ctx;
+}
+
+function nouveauBus() {
+  if (busSons) busSons.disconnect();
+  busSons = ctx.createGain();
+  busSons.connect(sortie);
+  busSons.envoiReverb = ctx.createGain();
+  busSons.envoiReverb.gain.value = 1;
+  busSons.envoiReverb.connect(reverb);
+}
+
+function impulsion(duree, decroissance) {
+  const n = Math.floor(ctx.sampleRate * duree);
+  const b = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decroissance);
+  }
+  return b;
+}
+
+/* sortie d'un son : direct + part de réverbération */
+function vers(noeud, reverbPart = 0.3) {
+  noeud.connect(busSons);
+  const r = ctx.createGain(); r.gain.value = reverbPart;
+  noeud.connect(r); r.connect(busSons.envoiReverb);
+}
+function gain(v = 0) { const g = ctx.createGain(); g.gain.value = v; return g; }
+function osc(type, f) { const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; return o; }
+function filtre(type, f, q = 1) { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+function bruit() { const s = ctx.createBufferSource(); s.buffer = bruitBlanc; s.loop = true; return s; }
+function enveloppe(p, t, montee, tenue, descente, pic) {
+  p.setValueAtTime(0.0001, t);
+  p.linearRampToValueAtTime(pic, t + montee);
+  p.setValueAtTime(pic, t + montee + tenue);
+  p.exponentialRampToValueAtTime(0.0001, t + montee + tenue + descente);
+}
+function vibrato(cible, vitesse, profondeur, t, fin) {
+  const l = osc("sine", vitesse), g = gain(profondeur);
+  l.connect(g); g.connect(cible); l.start(t); l.stop(fin);
+}
+function courbeAleatoire(n, min, max) {
+  const c = new Float32Array(n);
+  let v = (min + max) / 2;
+  for (let i = 0; i < n; i++) { v += (Math.random() - 0.5) * (max - min) * 0.5; v = Math.min(max, Math.max(min, v)); c[i] = v; }
+  return c;
+}
+function distorsion(k) {
+  const w = ctx.createWaveShaper(), n = 1024, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const x = i * 2 / n - 1; c[i] = Math.tanh(k * x) / Math.tanh(k); }
+  w.curve = c; return w;
+}
+
+/* ===================== Les sons ===================== */
+const sons = {
+  loup(t) {
+    const o = osc("sawtooth", 260), o2 = osc("sine", 260), f = filtre("lowpass", 1100, 2), g = gain();
+    for (const x of [o, o2]) {
+      x.frequency.setValueAtTime(240, t);
+      x.frequency.linearRampToValueAtTime(520, t + 0.7);
+      x.frequency.linearRampToValueAtTime(580, t + 2.2);
+      x.frequency.exponentialRampToValueAtTime(280, t + 3.4);
+      vibrato(x.frequency, 5, 7, t, t + 3.5);
+    }
+    const mo = gain(0.3); o.connect(mo); mo.connect(f); o2.connect(f); f.connect(g);
+    enveloppe(g.gain, t, 0.5, 1.9, 1.1, 0.5);
+    vers(g, 0.6); o.start(t); o2.start(t); o.stop(t + 3.6); o2.stop(t + 3.6);
+  },
+  porte(t) {
+    const d = 2.6, o = osc("sawtooth", 40), g = gain();
+    o.frequency.setValueCurveAtTime(courbeAleatoire(40, 18, 70), t, d);
+    const f1 = filtre("bandpass", 900, 9), f2 = filtre("bandpass", 2300, 12);
+    f1.frequency.setValueAtTime(700, t); f1.frequency.linearRampToValueAtTime(1500, t + d);
+    o.connect(f1); o.connect(f2); f1.connect(g); f2.connect(g);
+    enveloppe(g.gain, t, 0.2, d - 0.6, 0.4, 3);
+    vers(g, 0.25); o.start(t); o.stop(t + d + 0.1);
+  },
+  rire(t) {
+    const o = osc("sawtooth", 850), g = gain(), f1 = filtre("bandpass", 900, 5), f2 = filtre("bandpass", 1400, 6), m = gain(0);
+    o.connect(f1); o.connect(f2); f1.connect(m); f2.connect(m); m.connect(g); g.gain.value = 1.4;
+    vibrato(o.frequency, 7, 25, t, t + 2.4);
+    for (let i = 0; i < 12; i++) {
+      const s = t + i * 0.17, haut = 1050 - i * 25;
+      o.frequency.setValueAtTime(haut, s);
+      o.frequency.exponentialRampToValueAtTime(haut * 0.8, s + 0.12);
+      m.gain.setValueAtTime(0, s);
+      m.gain.linearRampToValueAtTime(1, s + 0.02);
+      m.gain.linearRampToValueAtTime(0, s + 0.13);
+    }
+    vers(g, 0.4); o.start(t); o.stop(t + 2.4);
+  },
+  tonnerre(t) {
+    const b = bruit(), f = filtre("lowpass", 900), g = gain();
+    f.frequency.setValueAtTime(3000, t); f.frequency.exponentialRampToValueAtTime(180, t + 1.5);
+    b.connect(f); f.connect(g);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(1.6, t + 0.03);
+    g.gain.setValueCurveAtTime(courbeAleatoire(30, 0.4, 1.4), t + 0.05, 2);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 5.5);
+    vers(g, 0.5); b.start(t); b.stop(t + 5.6);
+  },
+  coeur(t) {
+    for (let i = 0; i < 7; i++) {
+      for (const [dec, fort] of [[0, 1.4], [0.24, 1]]) {
+        const s = t + i * 0.78 + dec, o = osc("sine", 75), g = gain();
+        o.frequency.setValueAtTime(75, s); o.frequency.exponentialRampToValueAtTime(38, s + 0.14);
+        o.connect(g); enveloppe(g.gain, s, 0.012, 0.02, 0.16, fort);
+        vers(g, 0.05); o.start(s); o.stop(s + 0.25);
+      }
+    }
+  },
+  fantome(t) {
+    const g = gain(), f = filtre("lowpass", 1400);
+    for (const dec of [0, 4]) {
+      const o = osc("sine", 380);
+      o.detune.value = dec;
+      o.frequency.setValueAtTime(330, t);
+      o.frequency.linearRampToValueAtTime(620, t + 1.4);
+      o.frequency.linearRampToValueAtTime(520, t + 2.4);
+      o.frequency.linearRampToValueAtTime(260, t + 4);
+      vibrato(o.frequency, 5.5, 14, t, t + 4.2);
+      o.connect(f); o.start(t); o.stop(t + 4.2);
+    }
+    f.connect(g); enveloppe(g.gain, t, 0.8, 2.2, 1.1, 0.35);
+    vers(g, 0.9);
+  },
+  cri(t) {
+    const o = osc("sawtooth", 700), d = distorsion(3), f1 = filtre("bandpass", 1100, 3), f2 = filtre("bandpass", 2600, 4), g = gain();
+    o.frequency.setValueAtTime(600, t);
+    o.frequency.exponentialRampToValueAtTime(1300, t + 0.25);
+    o.frequency.linearRampToValueAtTime(1150, t + 1.2);
+    o.frequency.exponentialRampToValueAtTime(450, t + 1.9);
+    vibrato(o.frequency, 9, 45, t, t + 2);
+    o.connect(d); d.connect(f1); d.connect(f2); f1.connect(g); f2.connect(g);
+    enveloppe(g.gain, t, 0.08, 1.2, 0.7, 1.1);
+    vers(g, 0.45); o.start(t); o.stop(t + 2.1);
+  },
+  chaines(t) {
+    for (let i = 0; i < 9; i++) {
+      const s = t + i * 0.22 + Math.random() * 0.12;
+      for (let k = 0; k < 4; k++) {
+        const o = osc("sine", 1800 + Math.random() * 4500), g = gain();
+        o.connect(g); enveloppe(g.gain, s, 0.002, 0, 0.08 + Math.random() * 0.25, 0.18);
+        vers(g, 0.3); o.start(s); o.stop(s + 0.4);
+      }
+      const b = bruit(), f = filtre("highpass", 3500), g = gain();
+      b.connect(f); f.connect(g); enveloppe(g.gain, s, 0.001, 0, 0.05, 0.5);
+      vers(g, 0.2); b.start(s); b.stop(s + 0.1);
+    }
+  },
+  glas(t) {
+    const rapports = [0.5, 1, 1.19, 1.5, 2, 2.74, 3, 4.1];
+    for (let n = 0; n < 3; n++) {
+      const s = t + n * 2.2;
+      rapports.forEach((r, i) => {
+        const o = osc("sine", 196 * r), g = gain();
+        o.connect(g); enveloppe(g.gain, s, 0.005, 0, 4.5 / (1 + i * 0.4), 0.22 / (1 + i * 0.3));
+        vers(g, 0.5); o.start(s); o.stop(s + 5);
+      });
+    }
+  },
+  vent(t) {
+    const d = 7, b = bruit(), f = filtre("bandpass", 600, 5), g = gain();
+    f.frequency.setValueCurveAtTime(courbeAleatoire(20, 300, 1300), t, d);
+    b.connect(f); f.connect(g);
+    enveloppe(g.gain, t, 1.5, d - 3, 1.5, 1.6);
+    vers(g, 0.4); b.start(t); b.stop(t + d + 0.1);
+  },
+  chauvesouris(t) {
+    for (let i = 0; i < 16; i++) {
+      const s = t + i * 0.09 + Math.random() * 0.12, o = osc("sine", 3800), g = gain();
+      o.frequency.setValueAtTime(3600 + Math.random() * 800, s);
+      o.frequency.exponentialRampToValueAtTime(1900, s + 0.045);
+      o.connect(g); enveloppe(g.gain, s, 0.005, 0.01, 0.03, 0.25);
+      let dest = g;
+      if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = Math.random() * 2 - 1; g.connect(p); dest = p; }
+      vers(dest, 0.3); o.start(s); o.stop(s + 0.08);
+    }
+  },
+  orgue(t) {
+    const notes = [73.4, 146.8, 174.6, 207.7, 246.9, 293.7]; // accord diminué sinistre
+    const f = filtre("lowpass", 2200), g = gain();
+    for (const n of notes) for (const type of ["sawtooth", "square"]) {
+      const o = osc(type, n); o.detune.value = Math.random() * 8 - 4;
+      const m = gain(type === "square" ? 0.05 : 0.08); o.connect(m); m.connect(f);
+      o.start(t); o.stop(t + 4.4);
+    }
+    f.connect(g); enveloppe(g.gain, t, 0.15, 2.8, 1.3, 0.9);
+    vers(g, 0.7);
+  },
+  grogne(t) {
+    const d = 2.2, o = osc("sawtooth", 75), f = filtre("bandpass", 450, 3), g = gain(), rugueux = gain(0.6);
+    o.frequency.setValueCurveAtTime(courbeAleatoire(30, 55, 105), t, d);
+    const b = bruit(), fb = filtre("lowpass", 60), gb = gain(0.9);
+    b.connect(fb); fb.connect(gb); gb.connect(rugueux.gain); // grain irrégulier
+    o.connect(rugueux); rugueux.connect(f); f.connect(g);
+    enveloppe(g.gain, t, 0.25, d - 0.8, 0.5, 2.2);
+    vers(g, 0.3); o.start(t); o.stop(t + d + 0.1); b.start(t); b.stop(t + d + 0.1);
+  },
+};
+
+const pad = [
+  ["loup", "🐺", "Loup"], ["rire", "🧙‍♀️", "Sorcière"], ["cri", "😱", "Cri"],
+  ["porte", "🚪", "Porte"], ["tonnerre", "⛈️", "Tonnerre"], ["coeur", "💓", "Cœur"],
+  ["fantome", "👻", "Fantôme"], ["chaines", "⛓️", "Chaînes"], ["glas", "🔔", "Glas"],
+  ["vent", "🌬️", "Vent"], ["chauvesouris", "🦇", "Chauves-souris"], ["grogne", "🧟", "Zombie"],
+];
+
+const grille = document.getElementById("pad");
+for (const [cle, emoji, nom] of pad) {
+  const b = document.createElement("button");
+  b.type = "button";
+  b.innerHTML = `<span class="emoji" aria-hidden="true">${emoji}</span><span>${nom}</span>`;
+  b.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    audio();
+    sons[cle](ctx.currentTime + 0.02);
+    b.classList.add("joue"); setTimeout(() => b.classList.remove("joue"), 150);
+  });
+  grille.appendChild(b);
+}
+
+document.getElementById("stop").addEventListener("click", () => { if (ctx) nouveauBus(); });
+document.getElementById("volume").addEventListener("input", (e) => {
+  if (sortie) sortie.gain.setTargetAtTime(Number(e.target.value), ctx.currentTime, 0.03);
+});
+
+/* ===================== Voix de monstre ===================== */
+/* Décaleur de hauteur en temps réel : deux lignes de retard dont la durée glisse,
+   en fondu enchaîné (technique classique Web Audio). facteur -1 = une octave plus grave. */
+function decaleurHauteur(facteur) {
+  const temps = 0.1, fondu = 0.05, sr = ctx.sampleRate, n = Math.floor(temps * sr);
+  const rampe = ctx.createBuffer(1, n, sr), fenetre = ctx.createBuffer(1, n, sr);
+  const r = rampe.getChannelData(0), w = fenetre.getChannelData(0), nf = fondu * sr;
+  for (let i = 0; i < n; i++) {
+    r[i] = facteur < 0 ? i / n : (n - i) / n;
+    w[i] = i < nf ? Math.sqrt(i / nf) : i >= n - nf ? Math.sqrt(1 - (i - (n - nf)) / nf) : 1;
+  }
+  const entree = gain(1), sortieD = gain(1);
+  const t = ctx.currentTime + 0.05, sources = [];
+  [0, temps - fondu].forEach((decalage) => {
+    const mod = ctx.createBufferSource(); mod.buffer = rampe; mod.loop = true;
+    const prof = gain(0.5 * temps * Math.abs(facteur));
+    const retard = ctx.createDelay(1);
+    retard.delayTime.value = 0;
+    mod.connect(prof); prof.connect(retard.delayTime);
+    const fd = ctx.createBufferSource(); fd.buffer = fenetre; fd.loop = true;
+    const mix = gain(0); fd.connect(mix.gain);
+    entree.connect(retard); retard.connect(mix); mix.connect(sortieD);
+    mod.start(t + decalage); fd.start(t + decalage);
+    sources.push(mod, fd);
+  });
+  return { entree, sortie: sortieD, arreter() { sources.forEach((s) => { try { s.stop(); } catch (e) {} }); } };
+}
+
+let micro = null; // { flux, noeuds, decaleur, analyse, anim, verrou }
+const boutonMicro = document.getElementById("micro");
+const texteMicro = document.getElementById("micro-texte");
+const message = document.getElementById("message");
+const barre = document.querySelector("#niveau div");
+
+boutonMicro.addEventListener("click", () => { micro ? arreterMicro() : demarrerMicro(); });
+
+async function demarrerMicro() {
+  audio();
+  message.textContent = "";
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    message.textContent = "Ici, le navigateur ne donne pas accès au micro. Ouvre la page dans Chrome (Android) ou Safari (iPhone), depuis une adresse https.";
+    return;
+  }
+  let flux;
+  try {
+    flux = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    });
+  } catch (e) {
+    message.textContent = (window.self !== window.top)
+      ? "Le micro est bloqué dans cet aperçu. Ouvre la page directement dans le navigateur du téléphone."
+      : "Le micro est refusé. Autorise le micro pour cette page (cadenas à côté de l'adresse), puis réappuie.";
+    return;
+  }
+  const src = ctx.createMediaStreamSource(flux);
+  const coupeBas = filtre("highpass", 90);
+  const decaleur = decaleurHauteur(-0.8);              // voix nettement plus grave
+  const grave = filtre("lowshelf", 220); grave.gain.value = 8;
+  const dist = distorsion(2.5);
+  const doux = filtre("lowpass", 3200);
+  const voix = gain(0);
+  const envoiReverb = gain(0.25);
+  const analyse = ctx.createAnalyser(); analyse.fftSize = 512;
+
+  src.connect(coupeBas); coupeBas.connect(analyse); coupeBas.connect(decaleur.entree);
+  decaleur.sortie.connect(grave); grave.connect(dist); dist.connect(doux); doux.connect(voix);
+  voix.connect(sortie); voix.connect(envoiReverb); envoiReverb.connect(reverb);
+  voix.gain.setTargetAtTime(1.3, ctx.currentTime, 0.05);
+
+  let verrou = null;
+  try { verrou = await navigator.wakeLock.request("screen"); } catch (e) {}
+
+  micro = { flux, decaleur, voix, noeuds: [src, coupeBas, grave, dist, doux, voix, envoiReverb, analyse], verrou };
+  boutonMicro.classList.add("actif");
+  boutonMicro.setAttribute("aria-pressed", "true");
+  texteMicro.textContent = "Voix de monstre : MARCHE";
+  message.textContent = "Parle ! Éloigne l'enceinte du téléphone pour éviter le sifflement.";
+
+  const donnees = new Uint8Array(analyse.fftSize);
+  (function niveau() {
+    if (!micro) return;
+    analyse.getByteTimeDomainData(donnees);
+    let max = 0; for (const v of donnees) max = Math.max(max, Math.abs(v - 128));
+    barre.style.width = Math.min(100, max * 1.6) + "%";
+    micro.anim = requestAnimationFrame(niveau);
+  })();
+}
+
+function arreterMicro() {
+  if (!micro) return;
+  const m = micro; micro = null;
+  cancelAnimationFrame(m.anim);
+  m.flux.getTracks().forEach((p) => p.stop());
+  m.decaleur.arreter();
+  m.noeuds.forEach((n) => n.disconnect());
+  if (m.verrou) m.verrou.release().catch(() => {});
+  barre.style.width = "0";
+  boutonMicro.classList.remove("actif");
+  boutonMicro.setAttribute("aria-pressed", "false");
+  texteMicro.textContent = "Voix de monstre : ARRÊT";
+  message.textContent = "";
+}
+</script>
+</body>
+</html>
