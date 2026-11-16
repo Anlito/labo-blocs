@@ -94,7 +94,7 @@ test('parcours Escape Lab (Uno) : les blocs des modules dans chaque exercice', (
   global.definirParcours = (x) => (p = x);
   require('../parcours/escape-lab/parcours.js');
   for (const e of p.exercices) for (const b of K.BLOCS_MODULES) assert.ok(e.blocsAutorises.includes(b), `${e.id} : ${b}`);
-  assert.deepEqual(K.CATEGORIES_CARTES.filter((c) => c.carte === 'uno').map((c) => c.nom), ['Ultrason', 'Afficheur 4 chiffres', 'Écran', 'Clavier tactile']);
+  assert.deepEqual(K.CATEGORIES_CARTES.filter((c) => c.carte === 'uno').map((c) => c.nom), ['Mouvement', 'Ultrason', 'Afficheur 4 chiffres', 'Écran', 'Clavier tactile']);
 });
 
 test('programme de la carte Uno : extension 5, I2C sans la bibliothèque Wire', () => {
@@ -102,4 +102,23 @@ test('programme de la carte Uno : extension 5, I2C sans la bibliothèque Wire', 
   assert.match(ino, /if \(extension == 5\) return extModules\(commande, n, a\);/);
   assert.doesNotMatch(ino, /#include <Wire\.h>/);
   for (let c = 1; c <= 10; c++) assert.match(ino, new RegExp(`case ${c}:`));
+});
+
+test('capteur de mouvement HC-SR501 : entrée sans résistance, HAUT = mouvement ; surveillé en direct sans inversion', () => {
+  const p = { demarrage: [], boucle: [{ bloc: 'si_sinon', condition: { bloc: 'mouvement_detecte', broche: 'D8' }, alors: [{ bloc: 'led_etat', broche: 'D9', etat: 1 }], sinon: [{ bloc: 'led_etat', broche: 'D9', etat: 0 }] }, { bloc: 'attendre', duree: 0.05 }] };
+  assert.deepEqual(compiler(p).erreurs, []);
+  const { composants } = composantsDuProgramme(p, 'uno');
+  assert.deepEqual(composants.find((c) => c.type === 'mouvement'), { type: 'mouvement', broche: 'D8' });
+  const sim = creerSimulation(p, { carte: 'uno', composants });
+  sim.avancerJusqua(100);
+  assert.equal(sim.sorties.D9, 0);
+  sim.changerEntree('D8', 1);
+  sim.avancerJusqua(200);
+  assert.equal(sim.sorties.D9, 1);
+  const d = creerDirect(p, { carte: 'uno', composants });
+  assert.ok(d.depart.includes('M 8 I'), 'entrée simple, sans résistance interne');
+  assert.ok(d.depart.includes('W 8'));
+  d.evenement('E 8 1');
+  d.avancer(100);
+  assert.equal(d.sim.sorties.D9, 1, 'niveau HAUT = mouvement (pas inversé comme un bouton)');
 });

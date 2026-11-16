@@ -74,8 +74,8 @@
     return html;
   }
 
-  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran I2C', tactile: 'Clavier tactile' };
-  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son', joystick: 'joystick', ultrason: 'puzzle', afficheur4: 'puzzle', ecran: 'puzzle', tactile: 'puzzle' };
+  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', mouvement: 'Capteur de mouvement', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran I2C', tactile: 'Clavier tactile' };
+  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son', joystick: 'joystick', mouvement: 'puzzle', ultrason: 'puzzle', afficheur4: 'puzzle', ecran: 'puzzle', tactile: 'puzzle' };
   // Broches d'un composant dans la liste « Composants » (le joystick en a trois).
   const AUTRES_BROCHES = { ultrason: ['TRIG', 'ECHO', 'echo'], afficheur4: ['CLK', 'DIO', 'dio'], ecran: ['SDA', 'SCL', 'scl'], tactile: ['RX', 'TX', 'tx'] };
   const brochesDuComposant = (c) =>

@@ -110,8 +110,12 @@
     });
     const numero = (b) => N.numeroBroche(b);
     // Le bouton du joystick va toujours à la masse (résistance interne), quel que soit le réglage du parcours.
-    const boutons = (o.composants || []).filter((c) => c.type === 'bouton').concat(K().composantsJoystick(o.composants).map((c) => Object.assign({}, c, { masse: true })));
-    const aLaMasse = (b) => b.masse || versMasse;
+    // Capteur de mouvement : surveillé comme un bouton, mais il donne HAUT de lui-même (ni résistance, ni inversion).
+    const boutons = (o.composants || [])
+      .filter((c) => c.type === 'bouton')
+      .concat(K().composantsJoystick(o.composants).map((c) => Object.assign({}, c, { masse: true })))
+      .concat((o.composants || []).filter((c) => c.type === 'mouvement').map((c) => Object.assign({}, c, { haut: true })));
+    const aLaMasse = (b) => !b.haut && (b.masse || versMasse);
 
     // Au départ : tout éteint, boutons en entrée (avec la résistance interne s'ils vont à la masse), surveillés.
     const depart = ['OFF'];

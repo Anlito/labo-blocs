@@ -350,7 +350,7 @@
   }
 
   // ---------- Modules de l'Uno (extension 5, Escape Lab : décision de Thomas, 16/11/2026) ----------
-  // Ultrason HY-SRF05 (TRIG, ECHO ; OUT reste libre), afficheur 4 chiffres (CLK, DIO), écran LCD 16×2 I2C (SDA sur
+  // Capteur de mouvement HC-SR501 (OUT : une entrée, rien à ajouter au programme de la carte), ultrason HY-SRF05 (TRIG, ECHO ; OUT reste libre), afficheur 4 chiffres (CLK, DIO), écran LCD 16×2 I2C (SDA sur
   // A4, SCL sur A5, toujours sur l'Uno), clavier tactile 12 touches ATtiny1616 (liaison série : RX et TX du clavier).
   // Les broches sont choisies dans le bloc par l'élève (D2 par défaut : le bloc ne donne jamais la réponse).
   // Commandes : 1 ultrason(trig, echo) → cm · 2 afficheur nombre(clk, dio, n) · 3 afficheur effacer(clk, dio)
@@ -375,9 +375,15 @@
     const n = Math.round(Number(v) || 0);
     return n < -999 || n > 9999 ? '----' : String(n).padStart(4, ' ');
   };
-  const BLOCS_MODULES = ['ultrason_distance', 'afficheur4_nombre', 'afficheur4_effacer', 'ecran_texte', 'ecran_nombre', 'ecran_effacer', 'tactile_touche', 'tactile_valeur', 'tactile_oublier'];
+  const BLOCS_MODULES = ['mouvement_detecte', 'ultrason_distance', 'afficheur4_nombre', 'afficheur4_effacer', 'ecran_texte', 'ecran_nombre', 'ecran_effacer', 'tactile_touche', 'tactile_valeur', 'tactile_oublier'];
   const brochesTactile = (p) => [numeroBrocheModule(p.rx), numeroBrocheModule(p.tx)];
   const BLOCS_UNO = {
+    // Capteur de mouvement HC-SR501 (VCC, OUT, GND) : OUT passe à HAUT quand il voit un mouvement.
+    mouvement_detecte: {
+      carte: 'uno', categorie: 'uno_mouvement', sorte: 'condition', texte: 'le capteur de mouvement %BROCHE détecte un mouvement',
+      champs: { BROCHE: BROCHES_MODULES },
+      derouler: (p) => cmp('=', { bloc: 'entree_haut', broche: p.broche || 'D2' }, 1),
+    },
     ultrason_distance: {
       carte: 'uno', categorie: 'uno_ultrason', sorte: 'valeur', texte: 'distance mesurée par l’ultrason (cm) TRIG %TRIG ECHO %ECHO',
       champs: { TRIG: BROCHES_MODULES, ECHO: BROCHES_MODULES },
@@ -429,6 +435,8 @@
   // Composants d'un bloc des modules (liste « Composants » et simulateur d'un exercice libre).
   function composantDuModule(x) {
     switch (x.bloc) {
+      case 'mouvement_detecte':
+        return { type: 'mouvement', broche: x.broche || 'D2' };
       case 'ultrason_distance':
         return { type: 'ultrason', broche: x.trig || 'D2', echo: x.echo || 'D2' };
       case 'afficheur4_nombre':
@@ -699,6 +707,7 @@
     { nom: 'Boutons', cle: 'mb_entrees', carte: 'microbit' },
     { nom: 'Capteurs', cle: 'mb_capteurs', carte: 'microbit' },
     { nom: 'Musique', cle: 'mb_son', carte: 'microbit' },
+    { nom: 'Mouvement', cle: 'uno_mouvement', carte: 'uno' },
     { nom: 'Ultrason', cle: 'uno_ultrason', carte: 'uno' },
     { nom: 'Afficheur 4 chiffres', cle: 'uno_afficheur4', carte: 'uno' },
     { nom: 'Écran', cle: 'uno_ecran', carte: 'uno' },

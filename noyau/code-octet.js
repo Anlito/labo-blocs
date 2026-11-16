@@ -180,6 +180,10 @@
         case 'entree_numerique':
           o8(OP.LIRE_NUM);
           return o8(declarer(e.broche, typeBouton));
+        // Entrée qui donne HAUT d'elle-même (capteur de mouvement) : sans résistance interne, HAUT = 1.
+        case 'entree_haut':
+          o8(OP.LIRE_NUM);
+          return o8(declarer(e.broche, BROCHE.boutonHaut));
         case 'entree_analogique':
           o8(OP.LIRE_ANA);
           return o8(declarer(e.broche, BROCHE.analogique));

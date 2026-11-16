@@ -60,7 +60,7 @@
         sim.entrees[c.bouton] = sim.initiales[c.bouton] = 0;
         continue;
       }
-      if (c.type === 'bouton') sim.entrees[c.broche] = 0;
+      if (c.type === 'bouton' || c.type === 'mouvement') sim.entrees[c.broche] = 0;
       else sim.sorties[c.broche] = 0;
       sim.initiales[c.broche] = 0;
     }

@@ -4,7 +4,7 @@ definirParcours({
   "version": 1,
   "id": "escape-lab",
   "titre": "Escape Lab (Arduino Uno)",
-  "versionParcours": "1.2.0",
+  "versionParcours": "1.3.0",
   "date": "2026-11-16",
   "moteurMinimum": "0.5.0",
   "carte": "uno",
@@ -62,7 +62,8 @@ definirParcours({
         "ecran_effacer",
         "tactile_touche",
         "tactile_valeur",
-        "tactile_oublier"
+        "tactile_oublier",
+        "mouvement_detecte"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -127,7 +128,8 @@ definirParcours({
         "ecran_effacer",
         "tactile_touche",
         "tactile_valeur",
-        "tactile_oublier"
+        "tactile_oublier",
+        "mouvement_detecte"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -192,7 +194,8 @@ definirParcours({
         "ecran_effacer",
         "tactile_touche",
         "tactile_valeur",
-        "tactile_oublier"
+        "tactile_oublier",
+        "mouvement_detecte"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -257,7 +260,8 @@ definirParcours({
         "ecran_effacer",
         "tactile_touche",
         "tactile_valeur",
-        "tactile_oublier"
+        "tactile_oublier",
+        "mouvement_detecte"
       ],
       "blocsDepart": null,
       "scenarios": [

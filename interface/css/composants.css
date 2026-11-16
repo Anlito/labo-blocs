@@ -194,6 +194,12 @@ button:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 
 /* Modules de l'Uno : ultrason, afficheur 4 chiffres, écran 16 × 2, clavier tactile */
 .composant-module { align-items: flex-start; }
+.module-mouvement {
+  align-self: flex-start; min-height: 2.75rem; padding: 0 0.75rem; border: 2px solid #9AA8B0; border-radius: 0.5rem;
+  background: var(--fond); font: 700 0.9375rem var(--police); cursor: pointer;
+}
+.module-mouvement[aria-pressed="true"] { background: var(--encre); color: #FFFFFF; }
+.composant-mouvement.actif .pastille-etat { background: var(--encre); color: #FFFFFF; }
 .module-distance { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.875rem; }
 .module-distance input { flex: 1; min-width: 6rem; }
 .module-afficheur4 { align-self: flex-start; padding: 0.25rem 0.625rem; border-radius: 0.375rem; background: #1B1B1B; }
