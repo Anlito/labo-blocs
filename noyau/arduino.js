@@ -227,7 +227,7 @@
     }
     // Modules de l'Uno (ultrason, afficheur, écran, clavier tactile) : faits par le programme de la carte Labo Blocs.
     if ((K().BLOCS_MODULES || []).some((b) => JSON.stringify(v1.fils).includes(`"${b}"`))) {
-      ajouter('// Les modules (mouvement, ultrason, afficheur 4 chiffres, écran, clavier tactile) ne sont pas traduits ici :');
+      ajouter('// Les modules (relais, mouvement, ultrason, afficheur 4 chiffres, écran, clavier tactile) ne sont pas traduits ici :');
       ajouter('// teste ce programme dans Labo Blocs (« En direct » ou « Dans la carte »). Ici, leurs blocs valent 0.');
     }
     if (servos.size) ajouter('#include <Servo.h>');

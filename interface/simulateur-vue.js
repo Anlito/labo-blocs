@@ -11,7 +11,7 @@
   const XS = { GND: 144.5, D13: 154.5, D12: 164, D11: 174, D10: 183.5, D9: 193.5, D8: 203, D7: 219.5, D6: 229, D5: 239, D4: 248.5, D3: 258.5, D2: 268 };
   const PY = 57;
   const FILS = { D3: '#D32F2F', D4: '#1976D2', D5: '#F9A825', D6: '#7B1FA2', D8: '#2E7D32', D9: '#00838F', D10: '#455A64', D7: '#6D4C41', D11: '#AD1457', GND: '#7B4A2A' };
-  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41', joystick: '#00838F', mouvement: '#6A1B9A', ultrason: '#5E35B1', afficheur4: '#D84315', ecran: '#2E7D32', tactile: '#37474F' };
+  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41', joystick: '#00838F', relais: '#455A64', mouvement: '#6A1B9A', ultrason: '#5E35B1', afficheur4: '#D84315', ecran: '#2E7D32', tactile: '#37474F' };
   const COULEURS_LED = { PetiteDose: '#F5B800', GrandeDose: '#2F80ED', Trappe: '#E53935' };
 
   const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -23,7 +23,7 @@
     return c.couleur || COULEURS_LED[c.nom] || '#E53935';
   }
   function libelle(c) {
-    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', mouvement: 'Capteur de mouvement', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran', tactile: 'Clavier tactile' }[c.type] || c.type;
+    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', relais: 'Relais', mouvement: 'Capteur de mouvement', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran', tactile: 'Clavier tactile' }[c.type] || c.type;
     return c.nom ? `${type} ${c.nom}` : type;
   }
 
@@ -174,6 +174,7 @@
 
   // Modules de l'Uno : ultrason (curseur de distance), afficheur 4 chiffres, écran 16 × 2, clavier tactile 12 touches.
   const BROCHES_MODULE = {
+    relais: (c) => `IN ${c.broche}`,
     mouvement: (c) => `OUT ${c.broche}`,
     ultrason: (c) => `TRIG ${c.broche} · ECHO ${c.echo}`,
     afficheur4: (c) => `CLK ${c.broche} · DIO ${c.dio}`,
@@ -182,7 +183,9 @@
   };
   function carteModule(c, compact) {
     let corps = '';
-    if (c.type === 'mouvement') {
+    if (c.type === 'relais') {
+      corps = '<span class="pastille-etat" aria-live="polite">○ Désactivé : l’actionneur n’est pas alimenté</span>';
+    } else if (c.type === 'mouvement') {
       corps =
         `<button type="button" class="module-mouvement" aria-pressed="false">Mouvement devant le capteur</button>` +
         '<span class="pastille-etat" aria-live="polite">Rien ne bouge</span>';
@@ -745,6 +748,11 @@
     const texteTouche = (n) => (n === 10 ? '*' : n === 11 ? '#' : n >= 0 ? String(n) : 'aucune');
     function afficherModules(sim) {
       const e = (sim && sim.carte) || {};
+      for (const el of grille.querySelectorAll('.composant-relais')) {
+        const actif = !!(sim && sim.sorties[el.dataset.broche]);
+        el.classList.toggle('actif', actif);
+        el.querySelector('.pastille-etat').textContent = actif ? '● Activé (HAUT) : l’actionneur est alimenté' : '○ Désactivé (BAS) : l’actionneur n’est pas alimenté';
+      }
       for (const el of grille.querySelectorAll('.composant-mouvement')) {
         const vu = !!(sim && sim.entrees[el.dataset.broche]);
         el.classList.toggle('actif', vu);

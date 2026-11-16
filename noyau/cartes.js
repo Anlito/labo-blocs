@@ -375,9 +375,16 @@
     const n = Math.round(Number(v) || 0);
     return n < -999 || n > 9999 ? '----' : String(n).padStart(4, ' ');
   };
-  const BLOCS_MODULES = ['mouvement_detecte', 'ultrason_distance', 'afficheur4_nombre', 'afficheur4_effacer', 'ecran_texte', 'ecran_nombre', 'ecran_effacer', 'tactile_touche', 'tactile_valeur', 'tactile_oublier'];
+  const BLOCS_MODULES = ['relais_etat', 'mouvement_detecte', 'ultrason_distance', 'afficheur4_nombre', 'afficheur4_effacer', 'ecran_texte', 'ecran_nombre', 'ecran_effacer', 'tactile_touche', 'tactile_valeur', 'tactile_oublier'];
   const brochesTactile = (p) => [numeroBrocheModule(p.rx), numeroBrocheModule(p.tx)];
   const BLOCS_UNO = {
+    // Relais (module à SRD-05VDC-SL-C : VCC, GND, IN) : HAUT = enclenché, l'actionneur branché sur COM et NO est
+    // alimenté par sa propre alimentation (12 V : jamais sur la carte). Sens à vérifier à la recette (29.8).
+    relais_etat: {
+      carte: 'uno', categorie: 'uno_relais', sorte: 'instruction', texte: '%ETAT le relais %BROCHE',
+      champs: { ETAT: [['activer', '1'], ['désactiver', '0']], BROCHE: BROCHES_MODULES },
+      derouler: (p) => ({ bloc: 'led_etat', broche: p.broche || 'D2', etat: Number(p.etat) ? 1 : 0 }),
+    },
     // Capteur de mouvement HC-SR501 (VCC, OUT, GND) : OUT passe à HAUT quand il voit un mouvement.
     mouvement_detecte: {
       carte: 'uno', categorie: 'uno_mouvement', sorte: 'condition', texte: 'le capteur de mouvement %BROCHE détecte un mouvement',
@@ -435,6 +442,8 @@
   // Composants d'un bloc des modules (liste « Composants » et simulateur d'un exercice libre).
   function composantDuModule(x) {
     switch (x.bloc) {
+      case 'relais_etat':
+        return { type: 'relais', broche: x.broche || 'D2' };
       case 'mouvement_detecte':
         return { type: 'mouvement', broche: x.broche || 'D2' };
       case 'ultrason_distance':
@@ -707,6 +716,7 @@
     { nom: 'Boutons', cle: 'mb_entrees', carte: 'microbit' },
     { nom: 'Capteurs', cle: 'mb_capteurs', carte: 'microbit' },
     { nom: 'Musique', cle: 'mb_son', carte: 'microbit' },
+    { nom: 'Relais', cle: 'uno_relais', carte: 'uno' },
     { nom: 'Mouvement', cle: 'uno_mouvement', carte: 'uno' },
     { nom: 'Ultrason', cle: 'uno_ultrason', carte: 'uno' },
     { nom: 'Afficheur 4 chiffres', cle: 'uno_afficheur4', carte: 'uno' },

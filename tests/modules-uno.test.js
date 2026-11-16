@@ -94,7 +94,7 @@ test('parcours Escape Lab (Uno) : les blocs des modules dans chaque exercice', (
   global.definirParcours = (x) => (p = x);
   require('../parcours/escape-lab/parcours.js');
   for (const e of p.exercices) for (const b of K.BLOCS_MODULES) assert.ok(e.blocsAutorises.includes(b), `${e.id} : ${b}`);
-  assert.deepEqual(K.CATEGORIES_CARTES.filter((c) => c.carte === 'uno').map((c) => c.nom), ['Mouvement', 'Ultrason', 'Afficheur 4 chiffres', 'Écran', 'Clavier tactile']);
+  assert.deepEqual(K.CATEGORIES_CARTES.filter((c) => c.carte === 'uno').map((c) => c.nom), ['Relais', 'Mouvement', 'Ultrason', 'Afficheur 4 chiffres', 'Écran', 'Clavier tactile']);
 });
 
 test('programme de la carte Uno : extension 5, I2C sans la bibliothèque Wire', () => {
@@ -121,4 +121,19 @@ test('capteur de mouvement HC-SR501 : entrée sans résistance, HAUT = mouvement
   d.evenement('E 8 1');
   d.avancer(100);
   assert.equal(d.sim.sorties.D9, 1, 'niveau HAUT = mouvement (pas inversé comme un bouton)');
+});
+
+test('relais : HAUT = enclenché (sortie numérique), affiché dans les composants, ordre « D » en direct', () => {
+  const p = { demarrage: [{ bloc: 'relais_etat', etat: '1', broche: 'D8' }, { bloc: 'attendre', duree: 1 }, { bloc: 'relais_etat', etat: '0', broche: 'D8' }], boucle: [] };
+  assert.deepEqual(compiler(p).erreurs, []);
+  const { composants } = composantsDuProgramme(p, 'uno');
+  assert.deepEqual(composants, [{ type: 'relais', broche: 'D8' }]);
+  const sim = creerSimulation(p, { carte: 'uno', composants });
+  sim.avancerJusqua(500);
+  assert.equal(sim.sorties.D8, 1);
+  sim.avancerJusqua(1500);
+  assert.equal(sim.sorties.D8, 0);
+  const d = creerDirect(p, { carte: 'uno', composants });
+  assert.ok(d.avancer(100).includes('D 8 1'));
+  assert.ok(d.avancer(1500).includes('D 8 0'));
 });

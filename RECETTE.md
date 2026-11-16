@@ -420,3 +420,5 @@ Matériel : Uno, ultrason HY-SRF05, afficheur 4 chiffres (CLK, DIO), écran LCD 
 | 29.5 | Clavier : RX D6, TX D7 ; « si la dernière touche du clavier tactile est 7 alors écrire Bravo » | Toucher 7 : « Bravo » ; les autres touches : rien | |
 | 29.6 | Même programme « Dans la carte », Uno débranchée puis alimentée | Les quatre modules marchent sans l'ordinateur | |
 | 29.7 | Arrêter « En direct » | L'afficheur et l'écran s'effacent | |
+| 29.8 | Relais (module à SRD-05VDC-SL-C) : IN sur D8 ; « activer le relais D8 », attendre 1 s, « désactiver » | « Activer » : le relais claque et son voyant s'allume ; « désactiver » : il retombe (si c'est l'inverse, le module s'enclenche sur BAS : le signaler) | |
+| 29.9 | Capteur de mouvement HC-SR501 : OUT sur D3 ; « si le capteur de mouvement D3 détecte un mouvement alors allumer la LED » | Après une minute de chauffe, la LED s'allume quand on passe la main devant | |
