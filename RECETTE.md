@@ -422,3 +422,18 @@ Matériel : Uno, ultrason HY-SRF05, afficheur 4 chiffres (CLK, DIO), écran LCD 
 | 29.7 | Arrêter « En direct » | L'afficheur et l'écran s'effacent | |
 | 29.8 | Relais (module à SRD-05VDC-SL-C) : IN sur D8 ; « activer le relais D8 », attendre 1 s, « désactiver » | « Activer » : le relais claque et son voyant s'allume ; « désactiver » : il retombe (si c'est l'inverse, le module s'enclenche sur BAS : le signaler) | |
 | 29.9 | Capteur de mouvement HC-SR501 : OUT sur D3 ; « si le capteur de mouvement D3 détecte un mouvement alors allumer la LED » | Après une minute de chauffe, la LED s'allume quand on passe la main devant | |
+
+## 30. Reprendre le programme de l'exercice précédent
+
+Bouton « Reprendre l'exercice … » à côté de « Mon programme » : l'élève repart de son programme de l'exercice juste
+avant pour le compléter ou le modifier. Il apparaît quand cet exercice a un programme (pas seulement « Au démarrage »
+et « Répéter indéfiniment » vides) et utilise la même carte.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 30.1 | Élève : faire l'exercice 1, ouvrir l'exercice 2 | « Reprendre l'exercice 1 » à côté de « Mon programme » ; rien dans l'exercice 1 du parcours | |
+| 30.2 | Cliquer sur « Reprendre l'exercice 1 » (exercice 2 encore vide) | Le programme de l'exercice 1 apparaît tout de suite ; sous le simulateur : « Programme de l'exercice 1 repris… » | |
+| 30.3 | Modifier un bloc, cliquer encore sur « Reprendre l'exercice 1 » | Une question « Remplacer ton programme par celui de l'exercice 1 ? » ; « Annuler » ne change rien | |
+| 30.4 | Après une reprise, bouton « Annuler » (flèche en bas de la zone) | Le programme d'avant la reprise revient | |
+| 30.5 | Fermer l'onglet, rouvrir la sauvegarde de l'équipe | Le programme repris et complété de l'exercice 2 est retrouvé ; l'exercice 1 n'a pas changé | |
+| 30.6 | Éditeur de parcours : cocher « Ne pas proposer à l'élève le bouton… » sur un exercice, publier | Chez l'élève, plus de bouton sur cet exercice | |

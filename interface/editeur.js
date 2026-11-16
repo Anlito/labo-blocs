@@ -123,6 +123,32 @@
       majHorsProgramme();
     }
 
+    // Un autre programme à la place de celui affiché (« Reprendre l'exercice … ») : c'est une modification de l'élève,
+    // enregistrée comme les autres, et « Annuler » ramène le programme d'avant en un clic.
+    function remplacer(sauvegarde) {
+      const noms = A.nomsDeSauvegarde(sauvegarde);
+      const variables = [...new Set(A.variablesConnues.concat(noms.variables))];
+      const listes = [...new Set(A.listesConnues.concat(noms.listes))];
+      const paletteChange = variables.length !== A.variablesConnues.length || listes.length !== A.listesConnues.length;
+      A.variablesConnues = variables;
+      A.listesConnues = listes;
+      if (paletteChange) ws.updateToolbox(A.palette(exerciceCourant.blocsAutorises, exerciceCourant.composants, optionsPalette()));
+      A.fonctionsConnues = noms.fonctions;
+      A.parametresConnus = noms.parametres;
+      Blockly.Events.setGroup(true);
+      try {
+        ws.clear();
+        Blockly.serialization.workspaces.load(sauvegarde, ws, { recordUndo: true });
+        for (const b of ws.getTopBlocks(false)) if (b.type === 'demarrage' || b.type === 'boucle') b.setDeletable(false);
+      } finally {
+        Blockly.Events.setGroup(false);
+        A.fonctionsConnues = [];
+        A.parametresConnus = [];
+      }
+      ws.scroll(0, 0);
+      majHorsProgramme();
+    }
+
     function sauvegarder() {
       return Blockly.serialization.workspaces.save(ws);
     }
@@ -266,6 +292,7 @@
     return {
       ws,
       charger,
+      remplacer,
       sauvegarder,
       lire,
       surligner,

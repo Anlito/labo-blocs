@@ -229,6 +229,7 @@
       aides.changerExercice(ex);
       majIndices();
       majCode();
+      majReprise();
       if (avant.aReverifier) montrerRevoir();
       if (contexte.majBandeau) contexte.majBandeau(ex);
       // Rouvrir un exercice déjà commencé n'est pas un travail à enregistrer.
@@ -848,6 +849,28 @@
       arreter();
       editeur.charger(etat.exercice, A.versBlockly(etat.exercice.solutionReference));
       majCode();
+    });
+
+    // « Reprendre l'exercice … » : l'élève repart du programme qu'il a fait dans l'exercice juste avant, pour le
+    // compléter ou le modifier. Le professeur peut le retirer d'un exercice (« sansReprise », éditeur de parcours).
+    const btnReprendre = $('.btn-reprendre-precedent', ecran);
+    function majReprise() {
+      const p = etat.exercice && A.programmePrecedent(D, paquet, etat.exercice.id);
+      btnReprendre.hidden = !p;
+      if (!p) return;
+      const nom = `${p.exercice.defi ? 'le défi' : 'l’exercice'} ${p.exercice.numero}`;
+      $('.texte-reprendre', btnReprendre).textContent = `Reprendre ${p.exercice.defi ? 'le défi' : 'l’exercice'} ${p.exercice.numero}`;
+      btnReprendre.title = `Remplacer ton programme par celui que tu as fait dans ${nom} (« ${p.exercice.titre} »), pour le compléter`;
+    }
+    btnReprendre.addEventListener('click', () => {
+      const p = etat.exercice && A.programmePrecedent(D, paquet, etat.exercice.id);
+      if (!p) return majReprise();
+      const nom = `${p.exercice.defi ? 'du défi' : 'de l’exercice'} ${p.exercice.numero}`;
+      if (A.programmeNonVide(editeur.sauvegarder()) && !confirm(`Remplacer ton programme par celui ${nom} ?\nTu pourras revenir en arrière avec le bouton « Annuler ».`)) return;
+      arreter();
+      editeur.remplacer(JSON.parse(JSON.stringify(p.programme)));
+      majCode();
+      $('.simu-note', ecran).textContent = `Programme ${nom} repris : complète-le ou modifie-le. « Annuler » revient en arrière.`;
     });
 
     // ----- Outils de l'espace de travail -----

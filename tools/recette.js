@@ -281,6 +281,58 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return 'publication possible : version ' + (await texte(p, '.texte-publier')).replace('Publier la version ', '');
   });
 
+  await critere('Reprendre l’exercice précédent : le programme de l’exercice d’avant repris, « Annuler » revient en arrière, le professeur peut retirer le bouton', async () => {
+    const p = await page(PAGE + '?enseignant=1&exercice=dist-01');
+    const types = () => p.evaluate(() => Blockly.getMainWorkspace().getAllBlocks(false).map((b) => b.type).sort().join());
+    const bouton = () => p.$eval('.btn-reprendre-precedent', (b) => (b.hidden ? null : b.textContent.trim()));
+    const ouvrir = (id, reglage) =>
+      p.evaluate((id, reglage) => {
+        const ex = LaboBlocs.app.paquet.exercices.find((e) => e.id === id);
+        Object.assign(ex, reglage || {});
+        LaboBlocs.app.ecranExercice.ouvrir(ex);
+      }, id, reglage);
+    verifier((await bouton()) === null, 'bouton visible dans le premier exercice');
+    // Exercice 1 : une LED allumée. Exercice 2 (vide au départ) : « Reprendre l'exercice 1 ».
+    await p.evaluate(() => {
+      const L = LaboBlocs;
+      L.app.ecranExercice.editeur.charger(L.app.paquet.exercices[0], L.versBlockly({ demarrage: [{ bloc: 'led_etat', broche: 'D9', etat: 1 }], boucle: [] }));
+    });
+    await ouvrir('dist-02');
+    await pause(300);
+    const avant = await types();
+    const texteBouton = await bouton();
+    verifier(texteBouton === 'Reprendre l’exercice 1', 'bouton : ' + texteBouton);
+    await p.click('.btn-reprendre-precedent');
+    await pause(300);
+    const repris = await types();
+    const note = await texte(p, '.simu-note');
+    verifier(/led_etat/.test(repris) && !/led_etat/.test(avant) && /repris/.test(note), JSON.stringify({ avant, repris, note }));
+    // Un programme déjà commencé : l'élève confirme d'abord (ici, il refuse : rien ne change).
+    let question = '';
+    const refuser = async (d) => {
+      question = d.message();
+      await d.dismiss();
+    };
+    p.removeAllListeners('dialog');
+    p.on('dialog', refuser);
+    await p.click('.btn-reprendre-precedent');
+    await pause(300);
+    p.removeAllListeners('dialog');
+    p.on('dialog', (d) => d.accept());
+    verifier(/Remplacer ton programme par celui de l’exercice 1/.test(question) && (await types()) === repris, 'confirmation : ' + question);
+    // « Annuler » : le programme d'avant revient en un clic.
+    await p.click('.btn-annuler');
+    await pause(300);
+    const annule = await types();
+    verifier(annule === avant, JSON.stringify({ avant, annule }));
+    // Le professeur retire le bouton de l'exercice (« sansReprise ») : il disparaît.
+    await ouvrir('dist-02', { sansReprise: true });
+    await pause(200);
+    verifier((await bouton()) === null, 'bouton encore là avec « sansReprise »');
+    await p.close();
+    return `« ${texteBouton} » : LED D9 de l’exercice 1 reprise (« ${note} ») ; programme commencé → « ${question.split('\n')[0]} » ; « Annuler » revient au programme d’avant ; bouton retiré par le professeur`;
+  });
+
   await critere('Commentaires : l’élève commente son programme (bouton « Commentaire ») ; le professeur écrit le programme de départ', async () => {
     // Élève : une note dans l'espace des blocs (rien n'est choisi), puis un commentaire sur « Au démarrage ».
     const p = await page(PAGE + '?enseignant=1&exercice=dist-01');
