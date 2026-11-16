@@ -281,7 +281,7 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     return 'publication possible : version ' + (await texte(p, '.texte-publier')).replace('Publier la version ', '');
   });
 
-  await critere('Reprendre l’exercice précédent : le programme de l’exercice d’avant repris, « Annuler » revient en arrière, le professeur peut retirer le bouton', async () => {
+  await critere('Reprendre l’exercice précédent, repartir de zéro : le programme de l’exercice d’avant repris ou effacé, « Annuler » revient en arrière, le professeur peut retirer le bouton de reprise', async () => {
     const p = await page(PAGE + '?enseignant=1&exercice=dist-01');
     const types = () => p.evaluate(() => Blockly.getMainWorkspace().getAllBlocks(false).map((b) => b.type).sort().join());
     const bouton = () => p.$eval('.btn-reprendre-precedent', (b) => (b.hidden ? null : b.textContent.trim()));
@@ -325,12 +325,30 @@ const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     await pause(300);
     const annule = await types();
     verifier(annule === avant, JSON.stringify({ avant, annule }));
+    // « Repartir de zéro » : le programme repris est effacé (après une question), « Annuler » le ramène.
+    await p.click('.btn-reprendre-precedent');
+    await pause(300);
+    let questionZero = '';
+    p.removeAllListeners('dialog');
+    p.on('dialog', async (d) => {
+      questionZero = d.message();
+      await d.accept();
+    });
+    await p.click('.btn-repartir');
+    await pause(300);
+    p.removeAllListeners('dialog');
+    p.on('dialog', (d) => d.accept());
+    const zero = await types();
+    await p.click('.btn-annuler');
+    await pause(300);
+    const revenu = await types();
+    verifier(/repartir de zéro/.test(questionZero) && zero === 'boucle,demarrage' && revenu === repris, JSON.stringify({ questionZero, zero, revenu }));
     // Le professeur retire le bouton de l'exercice (« sansReprise ») : il disparaît.
     await ouvrir('dist-02', { sansReprise: true });
     await pause(200);
     verifier((await bouton()) === null, 'bouton encore là avec « sansReprise »');
     await p.close();
-    return `« ${texteBouton} » : LED D9 de l’exercice 1 reprise (« ${note} ») ; programme commencé → « ${question.split('\n')[0]} » ; « Annuler » revient au programme d’avant ; bouton retiré par le professeur`;
+    return `« ${texteBouton} » : LED D9 de l’exercice 1 reprise (« ${note} ») ; programme commencé → « ${question.split('\n')[0]} » ; « Annuler » revient au programme d’avant ; « Repartir de zéro » efface (après « ${questionZero.split('\n')[0]} ») et « Annuler » ramène le programme ; bouton de reprise retiré par le professeur`;
   });
 
   await critere('Commentaires : l’élève commente son programme (bouton « Commentaire ») ; le professeur écrit le programme de départ', async () => {

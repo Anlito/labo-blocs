@@ -572,6 +572,10 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      `sansReprise` sur l'exercice (case dans l'éditeur de parcours).
    - Bouton `.btn-reprendre-precedent` à côté de « Mon programme » ; confirmation si le programme affiché n'est pas
      vide ; `editeur.remplacer` charge sans vider l'historique : « Annuler » revient au programme d'avant.
+   - « Repartir de zéro » (16/11/2026, demande de Thomas) : à côté, `.btn-repartir` remet les blocs du début de
+     l'exercice (`blocsDepart`, sinon « Au démarrage » et « Répéter indéfiniment » vides), après une question,
+     par `editeur.remplacer` (« Annuler » le défait). Décision : libellés complets dans l'en-tête, même si les
+     niveaux passent sur une deuxième ligne vers 1366 px.
 45. **Simon : un parcours par niveau (16/11/2026)**. Thomas : à partir de l'exercice 5 (fonctions, listes), c'est trop
    dur pour les 5e. Décisions : deux parcours, le site Simon choisit d'après la classe de l'équipe ; les deux mènent au
    Simon complet, tours qui s'allongent compris ; 5e très guidé (« on mâche le travail »), 4e moins guidé mais plus
