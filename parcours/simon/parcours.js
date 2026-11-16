@@ -1,12 +1,12 @@
-// Parcours « Simon Rétro Game », version 1.0.0 (Labo Blocs).
+// Parcours « Simon Rétro Game · 4e », version 2.0.0 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "simon",
-  "titre": "Simon Rétro Game",
-  "versionParcours": "1.0.0",
-  "date": "2026-10-21",
+  "titre": "Simon Rétro Game · 4e",
+  "versionParcours": "2.0.0",
+  "date": "2026-11-16",
   "moteurMinimum": "0.5.0",
   "carte": "uno",
   "modes": [
@@ -826,7 +826,7 @@ definirParcours({
     {
       "numero": "5",
       "titre": "Une fonction « allumer » pour chaque couleur",
-      "consigne": "Le bloc « fonction allumer avec couleur » est posé, mais il est vide. Complète-le : si couleur = 1, la LED bleue s’allume avec sa note ; si couleur = 2, la verte… Puis attendre 0,3 s, éteindre les 4 LED et attendre 0,2 s.\n« Au démarrage » appelle déjà la fonction pour 1, 2, 3 et 4 : les 4 couleurs doivent s’allumer l’une après l’autre.",
+      "consigne": "La fonction « allumer » est commencée : si couleur = 1, elle allume la LED bleue et joue sa note. Complète-la pour 2 (vert), 3 (jaune) et 4 (rouge).\n« Au démarrage » appelle déjà la fonction pour 1, 2, 3 et 4 : les 4 couleurs doivent s’allumer l’une après l’autre.\nNotes : bleu 262 Hz (do), vert 330 Hz (mi), jaune 392 Hz (sol), rouge 523 Hz (do aigu).",
       "composants": [
         {
           "type": "led",
@@ -937,10 +937,69 @@ definirParcours({
             "parametres": [
               "couleur"
             ],
-            "corps": []
+            "corps": [
+              {
+                "bloc": "si_alors",
+                "condition": {
+                  "bloc": "comparaison",
+                  "op": "=",
+                  "a": {
+                    "bloc": "parametre",
+                    "parametre": "couleur"
+                  },
+                  "b": 1
+                },
+                "alors": [
+                  {
+                    "bloc": "led_etat",
+                    "broche": "D3",
+                    "etat": 1
+                  },
+                  {
+                    "bloc": "son",
+                    "broche": "D10",
+                    "frequence": 262,
+                    "duree": 0.3
+                  }
+                ]
+              },
+              {
+                "bloc": "attendre",
+                "duree": 0.3
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D3",
+                "etat": 0
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D5",
+                "etat": 0
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D7",
+                "etat": 0
+              },
+              {
+                "bloc": "led_etat",
+                "broche": "D9",
+                "etat": 0
+              },
+              {
+                "bloc": "attendre",
+                "duree": 0.2
+              }
+            ],
+            "commentaire": "Le bleu (1) est fait. Ajoute un « si » pour 2, 3 et 4."
           }
         ]
       },
+      "indices": [
+        "Copie le « si couleur = 1 » (clic droit › Dupliquer) et change le numéro, la broche de la LED et la note.",
+        "Vert : couleur = 2, LED D5, 330 Hz. Jaune : 3, D7, 392 Hz. Rouge : 4, D9, 523 Hz."
+      ],
       "scenarios": [
         {
           "nom": "Les 4 couleurs dans l’ordre",
@@ -1006,12 +1065,9 @@ definirParcours({
           ]
         }
       ],
-      "indices": [
-        "Dans la fonction, « couleur » vaut 1, 2, 3 ou 4 selon l’appel. Quatre « si couleur = … » choisissent la LED et la note.",
-        "Bloc « couleur » (catégorie Fonctions) dans une comparaison « couleur = 1 ». Après les 4 « si » : attendre 0.3, 4 LED à BAS, attendre 0.2."
-      ],
       "aSavoir": "fonction",
       "competence": "C9",
+      "sansReprise": true,
       "id": "simon-05",
       "defi": false,
       "solutionReference": {
@@ -1198,8 +1254,8 @@ definirParcours({
     },
     {
       "numero": "6",
-      "titre": "Montrer ma séquence",
-      "consigne": "Invente la séquence de ton Simon : au moins 4 couleurs (1 bleu, 2 vert, 3 jaune, 4 rouge), rangées dans la liste « sequence ».\nAu démarrage, remplace les 4 appels par : remplir la liste, puis montrer chaque élément de la liste avec ta fonction « allumer » (une variable i compte : élément n° 1, n° 2…).",
+      "titre": "Ma séquence dans une liste",
+      "consigne": "Invente ta séquence dans la liste « sequence » : au moins 4 couleurs (1 bleu, 2 vert, 3 jaune, 4 rouge).\nComplète la boucle pour montrer chaque élément de la liste avec la fonction « allumer » : élément n° i, puis ajouter 1 à i.",
       "composants": [
         {
           "type": "led",
@@ -1283,32 +1339,28 @@ definirParcours({
             "quand": "demarrage",
             "corps": [
               {
-                "bloc": "appeler",
-                "fonction": "allumer",
-                "arguments": [
-                  1
-                ]
-              },
-              {
-                "bloc": "appeler",
-                "fonction": "allumer",
-                "arguments": [
-                  2
-                ]
-              },
-              {
-                "bloc": "appeler",
-                "fonction": "allumer",
-                "arguments": [
-                  3
-                ]
-              },
-              {
-                "bloc": "appeler",
-                "fonction": "allumer",
-                "arguments": [
+                "bloc": "liste_remplir",
+                "liste": "sequence",
+                "valeurs": [
+                  1,
+                  3,
+                  2,
                   4
                 ]
+              },
+              {
+                "bloc": "affecter",
+                "variable": "i",
+                "valeur": 1
+              },
+              {
+                "bloc": "repeter_n",
+                "fois": {
+                  "bloc": "liste_taille",
+                  "liste": "sequence"
+                },
+                "corps": [],
+                "commentaire": "Ici : allumer l’élément n° i, puis ajouter 1 à i."
               }
             ]
           },
@@ -1456,7 +1508,10 @@ definirParcours({
           }
         ]
       },
-      "reprendreProgramme": "simon-05",
+      "indices": [
+        "Dans « répéter … fois » : « appeler allumer avec élément n° i de la liste sequence », puis « ajouter à i la valeur 1 ».",
+        "Le bloc « élément n° … de la liste » est dans la catégorie Listes ; mets-y la variable i."
+      ],
       "scenarios": [
         {
           "nom": "La séquence est montrée dans l’ordre",
@@ -1530,12 +1585,9 @@ definirParcours({
           ]
         }
       ],
-      "indices": [
-        "« répéter (nombre d’éléments de la liste) fois » : appeler allumer avec l’élément n° i, puis ajouter 1 à i. Avant la boucle, i vaut 1.",
-        "Blocs : « remplir la liste sequence avec 1, 3, 2, 4 », « affecter à i la valeur 1 », « répéter … fois », « appeler allumer avec élément n° i de la liste », « ajouter à i la valeur 1 »."
-      ],
       "aSavoir": "liste",
       "competence": "C9",
+      "sansReprise": true,
       "id": "simon-06",
       "defi": false,
       "solutionReference": {
@@ -1738,7 +1790,7 @@ definirParcours({
     {
       "numero": "7",
       "titre": "Quel bouton le joueur appuie-t-il ?",
-      "consigne": "Après avoir montré la séquence, le programme écoute le joueur.\nCrée une fonction « lire_bouton » : elle met 0 dans « appui », puis répète jusqu’à ce que « appui » ne soit plus 0 : si le bouton bleu est appuyé, appui = 1 ; vert, 2 ; jaune, 3 ; rouge, 4. À la fin, elle allume la couleur appuyée.\nDans « Répéter indéfiniment », appelle « lire_bouton ».",
+      "consigne": "Après avoir montré la séquence, le programme écoute le joueur. La fonction « lire_bouton » est commencée : bouton bleu → appui = 1. Ajoute vert → 2, jaune → 3, rouge → 4.\nPuis, dans « Répéter indéfiniment », appelle « lire_bouton ».",
       "composants": [
         {
           "type": "led",
@@ -2016,10 +2068,67 @@ definirParcours({
                 "duree": 0.2
               }
             ]
+          },
+          {
+            "nom": "lire_bouton",
+            "parametres": [],
+            "corps": [
+              {
+                "bloc": "affecter",
+                "variable": "appui",
+                "valeur": 0
+              },
+              {
+                "bloc": "repeter_jusqua",
+                "condition": {
+                  "bloc": "comparaison",
+                  "op": "≠",
+                  "a": {
+                    "bloc": "variable",
+                    "variable": "appui"
+                  },
+                  "b": 0
+                },
+                "corps": [
+                  {
+                    "bloc": "si_alors",
+                    "condition": {
+                      "bloc": "bouton_etat",
+                      "broche": "D2"
+                    },
+                    "alors": [
+                      {
+                        "bloc": "affecter",
+                        "variable": "appui",
+                        "valeur": 1
+                      }
+                    ]
+                  },
+                  {
+                    "bloc": "attendre",
+                    "duree": 0.01
+                  }
+                ],
+                "commentaire": "Le bleu (1) est fait. Ajoute vert 2, jaune 3, rouge 4."
+              },
+              {
+                "bloc": "appeler",
+                "fonction": "allumer",
+                "arguments": [
+                  {
+                    "bloc": "variable",
+                    "variable": "appui"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
-      "reprendreProgramme": "simon-06",
+      "indices": [
+        "Copie le « si bouton D2 » et change la broche du bouton et le nombre rangé dans appui.",
+        "Vert : D4 → 2. Jaune : D6 → 3. Rouge : D8 → 4. Puis « appeler lire_bouton » dans « Répéter indéfiniment »."
+      ],
       "scenarios": [
         {
           "nom": "Le joueur appuie sur le jaune puis sur le bleu",
@@ -2069,12 +2178,9 @@ definirParcours({
           ]
         }
       ],
-      "indices": [
-        "« répéter jusqu’à appui ≠ 0 » : le programme reste là tant qu’aucun bouton n’est appuyé. Ajoute « attendre 0.01 » dans la boucle.",
-        "Blocs : « fonction lire_bouton », « affecter à appui la valeur 0 », « répéter jusqu’à », 4 « si état sur la broche … alors affecter à appui … », puis « appeler allumer avec appui »."
-      ],
       "aSavoir": "fonction",
       "competence": "C9",
+      "sansReprise": true,
       "id": "simon-07",
       "defi": false,
       "solutionReference": {
@@ -2378,7 +2484,7 @@ definirParcours({
     {
       "numero": "8",
       "titre": "Se tromper : son d’erreur",
-      "consigne": "Le jeu montre toute la séquence, puis le joueur la refait. Pour chaque appui (i de 1 à la taille de la liste) : si « appui » n’est pas l’élément n° i, c’est une erreur.\nEn cas d’erreur : un son d’erreur (une note différente de celles des couleurs, par exemple 110 Hz pendant 1 s), puis tout recommence.\nDéplace « montrer la séquence » dans « Répéter indéfiniment » ; « remplir la liste » reste « Au démarrage ».",
+      "consigne": "Le jeu montre la séquence, puis le joueur la refait. Dans la boucle d’écoute, après chaque appui : si « appui » n’est pas l’élément n° i, erreur = 1 ; sinon, ajouter 1 à i.\nEn cas d’erreur : un son d’erreur (une note différente de celles des couleurs, par exemple 110 Hz pendant 1 s).",
       "composants": [
         {
           "type": "led",
@@ -2480,7 +2586,12 @@ definirParcours({
                   2,
                   4
                 ]
-              },
+              }
+            ]
+          },
+          {
+            "quand": "boucle",
+            "corps": [
               {
                 "bloc": "affecter",
                 "variable": "i",
@@ -2513,16 +2624,69 @@ definirParcours({
                     "valeur": 1
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "quand": "boucle",
-            "corps": [
+              },
               {
-                "bloc": "appeler",
-                "fonction": "lire_bouton",
-                "arguments": []
+                "bloc": "affecter",
+                "variable": "i",
+                "valeur": 1
+              },
+              {
+                "bloc": "affecter",
+                "variable": "erreur",
+                "valeur": 0
+              },
+              {
+                "bloc": "repeter_jusqua",
+                "condition": {
+                  "bloc": "logique",
+                  "op": "ou",
+                  "a": {
+                    "bloc": "comparaison",
+                    "op": ">",
+                    "a": {
+                      "bloc": "variable",
+                      "variable": "i"
+                    },
+                    "b": {
+                      "bloc": "liste_taille",
+                      "liste": "sequence"
+                    }
+                  },
+                  "b": {
+                    "bloc": "comparaison",
+                    "op": "=",
+                    "a": {
+                      "bloc": "variable",
+                      "variable": "erreur"
+                    },
+                    "b": 1
+                  }
+                },
+                "corps": [
+                  {
+                    "bloc": "appeler",
+                    "fonction": "lire_bouton",
+                    "arguments": []
+                  }
+                ],
+                "commentaire": "Ici : si appui ≠ élément n° i alors erreur = 1, sinon ajouter 1 à i."
+              },
+              {
+                "bloc": "si_alors",
+                "condition": {
+                  "bloc": "comparaison",
+                  "op": "=",
+                  "a": {
+                    "bloc": "variable",
+                    "variable": "erreur"
+                  },
+                  "b": 1
+                },
+                "alors": []
+              },
+              {
+                "bloc": "attendre",
+                "duree": 1
               }
             ]
           }
@@ -2761,7 +2925,10 @@ definirParcours({
           }
         ]
       },
-      "reprendreProgramme": "simon-07",
+      "indices": [
+        "Un « si … alors … sinon » sous « appeler lire_bouton », avec la comparaison « appui ≠ élément n° i de la liste ».",
+        "Alors : affecter à erreur la valeur 1. Sinon : ajouter à i la valeur 1. Dans le « si erreur = 1 » : jouer 110 Hz pendant 1 s, attendre 1."
+      ],
       "scenarios": [
         {
           "nom": "Le joueur se trompe",
@@ -2860,12 +3027,9 @@ definirParcours({
           ]
         }
       ],
-      "indices": [
-        "Une variable « erreur » vaut 0 au début. On écoute jusqu’à « i > nombre d’éléments » ou « erreur = 1 ». Après : si erreur = 1, le son d’erreur.",
-        "Blocs : « répéter jusqu’à (i > nombre d’éléments) ou (erreur = 1) » ; dedans : « appeler lire_bouton », « si appui ≠ élément n° i alors erreur = 1 sinon ajouter 1 à i »."
-      ],
       "aSavoir": "jeu",
       "competence": "C9",
+      "sansReprise": true,
       "id": "simon-08",
       "defi": false,
       "solutionReference": {
@@ -3270,7 +3434,7 @@ definirParcours({
     {
       "numero": "9",
       "titre": "Une couleur de plus à chaque tour",
-      "consigne": "Comme le vrai Simon : au tour 1, le jeu montre 1 couleur ; au tour 2, 2 couleurs… Une variable « etape » compte les couleurs du tour (1 au démarrage).\nLe joueur refait les « etape » premières couleurs. Réussi : ajouter 1 à etape (s’il reste des couleurs dans la liste, sinon etape revient à 1). Erreur : son d’erreur et etape revient à 1.",
+      "consigne": "Comme le vrai Simon : au tour 1, le jeu montre 1 couleur ; au tour 2, 2 couleurs… La variable « etape » compte les couleurs du tour ; montrer et écouter s’arrêtent déjà à « etape ».\nÀ la fin du tour : réussi, ajouter 1 à etape (s’il reste des couleurs, sinon etape revient à 1) ; erreur, son d’erreur et etape revient à 1.",
       "composants": [
         {
           "type": "led",
@@ -3373,6 +3537,11 @@ definirParcours({
                   2,
                   4
                 ]
+              },
+              {
+                "bloc": "affecter",
+                "variable": "etape",
+                "valeur": 1
               }
             ]
           },
@@ -3387,8 +3556,8 @@ definirParcours({
               {
                 "bloc": "repeter_n",
                 "fois": {
-                  "bloc": "liste_taille",
-                  "liste": "sequence"
+                  "bloc": "variable",
+                  "variable": "etape"
                 },
                 "corps": [
                   {
@@ -3435,8 +3604,8 @@ definirParcours({
                       "variable": "i"
                     },
                     "b": {
-                      "bloc": "liste_taille",
-                      "liste": "sequence"
+                      "bloc": "variable",
+                      "variable": "etape"
                     }
                   },
                   "b": {
@@ -3491,7 +3660,7 @@ definirParcours({
                 ]
               },
               {
-                "bloc": "si_alors",
+                "bloc": "si_sinon",
                 "condition": {
                   "bloc": "comparaison",
                   "op": "=",
@@ -3512,7 +3681,9 @@ definirParcours({
                     "bloc": "attendre",
                     "duree": 1
                   }
-                ]
+                ],
+                "sinon": [],
+                "commentaire": "Ici : la fin du tour (voir la consigne)."
               },
               {
                 "bloc": "attendre",
@@ -3755,7 +3926,10 @@ definirParcours({
           }
         ]
       },
-      "reprendreProgramme": "simon-08",
+      "indices": [
+        "Dans « sinon » : « si etape < nombre d’éléments de la liste alors ajouter 1 à etape sinon affecter à etape la valeur 1 ».",
+        "Dans « alors », sous le son d’erreur : « affecter à etape la valeur 1 »."
+      ],
       "scenarios": [
         {
           "nom": "Après deux tours réussis, le jeu montre 3 couleurs",
@@ -3835,12 +4009,9 @@ definirParcours({
           ]
         }
       ],
-      "indices": [
-        "Dans « montrer » et « écouter », remplace « nombre d’éléments de la liste » par « etape ».",
-        "Après l’écoute : « si erreur = 1 alors son d’erreur, etape = 1 sinon (si etape < nombre d’éléments alors ajouter 1 à etape sinon etape = 1) »."
-      ],
       "aSavoir": "jeu",
       "competence": "C9",
+      "sansReprise": true,
       "id": "simon-09",
       "defi": false,
       "solutionReference": {
@@ -4813,6 +4984,10 @@ definirParcours({
         ]
       },
       "reprendreProgramme": "simon-09",
+      "indices": [
+        "La victoire se joue au même endroit que « etape revient à 1 » quand toute la liste est réussie.",
+        "Exemple de musique : do 523 Hz, mi 659 Hz, sol 784 Hz, do 1047 Hz, avec « attendre » entre les notes."
+      ],
       "scenarios": [
         {
           "nom": "Le joueur réussit toute la séquence",
@@ -4908,10 +5083,6 @@ definirParcours({
             }
           ]
         }
-      ],
-      "indices": [
-        "La victoire se joue au même endroit que « etape revient à 1 » quand toute la liste est réussie.",
-        "Exemple de musique : do 523 Hz, mi 659 Hz, sol 784 Hz, do 1047 Hz, avec « attendre » entre les notes."
       ],
       "aSavoir": "son",
       "competence": "C9",
@@ -5968,6 +6139,10 @@ definirParcours({
         ]
       },
       "reprendreProgramme": "simon-10",
+      "indices": [
+        "Change les nombres de « remplir la liste », les notes de la fonction « allumer », la musique de victoire et le son d’erreur.",
+        "Vérifie que chaque pause dure 1 s au plus : sinon le joueur ne sait pas quand répondre."
+      ],
       "scenarios": [
         {
           "nom": "Le joueur réussit toute ma séquence",
@@ -6064,10 +6239,6 @@ definirParcours({
             }
           ]
         }
-      ],
-      "indices": [
-        "Change les nombres de « remplir la liste », les notes et les « attendre » de la fonction « allumer », la musique de victoire et le son d’erreur.",
-        "Vérifie que chaque pause dure 1 s au plus : sinon le joueur ne sait pas quand répondre."
       ],
       "aSavoir": "jeu",
       "competence": "C9",
@@ -7134,6 +7305,10 @@ definirParcours({
         ]
       },
       "reprendreProgramme": "simon-11",
+      "indices": [
+        "« Au démarrage » : vider la liste. Au début de « Répéter indéfiniment » : ajouter un nombre au hasard entre 1 et 4 à la fin de la liste.",
+        "Plus besoin de « etape » : on montre et on écoute toute la liste. En cas d’erreur, « vider la liste »."
+      ],
       "scenarios": [
         {
           "nom": "La séquence s’allonge à chaque tour",
@@ -7192,10 +7367,6 @@ definirParcours({
             }
           ]
         }
-      ],
-      "indices": [
-        "« Au démarrage » : vider la liste. Au début de « Répéter indéfiniment » : ajouter un nombre au hasard entre 1 et 4 à la fin de la liste.",
-        "Plus besoin de « etape » : on montre et on écoute toute la liste. En cas d’erreur, « vider la liste »."
       ],
       "aSavoir": "jeu",
       "competence": "C9",

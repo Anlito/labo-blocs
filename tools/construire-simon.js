@@ -1,7 +1,9 @@
-// Construit parcours/simon/parcours.js (parcours « Simon Rétro Game ») et vérifie chaque exercice :
-// la solution passe tous les scénarios ; le programme de départ (ou un programme incomplet) ne passe pas.
+// Construit les deux parcours « Simon Rétro Game » et vérifie chaque exercice : la solution passe tous les scénarios ;
+// le programme de départ (ou un programme incomplet) ne passe pas.
+//   parcours/simon/parcours.js (4e)   et   parcours/simon-5e/parcours.js (5e, très guidé)
+// Le site Simon choisit le parcours d'après la classe de l'équipe. Mêmes exercices 1 à 4, même chemin ensuite : seuls le
+// programme de départ, la consigne, la palette et les indices changent (décision de Thomas, 16/11/2026).
 //   node tools/construire-simon.js [dossier du dépôt] [--ecrire]   (sans --ecrire : vérifie seulement)
-// Le parcours se modifie ensuite dans l’éditeur de Labo Blocs ; ce script garde la trace de la première version.
 const path = require('node:path');
 const fs = require('node:fs');
 const R = path.resolve(process.argv[2] || '.');
@@ -205,232 +207,330 @@ E.push({
   aSavoir: 'son',
   competence: 'C9',
 });
-E.push({
-  numero: '5',
-  titre: 'Une fonction « allumer » pour chaque couleur',
-  consigne:
-    'Le bloc « fonction allumer avec couleur » est posé, mais il est vide. Complète-le : si couleur = 1, la LED bleue s’allume avec sa note ; si couleur = 2, la verte… Puis attendre 0,3 s, éteindre les 4 LED et attendre 0,2 s.\n« Au démarrage » appelle déjà la fonction pour 1, 2, 3 et 4 : les 4 couleurs doivent s’allumer l’une après l’autre.',
-  composants: TOUS,
-  illustration: 'simon',
-  blocsAutorises: tout(['led_etat', 'si_alors', 'comparaison'], BLOCS_SON, BLOCS_FONCTION),
-  blocsDepart: v1([1, 2, 3, 4].map((k) => appeler('allumer', k)), [], [{ nom: 'allumer', parametres: ['couleur'], corps: [] }]),
-  scenarios: [
-    {
-      nom: 'Les 4 couleurs dans l’ordre',
-      etapes: [
-        { allumage: 'D3', delai: 1, contexte: 'au démarrage' },
-        { entendre: 'D10', frequence: 262, delai: 0.3, contexte: 'quand la LED bleue s’allume' },
-        { allumage: 'D5', delai: 1.5, contexte: 'après la couleur bleue' },
-        { entendre: 'D10', frequence: 330, delai: 0.3, contexte: 'quand la LED verte s’allume' },
-        { allumage: 'D7', delai: 1.5, contexte: 'après la couleur verte' },
-        { entendre: 'D10', frequence: 392, delai: 0.3, contexte: 'quand la LED jaune s’allume' },
-        { allumage: 'D9', delai: 1.5, contexte: 'après la couleur jaune' },
-        { entendre: 'D10', frequence: 523, delai: 0.3, contexte: 'quand la LED rouge s’allume' },
-        { attendre: 1 },
-        { stable: Object.fromEntries(LEDS.map((l) => [l, 0])), duree: 1, contexte: 'à la fin', attendu: 'les 4 LED devraient être éteintes' },
-      ],
-    },
-  ],
-  indices: ['Dans la fonction, « couleur » vaut 1, 2, 3 ou 4 selon l’appel. Quatre « si couleur = … » choisissent la LED et la note.', 'Bloc « couleur » (catégorie Fonctions) dans une comparaison « couleur = 1 ». Après les 4 « si » : attendre 0.3, 4 LED à BAS, attendre 0.2.'],
-  aSavoir: 'fonction',
-  competence: 'C9',
-});
-E.push({
-  numero: '6',
-  titre: 'Montrer ma séquence',
-  consigne:
-    'Invente la séquence de ton Simon : au moins 4 couleurs (1 bleu, 2 vert, 3 jaune, 4 rouge), rangées dans la liste « sequence ».\nAu démarrage, remplace les 4 appels par : remplir la liste, puis montrer chaque élément de la liste avec ta fonction « allumer » (une variable i compte : élément n° 1, n° 2…).',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i'],
-  blocsAutorises: tout(['led_etat', 'si_alors', 'comparaison'], BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE),
-  blocsDepart: S[5],
-  reprendreProgramme: 'simon-05',
-  scenarios: [
-    {
-      nom: 'La séquence est montrée dans l’ordre',
-      etapes: [listeOk(4), ...[1, 2, 3, 4].map((n) => ({ allumage: { liste: 'sequence', numero: n }, leds: LEDS, delai: 1.5, contexte: n === 1 ? 'au démarrage' : `après la couleur n° ${n - 1}` }))],
-    },
-  ],
-  indices: ['« répéter (nombre d’éléments de la liste) fois » : appeler allumer avec l’élément n° i, puis ajouter 1 à i. Avant la boucle, i vaut 1.', 'Blocs : « remplir la liste sequence avec 1, 3, 2, 4 », « affecter à i la valeur 1 », « répéter … fois », « appeler allumer avec élément n° i de la liste », « ajouter à i la valeur 1 ».'],
-  aSavoir: 'liste',
-  competence: 'C9',
-});
-E.push({
-  numero: '7',
-  titre: 'Quel bouton le joueur appuie-t-il ?',
-  consigne:
-    'Après avoir montré la séquence, le programme écoute le joueur.\nCrée une fonction « lire_bouton » : elle met 0 dans « appui », puis répète jusqu’à ce que « appui » ne soit plus 0 : si le bouton bleu est appuyé, appui = 1 ; vert, 2 ; jaune, 3 ; rouge, 4. À la fin, elle allume la couleur appuyée.\nDans « Répéter indéfiniment », appelle « lire_bouton ».',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU),
-  blocsDepart: S[6],
-  reprendreProgramme: 'simon-06',
-  scenarios: [
-    {
-      nom: 'Le joueur appuie sur le jaune puis sur le bleu',
-      etapes: [
-        listeOk(4),
-        { attendre: 26 },
-        { appuyer: 'D6' },
-        { allumage: 'D7', delai: 1 },
-        { entendre: 'D10', frequence: 392, delai: 0.3, contexte: 'après un appui sur le bouton jaune (D6)' },
-        { attendre: 1 },
-        { appuyer: 'D2' },
-        { allumage: 'D3', delai: 1 },
-        { entendre: 'D10', frequence: 262, delai: 0.3, contexte: 'après un appui sur le bouton bleu (D2)' },
-      ],
-    },
-  ],
-  indices: ['« répéter jusqu’à appui ≠ 0 » : le programme reste là tant qu’aucun bouton n’est appuyé. Ajoute « attendre 0.01 » dans la boucle.', 'Blocs : « fonction lire_bouton », « affecter à appui la valeur 0 », « répéter jusqu’à », 4 « si état sur la broche … alors affecter à appui … », puis « appeler allumer avec appui ».'],
-  aSavoir: 'fonction',
-  competence: 'C9',
-});
-E.push({
-  numero: '8',
-  titre: 'Se tromper : son d’erreur',
-  consigne:
-    'Le jeu montre toute la séquence, puis le joueur la refait. Pour chaque appui (i de 1 à la taille de la liste) : si « appui » n’est pas l’élément n° i, c’est une erreur.\nEn cas d’erreur : un son d’erreur (une note différente de celles des couleurs, par exemple 110 Hz pendant 1 s), puis tout recommence.\nDéplace « montrer la séquence » dans « Répéter indéfiniment » ; « remplir la liste » reste « Au démarrage ».',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui', 'erreur'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU),
-  blocsDepart: S[7],
-  reprendreProgramme: 'simon-07',
-  scenarios: [
-    SCENARIO_ERREUR('complet', 3),
-    {
-      nom: 'Le joueur refait la séquence sans se tromper',
-      etapes: [
-        listeOk(4),
-        jouer({ tours: 'complet' }),
-        { entendre: 'D10', sauf: 'couleurs', aucune: true, delai: 2, memeDepart: true, contexte: 'Quand le joueur refait toute la séquence sans se tromper', attendu: 'le buzzer ne devrait pas jouer le son d’erreur' },
-        ...premiereCouleur(6, 'Ensuite'),
-      ],
-    },
-  ],
-  indices: ['Une variable « erreur » vaut 0 au début. On écoute jusqu’à « i > nombre d’éléments » ou « erreur = 1 ». Après : si erreur = 1, le son d’erreur.', 'Blocs : « répéter jusqu’à (i > nombre d’éléments) ou (erreur = 1) » ; dedans : « appeler lire_bouton », « si appui ≠ élément n° i alors erreur = 1 sinon ajouter 1 à i ».'],
-  aSavoir: 'jeu',
-  competence: 'C9',
-});
-E.push({
-  numero: '9',
-  titre: 'Une couleur de plus à chaque tour',
-  consigne:
-    'Comme le vrai Simon : au tour 1, le jeu montre 1 couleur ; au tour 2, 2 couleurs… Une variable « etape » compte les couleurs du tour (1 au démarrage).\nLe joueur refait les « etape » premières couleurs. Réussi : ajouter 1 à etape (s’il reste des couleurs dans la liste, sinon etape revient à 1). Erreur : son d’erreur et etape revient à 1.',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui', 'erreur', 'etape'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU),
-  blocsDepart: S[8],
-  reprendreProgramme: 'simon-08',
-  scenarios: [
-    {
-      nom: 'Après deux tours réussis, le jeu montre 3 couleurs',
-      etapes: [
-        listeOk(4),
-        jouer({ tours: 2 }),
-        { entendre: 'D10', notes: 3, exactement: true, delai: 5, contexte: 'Après deux tours réussis', attendu: 'le jeu devrait montrer 3 couleurs (3 notes), puis attendre le joueur' },
-      ],
-    },
-    SCENARIO_ERREUR(2, 3),
-  ],
-  indices: ['Dans « montrer » et « écouter », remplace « nombre d’éléments de la liste » par « etape ».', 'Après l’écoute : « si erreur = 1 alors son d’erreur, etape = 1 sinon (si etape < nombre d’éléments alors ajouter 1 à etape sinon etape = 1) ».'],
-  aSavoir: 'jeu',
-  competence: 'C9',
-});
-E.push({
-  numero: '10',
-  titre: 'Toute la séquence : victoire !',
-  consigne: 'Quand le joueur a refait toute la séquence (etape = nombre d’éléments de la liste), joue une petite musique de victoire (au moins 2 notes), puis le jeu recommence au tour 1.',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui', 'erreur', 'etape'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU),
-  blocsDepart: S[9],
-  reprendreProgramme: 'simon-09',
-  scenarios: [
-    {
-      nom: 'Le joueur réussit toute la séquence',
-      etapes: [
-        listeOk(4),
-        jouer({}),
-        { entendre: 'D10', notes: 2, delai: 2.5, memeDepart: true, contexte: 'Quand le joueur a refait toute la séquence', attendu: 'le buzzer devrait jouer une musique de victoire (au moins 2 notes)' },
-        ...premiereCouleur(8, 'Après la victoire'),
-      ],
-    },
-    SCENARIO_ERREUR(2, 3),
-  ],
-  indices: ['La victoire se joue au même endroit que « etape revient à 1 » quand toute la liste est réussie.', 'Exemple de musique : do 523 Hz, mi 659 Hz, sol 784 Hz, do 1047 Hz, avec « attendre » entre les notes.'],
-  aSavoir: 'son',
-  competence: 'C9',
-});
-E.push({
-  numero: '11',
-  titre: 'Mon Simon',
-  consigne:
-    'Personnalise ton Simon : ta séquence (au moins 6 couleurs), tes notes, ton rythme (pauses d’1 s au plus), ta musique de victoire et ton son d’erreur (différent des notes des couleurs).\nC’est ce programme qui sera envoyé dans la Console Officielle pour le Grand Tournoi. Quand il est réussi, appelle le professeur.',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui', 'erreur', 'etape'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU, ['operation']),
-  blocsDepart: S[10],
-  reprendreProgramme: 'simon-10',
-  scenarios: [
-    {
-      nom: 'Le joueur réussit toute ma séquence',
-      etapes: [listeOk(6), jouer({ attente: 30 }), { entendre: 'D10', notes: 2, delai: 3, memeDepart: true, contexte: 'Quand le joueur a refait toute la séquence', attendu: 'le buzzer devrait jouer ta musique de victoire (au moins 2 notes)' }, ...premiereCouleur(10, 'Après la victoire')],
-    },
-    SCENARIO_ERREUR(3, 4),
-  ],
-  indices: ['Change les nombres de « remplir la liste », les notes et les « attendre » de la fonction « allumer », la musique de victoire et le son d’erreur.', 'Vérifie que chaque pause dure 1 s au plus : sinon le joueur ne sait pas quand répondre.'],
-  aSavoir: 'jeu',
-  competence: 'C9',
-});
-E.push({
-  numero: '12',
-  titre: 'Défi : le Simon au hasard',
-  defi: true,
-  consigne:
-    'Le vrai Simon invente sa séquence : au début de chaque tour, ajoute une couleur au hasard (1 à 4) à la fin de la liste, puis montre toute la liste et écoute le joueur.\nErreur : son d’erreur, la liste est vidée et on recommence. Bonus : garde le score (nombre de couleurs réussies) dans une variable.',
-  composants: TOUS,
-  illustration: 'simon',
-  listes: ['sequence'],
-  variables: ['i', 'appui', 'erreur', 'score'],
-  blocsAutorises: tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU, ['hasard', 'liste_ajouter', 'liste_vider', 'operation']),
-  blocsDepart: S[11],
-  reprendreProgramme: 'simon-11',
-  scenarios: [
-    {
-      nom: 'La séquence s’allonge à chaque tour',
-      etapes: [
-        jouer({ grandit: true, tours: 4 }),
-        { liste: 'sequence', tailleMin: 5, delai: 3, contexte: 'Après 4 tours réussis', attendu: 'la liste devrait avoir une couleur de plus à chaque tour (5 couleurs au moins)' },
-      ],
-    },
-    {
-      nom: 'Le joueur se trompe',
-      etapes: [jouer({ grandit: true, tours: 3, faute: true }), sonErreur(3), { liste: 'sequence', tailleMax: 1, delai: 3, contexte: 'Après l’erreur', attendu: 'la liste devrait repartir de zéro (une seule couleur au nouveau tour)' }],
-    },
-  ],
-  indices: ['« Au démarrage » : vider la liste. Au début de « Répéter indéfiniment » : ajouter un nombre au hasard entre 1 et 4 à la fin de la liste.', 'Plus besoin de « etape » : on montre et on écoute toute la liste. En cas d’erreur, « vider la liste ».'],
-  aSavoir: 'jeu',
-  competence: 'C9',
-});
-E.forEach((e, k) => {
-  e.id = 'simon-' + String(k + 1).padStart(2, '0');
-  e.defi = !!e.defi;
-  e.solutionReference = S[k + 1];
-  if (e.blocsDepart === undefined) e.blocsDepart = null;
-});
 
+// ---------- Exercices 5 à 12 : même chemin, même vérification, deux niveaux de guidage ----------
+// 5e : le programme de départ est presque écrit et commenté ; l'élève ajoute un ou deux blocs, avec une petite palette.
+// 4e : le départ donne la structure (fonction commencée, boucle vide, « si » posé) ; l'élève écrit le cœur de l'étape.
+// Un exercice guidé repart de son programme de départ (pas de reprise du précédent, qui le remplacerait).
+const com = (bloc, commentaire) => Object.assign(copie(bloc), { commentaire });
+const fil = (quand, corps, commentaire) => Object.assign({ quand, corps }, commentaire ? { commentaire } : {});
+const prog = (demarrage, boucle, fonctions) => ({ format: 'labo-blocs/programme', version: 1, fils: [demarrage, boucle], fonctions });
+// Une seule bulle par exercice, courte (elle s'ouvre à 200 × 80 px), posée sur ce qu'il faut compléter.
+const ALLUMER_FAITE = ALLUMER;
+const LIRE_FAITE = LIRE_BOUTON;
+const NOTES = '\nNotes : bleu 262 Hz (do), vert 330 Hz (mi), jaune 392 Hz (sol), rouge 523 Hz (do aigu).';
+
+function exercicesGuides(niveau) {
+  const n5 = niveau === 5;
+  const PALETTE = tout(BLOCS_BASE, BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE, BLOCS_JEU);
+  const L = [];
+
+  // 5 · Fonction « allumer »
+  L.push({
+    numero: '5',
+    titre: n5 ? 'Appeler la fonction « allumer »' : 'Une fonction « allumer » pour chaque couleur',
+    consigne: n5
+      ? 'La fonction « allumer » est déjà écrite (en bas) : on lui donne un numéro de couleur (1 bleu, 2 vert, 3 jaune, 4 rouge), elle allume cette couleur, joue sa note, puis éteint tout.\nDans « Au démarrage », appelle-la 4 fois : avec 1, puis 2, puis 3, puis 4. Les 4 couleurs doivent s’allumer l’une après l’autre.'
+      : 'La fonction « allumer » est commencée : si couleur = 1, elle allume la LED bleue et joue sa note. Complète-la pour 2 (vert), 3 (jaune) et 4 (rouge).\n« Au démarrage » appelle déjà la fonction pour 1, 2, 3 et 4 : les 4 couleurs doivent s’allumer l’une après l’autre.' + NOTES,
+    blocsAutorises: n5 ? ['fonction_appeler_param', 'nombre'] : tout(['led_etat', 'si_alors', 'comparaison'], BLOCS_SON, BLOCS_FONCTION),
+    blocsDepart: n5
+      ? prog(fil('demarrage', [], 'Ici : 4 blocs « appeler allumer avec … » (1, 2, 3, 4).'), fil('boucle', []), [ALLUMER_FAITE])
+      : prog(fil('demarrage', [1, 2, 3, 4].map((k) => appeler('allumer', k))), fil('boucle', []), [
+          com(Object.assign(copie(ALLUMER), { corps: [ALLUMER.corps[0], ...ALLUMER.corps.slice(4)] }), 'Le bleu (1) est fait. Ajoute un « si » pour 2, 3 et 4.'),
+        ]),
+    indices: n5
+      ? ['Catégorie Fonctions : le bloc « appeler allumer avec … ». Pose-le 4 fois dans « Au démarrage », l’un sous l’autre.', 'Change le nombre de chaque appel : 1, 2, 3, 4.']
+      : ['Copie le « si couleur = 1 » (clic droit › Dupliquer) et change le numéro, la broche de la LED et la note.', 'Vert : couleur = 2, LED D5, 330 Hz. Jaune : 3, D7, 392 Hz. Rouge : 4, D9, 523 Hz.'],
+  });
+
+  // 6 · La séquence dans une liste
+  L.push({
+    numero: '6',
+    titre: 'Ma séquence dans une liste',
+    consigne: n5
+      ? 'Ta séquence est rangée dans la liste « sequence ». Écris-y tes couleurs : au moins 4 (1 bleu, 2 vert, 3 jaune, 4 rouge).\nLa boucle montre chaque couleur de la liste, mais il manque un bloc : « ajouter 1 à i », pour passer à la couleur suivante.'
+      : 'Invente ta séquence dans la liste « sequence » : au moins 4 couleurs (1 bleu, 2 vert, 3 jaune, 4 rouge).\nComplète la boucle pour montrer chaque élément de la liste avec la fonction « allumer » : élément n° i, puis ajouter 1 à i.',
+    listes: ['sequence'],
+    variables: ['i'],
+    blocsAutorises: n5 ? ['ajouter_a', 'variable', 'nombre'] : tout(['led_etat', 'si_alors', 'comparaison'], BLOCS_SON, BLOCS_FONCTION, BLOCS_LISTE),
+    blocsDepart: n5
+      ? prog(
+          fil('demarrage', [
+            REMPLIR([1]),
+            aff('i', 1),
+            { bloc: 'repeter_n', fois: taille, corps: [com(appeler('allumer', elt(v('i'))), 'Il manque un bloc dessous : « ajouter à i la valeur 1 ».')] },
+          ]),
+          fil('boucle', []),
+          [ALLUMER_FAITE],
+        )
+      : prog(
+          fil('demarrage', [
+            REMPLIR([1, 3, 2, 4]),
+            aff('i', 1),
+            com({ bloc: 'repeter_n', fois: taille, corps: [] }, 'Ici : allumer l’élément n° i, puis ajouter 1 à i.'),
+          ]),
+          fil('boucle', []),
+          [ALLUMER],
+        ),
+    indices: n5
+      ? ['« i » vaut 1, puis 2, puis 3… : c’est le numéro de la couleur montrée. Sans « ajouter 1 à i », on montre toujours la n° 1.', 'Bloc « ajouter à i la valeur 1 » (catégorie Variables), sous « appeler allumer », dans la boucle.']
+      : ['Dans « répéter … fois » : « appeler allumer avec élément n° i de la liste sequence », puis « ajouter à i la valeur 1 ».', 'Le bloc « élément n° … de la liste » est dans la catégorie Listes ; mets-y la variable i.'],
+  });
+
+  // 7 · Lire le bouton appuyé
+  L.push({
+    numero: '7',
+    titre: 'Quel bouton le joueur appuie-t-il ?',
+    consigne: n5
+      ? 'Après avoir montré la séquence, le programme écoute le joueur. La fonction « lire_bouton » est déjà écrite : elle attend qu’un bouton soit appuyé, range son numéro dans « appui » (1 à 4), puis allume cette couleur.\nDans « Répéter indéfiniment », appelle « lire_bouton » : chaque appui allume la couleur du bouton.'
+      : 'Après avoir montré la séquence, le programme écoute le joueur. La fonction « lire_bouton » est commencée : bouton bleu → appui = 1. Ajoute vert → 2, jaune → 3, rouge → 4.\nPuis, dans « Répéter indéfiniment », appelle « lire_bouton ».',
+    listes: ['sequence'],
+    variables: ['i', 'appui'],
+    blocsAutorises: n5 ? ['fonction_appeler'] : PALETTE,
+    blocsDepart: n5
+      ? prog(fil('demarrage', S[6].fils[0].corps), fil('boucle', [], 'Ici : « appeler lire_bouton ».'), [ALLUMER_FAITE, LIRE_FAITE])
+      : prog(fil('demarrage', S[6].fils[0].corps), fil('boucle', []), [
+          ALLUMER,
+          Object.assign(copie(LIRE_BOUTON), {
+            corps: [LIRE_BOUTON.corps[0], com(Object.assign(copie(LIRE_BOUTON.corps[1]), { corps: [LIRE_BOUTON.corps[1].corps[0], att(0.01)] }), 'Le bleu (1) est fait. Ajoute vert 2, jaune 3, rouge 4.'), LIRE_BOUTON.corps[2]],
+          }),
+        ]),
+    indices: n5
+      ? ['Catégorie Fonctions : le bloc « appeler lire_bouton ».', 'Pose-le dans « Répéter indéfiniment » : le programme attend un appui, encore et encore.']
+      : ['Copie le « si bouton D2 » et change la broche du bouton et le nombre rangé dans appui.', 'Vert : D4 → 2. Jaune : D6 → 3. Rouge : D8 → 4. Puis « appeler lire_bouton » dans « Répéter indéfiniment ».'],
+  });
+
+  // 8 · Refaire la séquence, son d'erreur
+  const ERREUR_VIDE = (texte) => com(si(cmp('=', v('erreur'), 1), []), texte);
+  L.push({
+    numero: '8',
+    titre: 'Se tromper : son d’erreur',
+    consigne: n5
+      ? 'Le jeu montre la séquence, puis le joueur la refait. Le programme compare déjà chaque appui à la séquence : s’il y a une différence, « erreur » vaut 1.\nDans le « si erreur = 1 », joue un son d’erreur (une note différente de celles des couleurs, par exemple 110 Hz pendant 1 s), puis attends 1 s.'
+      : 'Le jeu montre la séquence, puis le joueur la refait. Dans la boucle d’écoute, après chaque appui : si « appui » n’est pas l’élément n° i, erreur = 1 ; sinon, ajouter 1 à i.\nEn cas d’erreur : un son d’erreur (une note différente de celles des couleurs, par exemple 110 Hz pendant 1 s).',
+    listes: ['sequence'],
+    variables: ['i', 'appui', 'erreur'],
+    blocsAutorises: n5 ? ['son', 'attendre', 'nombre'] : PALETTE,
+    blocsDepart: n5
+      ? prog(
+          fil('demarrage', [REMPLIR([1, 3, 2, 4])]),
+          fil('boucle', [...MONTRER_TOUT, ...ECOUTER(taille), ERREUR_VIDE('Ici : le son d’erreur, puis « attendre 1 ».'), att(1)]),
+          [ALLUMER_FAITE, LIRE_FAITE],
+        )
+      : prog(
+          fil('demarrage', [REMPLIR([1, 3, 2, 4])]),
+          fil('boucle', [
+            ...MONTRER_TOUT,
+            aff('i', 1),
+            aff('erreur', 0),
+            com(Object.assign(copie(ECOUTER(taille)[2]), { corps: [appeler('lire_bouton')] }), 'Ici : si appui ≠ élément n° i alors erreur = 1, sinon ajouter 1 à i.'),
+            si(cmp('=', v('erreur'), 1), []),
+            att(1),
+          ]),
+          [ALLUMER, LIRE_BOUTON],
+        ),
+    indices: n5
+      ? ['Catégorie Son : « jouer la note … Hz pendant … s ». Choisis une note grave, différente des 4 couleurs (110 Hz par exemple).', 'Dans le « si erreur = 1 » : « jouer la note 110 Hz pendant 1 s », puis « attendre 1 ».']
+      : ['Un « si … alors … sinon » sous « appeler lire_bouton », avec la comparaison « appui ≠ élément n° i de la liste ».', 'Alors : affecter à erreur la valeur 1. Sinon : ajouter à i la valeur 1. Dans le « si erreur = 1 » : jouer 110 Hz pendant 1 s, attendre 1.'],
+  });
+
+  // 9 · Une couleur de plus à chaque tour
+  L.push({
+    numero: '9',
+    titre: 'Une couleur de plus à chaque tour',
+    consigne: n5
+      ? 'Comme le vrai Simon : au tour 1, le jeu montre 1 couleur ; au tour 2, 2 couleurs… La variable « etape » compte les couleurs du tour.\nTout est prêt, sauf un bloc : quand le joueur a réussi le tour, ajoute 1 à « etape », à l’endroit indiqué par le commentaire.'
+      : 'Comme le vrai Simon : au tour 1, le jeu montre 1 couleur ; au tour 2, 2 couleurs… La variable « etape » compte les couleurs du tour ; montrer et écouter s’arrêtent déjà à « etape ».\nÀ la fin du tour : réussi, ajouter 1 à etape (s’il reste des couleurs, sinon etape revient à 1) ; erreur, son d’erreur et etape revient à 1.',
+    listes: ['sequence'],
+    variables: ['i', 'appui', 'erreur', 'etape'],
+    blocsAutorises: n5 ? ['ajouter_a', 'variable', 'nombre'] : PALETTE,
+    blocsDepart: n5
+      ? prog(
+          fil('demarrage', [REMPLIR([1, 3, 2, 4]), aff('etape', 1)]),
+          fil('boucle', [
+            ...MONTRER_ETAPE,
+            ...ECOUTER(v('etape')),
+            si(
+              cmp('=', v('erreur'), 1),
+              [...SON_ERREUR, aff('etape', 1)],
+              [com(si(cmp('<', v('etape'), taille), [], [aff('etape', 1)]), 'Tour réussi : ajoute dans « alors » 1 à etape.')],
+            ),
+            att(1),
+          ]),
+          [ALLUMER_FAITE, LIRE_FAITE],
+        )
+      : prog(
+          fil('demarrage', [REMPLIR([1, 3, 2, 4]), aff('etape', 1)]),
+          fil('boucle', [...MONTRER_ETAPE, ...ECOUTER(v('etape')), com(si(cmp('=', v('erreur'), 1), [...SON_ERREUR], []), 'Ici : la fin du tour (voir la consigne).'), att(1)]),
+          [ALLUMER, LIRE_BOUTON],
+        ),
+    indices: n5
+      ? ['« ajouter à etape la valeur 1 » : au prochain tour, le jeu montre une couleur de plus.', 'Pose « ajouter à etape la valeur 1 » dans le « alors » du « si etape < nombre d’éléments ».']
+      : ['Dans « sinon » : « si etape < nombre d’éléments de la liste alors ajouter 1 à etape sinon affecter à etape la valeur 1 ».', 'Dans « alors », sous le son d’erreur : « affecter à etape la valeur 1 ».'],
+  });
+
+  // 10 · Victoire
+  const S9_COMMENTE = copie(L[4].blocsDepart);
+  if (n5) {
+    const fin = S9_COMMENTE.fils[1].corps.find((b) => b.bloc === 'si_sinon');
+    fin.sinon[0] = si(cmp('<', v('etape'), taille), [plus1('etape')], [com(aff('etape', 1), 'Tout est réussi : ta musique de victoire au-dessus de ce bloc.')]);
+  }
+  L.push({
+    numero: '10',
+    titre: 'Toute la séquence : victoire !',
+    consigne: n5
+      ? 'Quand le joueur a refait toute la séquence, joue une petite musique de victoire : au moins 2 notes, avec « attendre » entre elles. Le commentaire montre où la mettre.\nEnsuite, le jeu recommence au tour 1 (c’est déjà fait).'
+      : 'Quand le joueur a refait toute la séquence (etape = nombre d’éléments de la liste), joue une petite musique de victoire (au moins 2 notes), puis le jeu recommence au tour 1.',
+    listes: ['sequence'],
+    variables: ['i', 'appui', 'erreur', 'etape'],
+    blocsAutorises: n5 ? ['son', 'attendre', 'nombre'] : PALETTE,
+    blocsDepart: n5 ? S9_COMMENTE : S[9],
+    reprendreProgramme: n5 ? undefined : 'simon-09',
+    indices: n5
+      ? ['La musique se place juste avant « affecter à etape la valeur 1 », là où toute la liste est réussie.', 'Exemple : do 523 Hz, mi 659 Hz, sol 784 Hz, do 1047 Hz, chacun pendant 0,15 s, avec « attendre 0.15 » entre les notes.']
+      : ['La victoire se joue au même endroit que « etape revient à 1 » quand toute la liste est réussie.', 'Exemple de musique : do 523 Hz, mi 659 Hz, sol 784 Hz, do 1047 Hz, avec « attendre » entre les notes.'],
+  });
+
+  // 11 · Mon Simon
+  const S10_COMMENTE = copie(S[10]);
+  if (n5) {
+    S10_COMMENTE.fils[0].corps[0] = com(S10_COMMENTE.fils[0].corps[0], 'Ta séquence : au moins 6 couleurs.');
+  }
+  L.push({
+    numero: '11',
+    titre: 'Mon Simon',
+    consigne: n5
+      ? 'Personnalise ton Simon : ta séquence (au moins 6 couleurs), tes notes, ta musique de victoire et ton son d’erreur. Ta séquence est dans « remplir la liste », tes notes dans la fonction « allumer », la musique de victoire et le son d’erreur à la fin de « Répéter indéfiniment ».\nC’est ce programme qui sera envoyé dans la Console Officielle pour le Grand Tournoi. Quand il est réussi, appelle le professeur.'
+      : 'Personnalise ton Simon : ta séquence (au moins 6 couleurs), tes notes, ton rythme (pauses d’1 s au plus), ta musique de victoire et ton son d’erreur (différent des notes des couleurs).\nC’est ce programme qui sera envoyé dans la Console Officielle pour le Grand Tournoi. Quand il est réussi, appelle le professeur.',
+    listes: ['sequence'],
+    variables: ['i', 'appui', 'erreur', 'etape'],
+    blocsAutorises: n5 ? ['son', 'attendre', 'nombre'] : tout(PALETTE, ['operation']),
+    blocsDepart: S10_COMMENTE,
+    reprendreProgramme: n5 ? undefined : 'simon-10',
+    indices: [
+      'Change les nombres de « remplir la liste », les notes de la fonction « allumer », la musique de victoire et le son d’erreur.',
+      n5 ? 'Ta liste doit contenir au moins 6 nombres entre 1 et 4, séparés par des virgules.' : 'Vérifie que chaque pause dure 1 s au plus : sinon le joueur ne sait pas quand répondre.',
+    ],
+  });
+
+  // 12 · Défi : le Simon au hasard (le même pour les deux niveaux)
+  L.push({
+    numero: '12',
+    titre: 'Défi : le Simon au hasard',
+    defi: true,
+    consigne:
+      'Le vrai Simon invente sa séquence : au début de chaque tour, ajoute une couleur au hasard (1 à 4) à la fin de la liste, puis montre toute la liste et écoute le joueur.\nErreur : son d’erreur, la liste est vidée et on recommence. Bonus : garde le score (nombre de couleurs réussies) dans une variable.',
+    listes: ['sequence'],
+    variables: ['i', 'appui', 'erreur', 'score'],
+    blocsAutorises: tout(PALETTE, ['hasard', 'liste_ajouter', 'liste_vider', 'operation']),
+    blocsDepart: S[11],
+    reprendreProgramme: n5 ? undefined : 'simon-11',
+    indices: ['« Au démarrage » : vider la liste. Au début de « Répéter indéfiniment » : ajouter un nombre au hasard entre 1 et 4 à la fin de la liste.', 'Plus besoin de « etape » : on montre et on écoute toute la liste. En cas d’erreur, « vider la liste ».'],
+  });
+
+  // Ce qui ne change pas d'un niveau à l'autre : composants, scénarios, fiche, compétence.
+  const SCENARIOS = {
+    5: [
+      {
+        nom: 'Les 4 couleurs dans l’ordre',
+        etapes: [
+          { allumage: 'D3', delai: 1, contexte: 'au démarrage' },
+          { entendre: 'D10', frequence: 262, delai: 0.3, contexte: 'quand la LED bleue s’allume' },
+          { allumage: 'D5', delai: 1.5, contexte: 'après la couleur bleue' },
+          { entendre: 'D10', frequence: 330, delai: 0.3, contexte: 'quand la LED verte s’allume' },
+          { allumage: 'D7', delai: 1.5, contexte: 'après la couleur verte' },
+          { entendre: 'D10', frequence: 392, delai: 0.3, contexte: 'quand la LED jaune s’allume' },
+          { allumage: 'D9', delai: 1.5, contexte: 'après la couleur jaune' },
+          { entendre: 'D10', frequence: 523, delai: 0.3, contexte: 'quand la LED rouge s’allume' },
+          { attendre: 1 },
+          { stable: Object.fromEntries(LEDS.map((l) => [l, 0])), duree: 1, contexte: 'à la fin', attendu: 'les 4 LED devraient être éteintes' },
+        ],
+      },
+    ],
+    6: [
+      {
+        nom: 'La séquence est montrée dans l’ordre',
+        etapes: [listeOk(4), ...[1, 2, 3, 4].map((n) => ({ allumage: { liste: 'sequence', numero: n }, leds: LEDS, delai: 1.5, contexte: n === 1 ? 'au démarrage' : `après la couleur n° ${n - 1}` }))],
+      },
+    ],
+    7: [
+      {
+        nom: 'Le joueur appuie sur le jaune puis sur le bleu',
+        etapes: [
+          listeOk(4),
+          { attendre: 26 },
+          { appuyer: 'D6' },
+          { allumage: 'D7', delai: 1 },
+          { entendre: 'D10', frequence: 392, delai: 0.3, contexte: 'après un appui sur le bouton jaune (D6)' },
+          { attendre: 1 },
+          { appuyer: 'D2' },
+          { allumage: 'D3', delai: 1 },
+          { entendre: 'D10', frequence: 262, delai: 0.3, contexte: 'après un appui sur le bouton bleu (D2)' },
+        ],
+      },
+    ],
+    8: [
+      SCENARIO_ERREUR('complet', 3),
+      {
+        nom: 'Le joueur refait la séquence sans se tromper',
+        etapes: [
+          listeOk(4),
+          jouer({ tours: 'complet' }),
+          { entendre: 'D10', sauf: 'couleurs', aucune: true, delai: 2, memeDepart: true, contexte: 'Quand le joueur refait toute la séquence sans se tromper', attendu: 'le buzzer ne devrait pas jouer le son d’erreur' },
+          ...premiereCouleur(6, 'Ensuite'),
+        ],
+      },
+    ],
+    9: [
+      {
+        nom: 'Après deux tours réussis, le jeu montre 3 couleurs',
+        etapes: [listeOk(4), jouer({ tours: 2 }), { entendre: 'D10', notes: 3, exactement: true, delai: 5, contexte: 'Après deux tours réussis', attendu: 'le jeu devrait montrer 3 couleurs (3 notes), puis attendre le joueur' }],
+      },
+      SCENARIO_ERREUR(2, 3),
+    ],
+    10: [
+      {
+        nom: 'Le joueur réussit toute la séquence',
+        etapes: [listeOk(4), jouer({}), { entendre: 'D10', notes: 2, delai: 2.5, memeDepart: true, contexte: 'Quand le joueur a refait toute la séquence', attendu: 'le buzzer devrait jouer une musique de victoire (au moins 2 notes)' }, ...premiereCouleur(8, 'Après la victoire')],
+      },
+      SCENARIO_ERREUR(2, 3),
+    ],
+    11: [
+      {
+        nom: 'Le joueur réussit toute ma séquence',
+        etapes: [listeOk(6), jouer({ attente: 30 }), { entendre: 'D10', notes: 2, delai: 3, memeDepart: true, contexte: 'Quand le joueur a refait toute la séquence', attendu: 'le buzzer devrait jouer ta musique de victoire (au moins 2 notes)' }, ...premiereCouleur(10, 'Après la victoire')],
+      },
+      SCENARIO_ERREUR(3, 4),
+    ],
+    12: [
+      {
+        nom: 'La séquence s’allonge à chaque tour',
+        etapes: [jouer({ grandit: true, tours: 4 }), { liste: 'sequence', tailleMin: 5, delai: 3, contexte: 'Après 4 tours réussis', attendu: 'la liste devrait avoir une couleur de plus à chaque tour (5 couleurs au moins)' }],
+      },
+      {
+        nom: 'Le joueur se trompe',
+        etapes: [jouer({ grandit: true, tours: 3, faute: true }), sonErreur(3), { liste: 'sequence', tailleMax: 1, delai: 3, contexte: 'Après l’erreur', attendu: 'la liste devrait repartir de zéro (une seule couleur au nouveau tour)' }],
+      },
+    ],
+  };
+  const A_SAVOIR = { 5: 'fonction', 6: 'liste', 7: 'fonction', 8: 'jeu', 9: 'jeu', 10: 'son', 11: 'jeu', 12: 'jeu' };
+  return L.map((e) => {
+    const k = Number(e.numero);
+    const x = Object.assign({ numero: e.numero, titre: e.titre }, e.defi ? { defi: true } : {}, { consigne: e.consigne, composants: TOUS, illustration: 'simon' }, e);
+    x.scenarios = SCENARIOS[k];
+    x.aSavoir = A_SAVOIR[k];
+    x.competence = 'C9';
+    if (x.reprendreProgramme === undefined) delete x.reprendreProgramme;
+    if (k <= (niveau === 5 ? 11 : 9)) x.sansReprise = true;
+    return x;
+  });
+}
+
+// ---------- Les deux parcours ----------
+const NIVEAUX = {
+  4: { id: 'simon', titre: 'Simon Rétro Game · 4e', versionParcours: '2.0.0' },
+  5: { id: 'simon-5e', titre: 'Simon Rétro Game · 5e', versionParcours: '1.0.0' },
+};
 // ---------- Fiches et lexique ----------
 const fiches = {
   standard: {
@@ -503,53 +603,67 @@ const lexique = [
   { mot: 'Algorithme', icone: 'info', formes: ['algorithme', 'algorithmes'], definition: 'La suite des étapes pour résoudre un problème, écrite avant de programmer.' },
 ];
 
-const paquet = {
-  format: 'labo-blocs/parcours',
-  version: 1,
-  id: 'simon',
-  titre: 'Simon Rétro Game',
-  versionParcours: '1.0.0',
-  date: '2026-10-21',
-  moteurMinimum: PA.VERSION_MOTEUR,
-  carte: 'uno',
-  modes: ['simulateur', 'carte'],
-  boutonsVersMasse: true,
-  parametres: {},
-  exercices: E,
-  fiches,
-  lexique,
-};
+function construire(niveau) {
+  const exercices = [...copie(E), ...exercicesGuides(niveau)];
+  exercices.forEach((e, k) => {
+    e.id = 'simon-' + String(k + 1).padStart(2, '0');
+    e.defi = !!e.defi;
+    e.solutionReference = S[k + 1];
+    if (e.blocsDepart === undefined) e.blocsDepart = null;
+  });
+  return {
+    format: 'labo-blocs/parcours',
+    version: 1,
+    id: NIVEAUX[niveau].id,
+    titre: NIVEAUX[niveau].titre,
+    versionParcours: NIVEAUX[niveau].versionParcours,
+    date: '2026-11-16',
+    moteurMinimum: PA.VERSION_MOTEUR,
+    carte: 'uno',
+    modes: ['simulateur', 'carte'],
+    boutonsVersMasse: true,
+    parametres: {},
+    exercices,
+    fiches,
+    lexique,
+  };
+}
 
 // ---------- Vérifications ----------
 let echecs = 0;
-const pb = PA.controler(paquet);
-if (pb.length) {
-  console.log('Contrôle du parcours :', pb);
-  echecs++;
-}
-const prep = PA.preparer(paquet);
 const vides = v1([], []);
-for (const e of prep.exercices) {
-  const c = C.compiler(e.solutionReference, { composants: e.composants, boutonsVersMasse: true });
-  const r = V.valider(e, e.solutionReference);
-  const depart = V.valider(e, e.blocsDepart || vides);
-  const ok = c.erreurs.length === 0 && r.reussi && !depart.reussi && c.octets.length < 1024;
-  if (!ok) echecs++;
-  console.log(`${ok ? '✔' : '✖'} ${e.numero.padStart(2)} ${e.titre} — ${c.octets.length} octets${c.erreurs.length ? ' ; ' + c.erreurs.join(' ; ') : ''}`);
-  if (!r.reussi) console.log('   solution :', r.nomScenario, '—', r.message);
-  if (depart.reussi) console.log('   le programme de départ réussit déjà !');
-  else console.log('   départ :', depart.message);
-  // Le programme de l'exercice précédent ne doit pas suffire.
-  const k = Number(e.numero);
-  if (k > 1 && S[k - 1]) {
-    const avant = V.valider(e, S[k - 1]);
-    console.log(`   solution ${k - 1} : ${avant.reussi ? '!! réussit aussi' : avant.message}`);
+for (const niveau of [5, 4]) {
+  const paquet = construire(niveau);
+  console.log(`\n${paquet.titre} (${paquet.id} ${paquet.versionParcours})`);
+  const pb = PA.controler(paquet);
+  if (pb.length) {
+    console.log('Contrôle du parcours :', pb);
+    echecs++;
   }
-}
-if (process.argv.includes('--ecrire')) {
-  const dossier = path.join(R, 'parcours', 'simon');
-  fs.mkdirSync(dossier, { recursive: true });
-  fs.writeFileSync(path.join(dossier, 'parcours.js'), PA.scriptParcours(paquet));
-  console.log('Écrit :', path.join(dossier, 'parcours.js'));
+  const prep = PA.preparer(paquet);
+  for (const e of prep.exercices) {
+    const c = C.compiler(e.solutionReference, { composants: e.composants, boutonsVersMasse: true });
+    const r = V.valider(e, e.solutionReference);
+    const depart = V.valider(e, e.blocsDepart || vides);
+    const cd = e.blocsDepart ? C.compiler(e.blocsDepart, { composants: e.composants, boutonsVersMasse: true }) : { erreurs: [] };
+    const ok = c.erreurs.length === 0 && cd.erreurs.length === 0 && r.reussi && !depart.reussi && c.octets.length < 1024;
+    if (!ok) echecs++;
+    console.log(`${ok ? '✔' : '✖'} ${e.numero.padStart(2)} ${e.titre} — ${c.octets.length} octets${c.erreurs.length ? ' ; ' + c.erreurs.join(' ; ') : ''}${cd.erreurs.length ? ' ; départ : ' + cd.erreurs.join(' ; ') : ''}`);
+    if (!r.reussi) console.log('   solution :', r.nomScenario, '—', r.message);
+    if (depart.reussi) console.log('   le programme de départ réussit déjà !');
+    else console.log('   départ :', depart.message);
+    // Le programme de l'exercice précédent ne doit pas suffire.
+    const k = Number(e.numero);
+    if (k > 1 && S[k - 1]) {
+      const avant = V.valider(e, S[k - 1]);
+      console.log(`   solution ${k - 1} : ${avant.reussi ? '!! réussit aussi' : avant.message}`);
+    }
+  }
+  if (process.argv.includes('--ecrire')) {
+    const dossier = path.join(R, 'parcours', paquet.id);
+    fs.mkdirSync(dossier, { recursive: true });
+    fs.writeFileSync(path.join(dossier, 'parcours.js'), PA.scriptParcours(paquet));
+    console.log('Écrit :', path.join(dossier, 'parcours.js'));
+  }
 }
 process.exit(echecs ? 1 : 0);

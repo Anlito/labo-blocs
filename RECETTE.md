@@ -437,3 +437,17 @@ et « Répéter indéfiniment » vides) et utilise la même carte.
 | 30.4 | Après une reprise, bouton « Annuler » (flèche en bas de la zone) | Le programme d'avant la reprise revient | |
 | 30.5 | Fermer l'onglet, rouvrir la sauvegarde de l'équipe | Le programme repris et complété de l'exercice 2 est retrouvé ; l'exercice 1 n'a pas changé | |
 | 30.6 | Éditeur de parcours : cocher « Ne pas proposer à l'élève le bouton… » sur un exercice, publier | Chez l'élève, plus de bouton sur cet exercice | |
+
+## 31. Simon : parcours 5e et parcours 4e
+
+`parcours/simon-5e` (très guidé) et `parcours/simon` (4e). Exercices 1 à 4 identiques ; vérification identique ensuite.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 31.1 | Accueil professeur : « Essayer » Simon Rétro Game · 5e, exercice 5 | La fonction « allumer » est déjà là ; une bulle « Ici : 4 blocs… » sur « Au démarrage » ; palette Fonctions seulement | |
+| 31.2 | 5e, exercices 6 à 10 : ajouter le bloc indiqué par la bulle, vérifier | Réussi avec ce seul ajout ; avant l'ajout, la phrase dit ce que fait le programme | |
+| 31.3 | 5e, exercice 11 : 6 couleurs dans la liste, vérifier | Réussi : c'est le programme du tournoi | |
+| 31.4 | 4e, exercice 5 | Le bleu est fait dans « allumer » ; compléter vert, jaune, rouge ; les 4 appels sont déjà posés | |
+| 31.5 | 4e, exercices 6 à 9 | Pas de bouton « Reprendre » ; boucle ou « si » posé vide, avec une bulle | |
+| 31.6 | 4e, exercice 10 | Bouton « Reprendre l'exercice 9 » proposé | |
+| 31.7 | Une équipe qui avait réussi les exercices 1 à 4 | Toujours réussis ; les exercices 5 et plus sont « modifiés, à revérifier » | |

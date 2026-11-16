@@ -572,3 +572,14 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      `sansReprise` sur l'exercice (case dans l'éditeur de parcours).
    - Bouton `.btn-reprendre-precedent` à côté de « Mon programme » ; confirmation si le programme affiché n'est pas
      vide ; `editeur.remplacer` charge sans vider l'historique : « Annuler » revient au programme d'avant.
+45. **Simon : un parcours par niveau (16/11/2026)**. Thomas : à partir de l'exercice 5 (fonctions, listes), c'est trop
+   dur pour les 5e. Décisions : deux parcours, le site Simon choisit d'après la classe de l'équipe ; les deux mènent au
+   Simon complet, tours qui s'allongent compris ; 5e très guidé (« on mâche le travail »), 4e moins guidé mais plus
+   simple qu'avant. `tools/construire-simon.js` écrit `parcours/simon` (4e, 2.0.0) et `parcours/simon-5e` (5e, 1.0.0).
+   - Exercices 1 à 4 identiques, octet pour octet (les réussites déjà notées restent) ; ensuite mêmes scénarios et
+     mêmes solutions : seuls le programme de départ, la consigne, la palette et les indices changent.
+   - 5e : départ presque écrit (fonctions « allumer » et « lire_bouton » toutes faites), un ou deux blocs à ajouter,
+     palette de 1 à 3 blocs, une bulle de commentaire ouverte sur le trou. 4e : fonction commencée (le bleu), boucle
+     posée vide, « si erreur » posé, fin de tour à écrire. Exercices guidés : `sansReprise` (le bouton « Reprendre »
+     remplacerait le départ) ; 4e 10 à 12 reprennent le jeu de l'élève.
+   - Une seule bulle par exercice et courte : la bulle s'ouvre à 200 × 80 px et en recouvre d'autres.
