@@ -366,7 +366,8 @@
       `<label>Apprentissage IA : photos minimales par étiquette (fond vide compris)<input type="number" min="1" max="100" class="champ-apprentissage" data-apprentissage="photos" value="${e.apprentissage?.photos ?? ''}" placeholder="aucune exigence"></label>` +
       '</div></div>' +
       // Composants
-      `<div class="carte ed-carte ed-carte-reprise"><label>Reprendre le programme de l’exercice (identifiant)<input class="champ-reprise" value="${echapper(e.reprendreProgramme || '')}" placeholder="ex. theatre-05"></label></div>` +
+      `<div class="carte ed-carte ed-carte-reprise"><label>Reprendre le programme de l’exercice (identifiant)<input class="champ-reprise" value="${echapper(e.reprendreProgramme || '')}" placeholder="ex. theatre-05"></label>` +
+      `<label class="ed-case"><input type="checkbox" class="champ-sans-reprise"${e.sansReprise ? ' checked' : ''}> Ne pas proposer à l’élève le bouton « Reprendre l’exercice précédent » (ex. une évaluation)</label></div>` +
       '<div class="carte ed-carte ed-carte-libre"><div class="ed-carte-tete"><h3>Composants et broches</h3></div>' +
       '<p class="ed-aide">Exercice libre : les composants apparaissent selon les blocs que l’élève pose (LED, bouton, servomoteur, buzzer et leurs broches). Coche ci-dessous les blocs proposés.</p></div>' +
       '<div class="carte ed-carte ed-carte-composants">' +
@@ -545,6 +546,10 @@
         dessinerFormulaire();chargerSolution();dessinerScenarios();
       } else if (t.matches('.champ-reprise')) {
         if(t.value.trim())e.reprendreProgramme=t.value.trim();else delete e.reprendreProgramme;
+        modifie();
+      } else if (t.matches('.champ-sans-reprise')) {
+        if (t.checked) e.sansReprise = true;
+        else delete e.sansReprise;
         modifie();
       } else if (t.matches('.champ-camera') || t.matches('.champ-camera-libres') || t.matches('.champ-camera-activer')) {
         const champ = $('.champ-camera', zone);

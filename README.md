@@ -150,3 +150,6 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   (P0, P1, P2), broches réglées par l'exercice ; blocs « quand le joystick est poussé … », « le joystick est … »,
   « position du joystick », « le bouton du joystick est appuyé » ; manche à tirer dans le simulateur ; « En direct » et
   « Dans la carte » sans mise à jour des cartes — [RECETTE.md](RECETTE.md) §26.
+- **Reprendre l'exercice précédent, en recette (16/11/2026)** : bouton « Reprendre l'exercice … » à côté de « Mon
+  programme » : l'élève repart de son programme de l'exercice d'avant pour le compléter ; « Annuler » revient en
+  arrière ; le professeur peut le retirer d'un exercice (éditeur de parcours) — [RECETTE.md](RECETTE.md) §30.

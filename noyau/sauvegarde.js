@@ -256,6 +256,28 @@
     return ouvert ? ouvert.id : ids[ids.length - 1];
   }
 
+  // Bouton « Reprendre l'exercice … » : le programme que l'équipe a fait dans l'exercice juste avant (même carte),
+  // s'il n'est pas vide, pour le compléter ou le modifier. Le professeur peut le retirer d'un exercice (sansReprise).
+  //   → { exercice, programme (sauvegarde Blockly) } ou null
+  const BLOCS_DE_DEPART = ['demarrage', 'boucle'];
+  function nonVide(x) {
+    if (!x || typeof x !== 'object') return false;
+    if (Array.isArray(x)) return x.some(nonVide);
+    if (typeof x.type === 'string' && !BLOCS_DE_DEPART.includes(x.type)) return true;
+    if (Array.isArray(x.workspaceComments) && x.workspaceComments.length) return true;
+    return Object.values(x).some(nonVide);
+  }
+  function programmePrecedent(d, paquet, id) {
+    const liste = paquet.exercices;
+    const i = liste.findIndex((e) => e.id === id);
+    if (i <= 0 || liste[i].sansReprise) return null;
+    const avant = liste[i - 1];
+    const carte = (e) => e.carte || paquet.carte || 'uno';
+    if (carte(avant) !== carte(liste[i])) return null;
+    const e = d.programmation && d.programmation.exercices[avant.id];
+    return e && nonVide(e.programme) ? { exercice: avant, programme: e.programme } : null;
+  }
+
   // Avancement : exercices obligatoires réussis (les défis sont comptés à part).
   function avancement(d, paquet) {
     const obligatoires = paquet.exercices.filter((e) => !e.defi);
@@ -315,6 +337,8 @@
     estDebloque,
     etat,
     exerciceAReprendre: aReprendre,
+    programmePrecedent,
+    programmeNonVide: nonVide,
     avancement,
   };
   if (typeof module === 'object' && module.exports) module.exports = api;

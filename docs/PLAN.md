@@ -564,3 +564,11 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      (3 notes après 2 tours), `memeDepart` (son d'erreur puis retour au début), `grandit` (défi).
    - Corrigé : l'éditeur relisait mal `parcours/index.js` (apostrophes simples) et le réécrivait avec son seul parcours ;
      il lit maintenant les deux sortes et ne touche plus à une liste illisible (`idsIndexParcours`).
+44. **Reprendre l'exercice précédent (16/11/2026)**, demande de Thomas (un exercice reprend souvent le précédent en
+   ajoutant ou modifiant un élément). Décisions : un bouton pour l'élève, visible dès que possible ; le professeur peut
+   le retirer d'un exercice. Le réglage existant `reprendreProgramme` (l'exercice démarre avec ce programme) reste.
+   - `programmePrecedent(d, paquet, id)` (`noyau/sauvegarde.js`) : l'exercice juste avant, même carte, programme non
+     vide (`programmeNonVide` : un bloc autre que « Au démarrage » / « Répéter indéfiniment », ou une note), sauf
+     `sansReprise` sur l'exercice (case dans l'éditeur de parcours).
+   - Bouton `.btn-reprendre-precedent` à côté de « Mon programme » ; confirmation si le programme affiché n'est pas
+     vide ; `editeur.remplacer` charge sans vider l'historique : « Annuler » revient au programme d'avant.

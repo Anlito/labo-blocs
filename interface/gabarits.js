@@ -62,6 +62,7 @@
   <main class="colonne-programme">
     <div class="programme-tete">
       <h2>Mon programme</h2>
+      <button type="button" class="btn-onglet btn-reprendre-precedent" hidden><span data-icone="importer" data-epaisseur="2.4"></span><span class="texte-reprendre">Reprendre l’exercice précédent</span></button>
       <button type="button" class="btn-onglet btn-solution" hidden title="Remplacer le programme affiché par la solution de référence"><span data-icone="oeil" data-epaisseur="2.4"></span>Solution</button>
       <div class="niveaux" role="group" aria-label="Niveau">
         <span class="niveaux-libelle">Niveau</span>
