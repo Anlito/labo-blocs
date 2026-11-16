@@ -16,7 +16,7 @@
 //   RA <broche>             → V <broche> <0..1023>   lecture analogique
 //   W [<broche> …]          → OK            surveiller ces entrées : la carte envoie « E <broche> <0|1> »
 //                                           à chaque changement (sans broche : arrêter)
-//   X <ext> <cmd> [args…]   → V <valeur>    commande d'extension (mBot : moteurs, capteurs, LED)
+//   X <ext> <cmd> [args…]   → V <valeur>    commande d'extension (mBot : moteurs, capteurs, LED ; Uno : modules)
 //   PROG <octets>           → OK            prépare l'envoi d'un programme (efface l'ancien)
 //   H <hexadécimal>         → OK            morceau du programme (64 caractères au plus)
 //   FIN                     → OK <octets>   vérifie et garde le programme
@@ -29,15 +29,19 @@
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Servo.h>
+#if !defined(CARTE_MCORE)
+#include <SoftwareSerial.h>
+#endif
 #include "vm.h"
 
 // 0.2 : mBot, un moteur seul (extension 1, commande 9).
-// 0.3 (mBot seulement) : afficheur LED Matrix 8×16 sur le port 4 (extension 1, commandes 10 à 15). L'Uno reste en 0.2.
+// 0.3 (mBot seulement) : afficheur LED Matrix 8×16 sur le port 4 (extension 1, commandes 10 à 15).
+// 0.4 (Uno seulement) : modules d'Escape Lab (extension 5) : ultrason, afficheur 4 chiffres, écran I2C, clavier tactile.
 #if defined(CARTE_MCORE)
 #define VERSION_FIRMWARE "0.3"
 #define NOM_CARTE "mcore"
 #else
-#define VERSION_FIRMWARE "0.2"
+#define VERSION_FIRMWARE "0.4"
 #define NOM_CARTE "uno"
 #endif
 
@@ -362,6 +366,230 @@ static void deuxColonnes(uint8_t *dest, const float *a) {
 }
 #endif
 
+#if !defined(CARTE_MCORE)
+// ---------- Modules de l'Uno (extension 5, 0.4 : Escape Lab) ----------
+// Ultrason HY-SRF05 (TRIG, ECHO ; OUT libre), afficheur 4 chiffres TM1637 (CLK, DIO), écran LCD 16×2 I2C
+// (PCF8574 : adresse 0x27 ou 0x3F, cherchée au premier usage ; SDA = A4, SCL = A5), clavier tactile 12 touches
+// ATtiny1616 (liaison série 9600 bauds ; la carte lit le fil TX du clavier). Sans bibliothèque à installer.
+// L'I2C est écrit à la main (comme l'afficheur) : la bibliothèque Wire prendrait 200 octets de mémoire vive.
+
+static float ultrasonModule(int trig, int echo) {
+  if (!brocheAutorisee(trig) || !brocheAutorisee(echo)) return 0;
+  pinMode(echo, INPUT);
+  pinMode(trig, OUTPUT);
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  unsigned long d = pulseIn(echo, HIGH, 25000UL); // 25 ms : au-delà de 4 m
+  return d ? d / 58.0f : 400;
+}
+
+// Afficheur 4 chiffres (TM1637) : HAUT = broche lâchée (résistances du module), BAS = broche à la masse.
+static int8_t clkAfficheur = -1, dioAfficheur = -1;
+static void tmHaut(int b) { pinMode(b, INPUT_PULLUP); }
+static void tmBas(int b) {
+  digitalWrite(b, LOW);
+  pinMode(b, OUTPUT);
+}
+static void tmPause() { delayMicroseconds(5); }
+static void tmDebut() {
+  tmHaut(clkAfficheur), tmHaut(dioAfficheur), tmPause();
+  tmBas(dioAfficheur), tmPause();
+  tmBas(clkAfficheur), tmPause();
+}
+static void tmFin() {
+  tmBas(dioAfficheur), tmPause();
+  tmHaut(clkAfficheur), tmPause();
+  tmHaut(dioAfficheur), tmPause();
+}
+static void tmOctet(uint8_t o) {
+  for (uint8_t i = 0; i < 8; i++, o >>= 1) {
+    tmBas(clkAfficheur);
+    if (o & 1) tmHaut(dioAfficheur);
+    else tmBas(dioAfficheur);
+    tmPause();
+    tmHaut(clkAfficheur), tmPause();
+  }
+  tmBas(clkAfficheur), tmHaut(dioAfficheur), tmPause(); // accusé de réception du module (non lu)
+  tmHaut(clkAfficheur), tmPause();
+  tmBas(clkAfficheur), tmPause();
+}
+static void tmAfficher(int clk, int dio, const uint8_t *segments) {
+  if (!brocheAutorisee(clk) || !brocheAutorisee(dio) || clk == dio) return;
+  clkAfficheur = clk, dioAfficheur = dio;
+  tmDebut(), tmOctet(0x40), tmFin();             // écriture, adresse qui avance seule
+  tmDebut(), tmOctet(0xC0);                      // premier chiffre
+  for (uint8_t i = 0; i < 4; i++) tmOctet(segments[i]);
+  tmFin();
+  tmDebut(), tmOctet(0x88 | 7), tmFin();         // allumé, luminosité 7
+}
+static const uint8_t CHIFFRES_7[] = {0x3F, 0x06, 0x5B, 0x4F, 0x66, 0x6D, 0x7D, 0x07, 0x7F, 0x6F};
+// Nombre de -999 à 9999, aligné à droite ; au-delà : « ---- ».
+static void afficheurNombre(int clk, int dio, float v) {
+  long n = lround(v);
+  uint8_t s[4] = {0, 0, 0, 0};
+  if (n < -999 || n > 9999) {
+    for (uint8_t i = 0; i < 4; i++) s[i] = 0x40;
+  } else {
+    bool negatif = n < 0;
+    if (negatif) n = -n;
+    int8_t i = 3;
+    do {
+      s[i--] = CHIFFRES_7[n % 10];
+      n /= 10;
+    } while (n && i >= 0);
+    if (negatif && i >= 0) s[i] = 0x40;
+  }
+  tmAfficher(clk, dio, s);
+}
+static void afficheurEffacer(int clk, int dio) {
+  const uint8_t rien[4] = {0, 0, 0, 0};
+  tmAfficher(clk, dio, rien);
+}
+
+// I2C écrit à la main sur A4 (SDA) et A5 (SCL), mêmes broches lâchées / à la masse que l'afficheur.
+static const int SDA_ECRAN = 18, SCL_ECRAN = 19;
+static void i2cDebut() {
+  tmHaut(SDA_ECRAN), tmHaut(SCL_ECRAN), tmPause();
+  tmBas(SDA_ECRAN), tmPause();
+  tmBas(SCL_ECRAN), tmPause();
+}
+static void i2cFin() {
+  tmBas(SDA_ECRAN), tmPause();
+  tmHaut(SCL_ECRAN), tmPause();
+  tmHaut(SDA_ECRAN), tmPause();
+}
+// Envoie un octet ; renvoie true si le module a répondu (accusé de réception).
+static bool i2cOctet(uint8_t o) {
+  for (uint8_t i = 0; i < 8; i++, o <<= 1) {
+    if (o & 0x80) tmHaut(SDA_ECRAN);
+    else tmBas(SDA_ECRAN);
+    tmPause();
+    tmHaut(SCL_ECRAN), tmPause();
+    tmBas(SCL_ECRAN);
+  }
+  tmHaut(SDA_ECRAN), tmPause();
+  tmHaut(SCL_ECRAN), tmPause();
+  bool ok = digitalRead(SDA_ECRAN) == LOW;
+  tmBas(SCL_ECRAN), tmPause();
+  return ok;
+}
+
+// Écran LCD 16×2 derrière un PCF8574 : P0 RS, P2 E, P3 rétroéclairage, P4 à P7 données (montage courant).
+static uint8_t adresseEcran = 0;
+static uint8_t ligneEcran = 0, nbEcran = 0;
+static char texteEcran[17];
+static void ecranQuartet(uint8_t v) {
+  i2cDebut();
+  i2cOctet(adresseEcran << 1);
+  i2cOctet(v | 0x08), i2cOctet(v | 0x0C), i2cOctet(v | 0x08); // E : impulsion pour que l'écran lise
+  i2cFin();
+  delayMicroseconds(50);
+}
+static void ecranOctet(uint8_t o, uint8_t rs) {
+  ecranQuartet((o & 0xF0) | rs);
+  ecranQuartet((uint8_t)(o << 4) | rs);
+}
+static bool ecranPret() {
+  if (adresseEcran) return true;
+  const uint8_t adresses[2] = {0x27, 0x3F};
+  for (uint8_t i = 0; i < 2 && !adresseEcran; i++) {
+    i2cDebut();
+    if (i2cOctet(adresses[i] << 1)) adresseEcran = adresses[i];
+    i2cFin();
+  }
+  if (!adresseEcran) return false;
+  delay(50);
+  for (uint8_t i = 0; i < 3; i++) ecranQuartet(0x30), delay(5);
+  ecranQuartet(0x20);
+  ecranOctet(0x28, 0); // 4 bits, 2 lignes
+  ecranOctet(0x0C, 0); // allumé, sans curseur
+  ecranOctet(0x06, 0); // le curseur avance
+  ecranOctet(0x01, 0), delay(2);
+  return true;
+}
+static void ecranEcrireLigne(uint8_t ligne, const char *texte, uint8_t n) {
+  if (!ecranPret()) return;
+  ecranOctet(0x80 | (ligne ? 0x40 : 0), 0);
+  for (uint8_t i = 0; i < 16; i++) ecranOctet(i < n ? (uint8_t)texte[i] : ' ', 1);
+}
+static void ecranEffacer() {
+  if (!ecranPret()) return;
+  ecranOctet(0x01, 0), delay(2);
+}
+// Nombre : entier tel quel, sinon deux décimales au plus, avec une virgule.
+static void ecranNombre(uint8_t ligne, float v) {
+  char s[17];
+  if (v == (long)v) ltoa((long)v, s, 10);
+  else {
+    dtostrf(v, 1, 2, s);
+    char *fin = s + strlen(s) - 1;
+    while (*fin == '0') *fin-- = 0;
+    if (*fin == '.') *fin = 0;
+    for (char *c = s; *c; c++)
+      if (*c == '.') *c = ',';
+  }
+  ecranEcrireLigne(ligne, s, strlen(s));
+}
+
+// Clavier tactile 12 touches : chaque touche arrive en un octet (0xE1 à 0xEC : 1 à 9, *, 0, # ; ou son caractère).
+// Dernière touche : 0 à 9, 10 (*), 11 (#), -1 (aucune).
+static SoftwareSerial *clavier = nullptr;
+static int8_t rxClavier = -1, txClavier = -1, derniereTouche = -1;
+static int8_t toucheDeOctet(int o) {
+  if (o >= 0xE1 && o <= 0xE9) return o - 0xE0;
+  if (o == 0xEA || o == '*') return 10;
+  if (o == 0xEB) return 0;
+  if (o == 0xEC || o == '#') return 11;
+  if (o >= '0' && o <= '9') return o - '0';
+  return -1;
+}
+// rx, tx : broches de l'Uno où arrivent les fils RX et TX du clavier (la carte écoute le fil TX du clavier).
+static void lireClavier(int rx, int tx) {
+  if (!brocheAutorisee(rx) || !brocheAutorisee(tx) || rx == tx) return;
+  if (!clavier || rx != rxClavier || tx != txClavier) {
+    delete clavier;
+    clavier = new SoftwareSerial(tx, rx);
+    clavier->begin(9600);
+    rxClavier = rx, txClavier = tx, derniereTouche = -1;
+  }
+  while (clavier->available()) {
+    int8_t t = toucheDeOctet(clavier->read());
+    if (t >= 0) derniereTouche = t;
+  }
+}
+
+// À l'arrêt (« OFF », nouveau programme) : afficheur et écran effacés, clavier lâché.
+static void eteindreModules() {
+  if (clkAfficheur >= 0) afficheurEffacer(clkAfficheur, dioAfficheur);
+  if (adresseEcran) ecranEffacer();
+  adresseEcran = 0; // A4 et A5 vont être lâchées : l'écran sera repris au prochain usage
+  delete clavier;
+  clavier = nullptr, rxClavier = txClavier = derniereTouche = -1;
+}
+
+static float extModules(uint8_t commande, uint8_t n, const float *a) {
+  switch (commande) {
+    case 1: return ultrasonModule((int)a[0], (int)a[1]);
+    case 2: afficheurNombre((int)a[0], (int)a[1], a[2]); return 0;
+    case 3: afficheurEffacer((int)a[0], (int)a[1]); return 0;
+    case 4: ligneEcran = (int)a[0] == 2 ? 1 : 0, nbEcran = 0; return 0;
+    case 5:
+    case 6:
+      for (uint8_t i = 0; i < n && nbEcran < 16; i++) texteEcran[nbEcran++] = (char)constrain(lround(a[i]), 32, 126);
+      if (commande == 6) ecranEcrireLigne(ligneEcran, texteEcran, nbEcran), nbEcran = 0;
+      return 0;
+    case 7: ecranNombre((int)a[0] == 2 ? 1 : 0, a[1]); return 0;
+    case 8: ecranEffacer(); return 0;
+    case 9: lireClavier((int)a[0], (int)a[1]); return derniereTouche;
+    case 10: lireClavier((int)a[0], (int)a[1]); derniereTouche = -1; return 0;
+  }
+  return 0;
+}
+#endif
+
 // Extension 1 = mBot. Commandes : 1 moteurs(gauche, droite) · 2 ultrason(port) → cm · 3 ligne(port) → 0..3
 // · 4 bouton de la carte → 0/1 · 5 lumière → 0..1023 · 6 LED(1|2|0 les deux, rouge, vert, bleu)
 // · 9 un moteur seul (1 gauche | 2 droite, vitesse -100..100)
@@ -399,7 +627,7 @@ float lb_ext(uint8_t extension, uint8_t commande, uint8_t n, const float *a) {
     }
   }
 #else
-  (void)extension, (void)commande, (void)n, (void)a;
+  if (extension == 5) return extModules(commande, n, a);
 #endif
   return 0;
 }
@@ -456,6 +684,8 @@ static void toutEteindre() {
   lb_arreter();
 #if defined(CARTE_MCORE)
   eteindreMatrice(); // avant de lâcher les broches A0 et A1 (port 4)
+#else
+  eteindreModules(); // avant de lâcher les broches de l'afficheur, de l'écran et du clavier
 #endif
   for (int b = 2; b <= 19; b++) {
     if (b == 13) continue; // LED de la carte / LED RGB du mCore : réglée à part

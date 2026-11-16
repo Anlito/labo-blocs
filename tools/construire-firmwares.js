@@ -5,6 +5,8 @@
 //     le programme construit : « PONG v2 <version> »). Le mBot a sa propre version (afficheur, 0.3).
 // Avr : arduino-cli (ARDUINO_CLI ou PATH), sinon avr-gcc avec ARDUINO_CORE (github.com/arduino/ArduinoCore-avr) et
 // SERVO (github.com/arduino-libraries/Servo).
+// Uno : le tampon du clavier tactile (SoftwareSerial) passe à 16 octets, pour garder de la mémoire vive.
+// arduino-cli de l'IDE Arduino 2 : ARDUINO_DIRECTORIES_BUILTIN_LIBRARIES=%LOCALAPPDATA%/Arduino15/libraries (Servo).
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -41,12 +43,13 @@ function avecAvrGcc(options, sortie) {
   const core = process.env.ARDUINO_CORE;
   const servo = process.env.SERVO;
   if (!core || !servo) throw new Error('Indiquer ARDUINO_CORE et SERVO (ou installer arduino-cli).');
-  const inc = [path.join(core, 'cores', 'arduino'), path.join(core, 'variants', 'standard'), path.join(core, 'libraries', 'EEPROM', 'src'), path.join(servo, 'src'), CROQUIS].flatMap((d) => ['-I', d]);
+  const inc = [path.join(core, 'cores', 'arduino'), path.join(core, 'variants', 'standard'), path.join(core, 'libraries', 'EEPROM', 'src'), path.join(core, 'libraries', 'SoftwareSerial', 'src'), path.join(servo, 'src'), CROQUIS].flatMap((d) => ['-I', d]);
   const commun = ['-mmcu=atmega328p', '-DF_CPU=16000000L', '-DARDUINO=10819', '-DARDUINO_AVR_UNO', '-DARDUINO_ARCH_AVR', '-Os', '-ffunction-sections', '-fdata-sections', '-w', ...options, ...inc];
   const dossierCore = path.join(core, 'cores', 'arduino');
   const sources = fs.readdirSync(dossierCore).filter((f) => /\.(c|cpp|S)$/.test(f)).map((f) => path.join(dossierCore, f));
   const ino = path.join(sortie, 'labo_blocs.cpp');
   fs.copyFileSync(path.join(CROQUIS, 'labo_blocs.ino'), ino);
+  if (!options.includes('-DCARTE_MCORE')) sources.push(path.join(core, 'libraries', 'SoftwareSerial', 'src', 'SoftwareSerial.cpp')); // clavier tactile (Uno)
   sources.push(path.join(servo, 'src', 'avr', 'Servo.cpp'), path.join(CROQUIS, 'vm.c'), ino);
   const objets = sources.map((s, i) => {
     const o = path.join(sortie, `${i}-${path.basename(s)}.o`);
@@ -68,7 +71,7 @@ function avecAvrGcc(options, sortie) {
 function alleger(source) {
   return (
     source
-      .split('\n')
+      .split(/\r?\n/) // fichier extrait sous Windows : fins de ligne CRLF
       .filter((l) => l.trim() && !l.trim().startsWith('#'))
       .map((l) => {
         const m = /^( *)(.*)$/.exec(l);
@@ -91,7 +94,7 @@ function construireMicrobit() {
 if (require.main === module) {
   const cli = [process.env.ARDUINO_CLI, 'arduino-cli'].filter(Boolean).find((c) => trouver(c, ['version']));
   const fichiers = {};
-  for (const [carte, options] of Object.entries({ uno: [], mbot: ['-DCARTE_MCORE'] })) {
+  for (const [carte, options] of Object.entries({ uno: ['-D_SS_MAX_RX_BUFF=16'], mbot: ['-DCARTE_MCORE'] })) {
     const sortie = fs.mkdtempSync(path.join(os.tmpdir(), `labo-blocs-fw-${carte}-`));
     const r = cli ? avecArduinoCli(cli, options, sortie) : avecAvrGcc(options, sortie);
     fichiers[carte] = fs.readFileSync(r.hex, 'utf8');

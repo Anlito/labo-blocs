@@ -74,11 +74,14 @@
     return html;
   }
 
-  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick' };
-  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son', joystick: 'joystick' };
+  const NOMS_COMPOSANTS = { led: 'LED', bouton: 'Bouton', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran I2C', tactile: 'Clavier tactile' };
+  const ICONES_COMPOSANTS = { led: 'lumiere', bouton: 'bouton', servo: 'moteur', buzzer: 'son', joystick: 'joystick', ultrason: 'puzzle', afficheur4: 'puzzle', ecran: 'puzzle', tactile: 'puzzle' };
   // Broches d'un composant dans la liste « Composants » (le joystick en a trois).
+  const AUTRES_BROCHES = { ultrason: ['TRIG', 'ECHO', 'echo'], afficheur4: ['CLK', 'DIO', 'dio'], ecran: ['SDA', 'SCL', 'scl'], tactile: ['RX', 'TX', 'tx'] };
   const brochesDuComposant = (c) =>
-    c.type === 'joystick'
+    AUTRES_BROCHES[c.type]
+      ? `<span class="broches-joystick">${AUTRES_BROCHES[c.type][0]} <span class="broche">${c.broche}</span> ${AUTRES_BROCHES[c.type][1]} <span class="broche">${c[AUTRES_BROCHES[c.type][2]]}</span></span>`
+      : c.type === 'joystick'
       ? `<span class="broches-joystick">X <span class="broche">${c.broche}</span> Y <span class="broche">${c.y}</span> bouton <span class="broche">${c.bouton}</span></span>`
       : `<span class="broche">${c.broche}</span>`;
 
@@ -267,7 +270,7 @@
           ' Une broche ne peut brancher qu’un seul composant : choisis une autre broche pour l’un d’eux.';
         note.hidden = false;
       } else if (ex.libre && (!ex.carte || ex.carte === 'uno')) {
-        note.textContent = ex.composants.length ? 'Les composants suivent ton programme : à brancher sur ces broches.' : 'Pose un bloc (LED, bouton, servomoteur, buzzer) : son composant apparaît ici et dans le simulateur.';
+        note.textContent = ex.composants.length ? 'Les composants suivent ton programme : à brancher sur ces broches.' : 'Pose un bloc (LED, bouton, servomoteur, buzzer, module) : son composant apparaît ici et dans le simulateur.';
         note.hidden = false;
       } else note.hidden = true;
     }

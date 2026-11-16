@@ -225,6 +225,11 @@
       ajouter('// Le clavier est celui de l’ordinateur : ce programme marche seulement en mode « En direct ».');
       ajouter('// Ici, « la touche … est appuyée » vaut 0 et les « quand la touche … » ne sont pas écrits.');
     }
+    // Modules de l'Uno (ultrason, afficheur, écran, clavier tactile) : faits par le programme de la carte Labo Blocs.
+    if ((K().BLOCS_MODULES || []).some((b) => JSON.stringify(v1.fils).includes(`"${b}"`))) {
+      ajouter('// Les modules (ultrason, afficheur 4 chiffres, écran, clavier tactile) ne sont pas traduits ici :');
+      ajouter('// teste ce programme dans Labo Blocs (« En direct » ou « Dans la carte »). Ici, leurs blocs valent 0.');
+    }
     if (servos.size) ajouter('#include <Servo.h>');
     ajouter('');
     for (const n of trier(servos)) ajouter(`Servo servo${n};`);

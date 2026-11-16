@@ -405,3 +405,18 @@ Projet Simon Rétro Game : 4 boutons D2 / D4 / D6 / D8 (vers la masse), 4 LED D3
 | 28.5 | Exercice 11 : ma séquence de 6 couleurs, mes notes, mes sons, puis « Dans la carte » sur une Uno câblée D2–D10 | Réussi dans le simulateur ; même jeu sur la carte, débranchée de l'ordinateur | |
 | 28.6 | Exercice 12 (défi) : « Vérifier » plusieurs fois | Réussi à chaque fois (la séquence change à chaque essai) | |
 | 28.7 | Éditeur de parcours : enregistrer un nouveau parcours dans le dossier | `parcours/index.js` garde les autres parcours et ajoute le nouveau | |
+
+## 29. Modules de l'Uno pour Escape Lab (programme de la carte 0.4)
+
+Matériel : Uno, ultrason HY-SRF05, afficheur 4 chiffres (CLK, DIO), écran LCD 16×2 I2C, clavier tactile 12 touches
+(ATtiny1616). Parcours « Escape Lab (Arduino Uno) », exercice 1.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 29.1 | Brancher l'Uno, « En direct » | La page propose d'installer le programme de la carte 0.4 ; après l'installation, la carte répond | |
+| 29.2 | Ultrason : TRIG D2, ECHO D3, OUT libre ; bloc « distance mesurée par l'ultrason » dans « afficher le nombre » | La distance de la main (en cm) s'affiche et suit la main | |
+| 29.3 | Afficheur : CLK D4, DIO D5 ; « afficher le nombre 1234 », puis -7, puis 12345 | « 1234 », «   -7 », « ---- » | |
+| 29.4 | Écran : SDA A4, SCL A5 ; « écrire Bonjour sur la ligne 1 », « écrire le nombre 3,5 sur la ligne 2 » | Les deux lignes s'affichent (sinon : vis du contraste au dos) | |
+| 29.5 | Clavier : RX D6, TX D7 ; « si la dernière touche du clavier tactile est 7 alors écrire Bravo » | Toucher 7 : « Bravo » ; les autres touches : rien | |
+| 29.6 | Même programme « Dans la carte », Uno débranchée puis alimentée | Les quatre modules marchent sans l'ordinateur | |
+| 29.7 | Arrêter « En direct » | L'afficheur et l'écran s'effacent | |

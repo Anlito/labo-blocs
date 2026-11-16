@@ -4,9 +4,9 @@ definirParcours({
   "version": 1,
   "id": "escape-lab",
   "titre": "Escape Lab (Arduino Uno)",
-  "versionParcours": "1.0.0",
-  "date": "2026-10-23",
-  "moteurMinimum": "0.4.0",
+  "versionParcours": "1.2.0",
+  "date": "2026-11-16",
+  "moteurMinimum": "0.5.0",
   "carte": "uno",
   "modes": [
     "simulateur",
@@ -53,7 +53,16 @@ definirParcours({
         "variable",
         "nombre",
         "quand_touche",
-        "touche_appuyee"
+        "touche_appuyee",
+        "ultrason_distance",
+        "afficheur4_nombre",
+        "afficheur4_effacer",
+        "ecran_texte",
+        "ecran_nombre",
+        "ecran_effacer",
+        "tactile_touche",
+        "tactile_valeur",
+        "tactile_oublier"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -109,7 +118,16 @@ definirParcours({
         "variable",
         "nombre",
         "quand_touche",
-        "touche_appuyee"
+        "touche_appuyee",
+        "ultrason_distance",
+        "afficheur4_nombre",
+        "afficheur4_effacer",
+        "ecran_texte",
+        "ecran_nombre",
+        "ecran_effacer",
+        "tactile_touche",
+        "tactile_valeur",
+        "tactile_oublier"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -165,7 +183,16 @@ definirParcours({
         "variable",
         "nombre",
         "quand_touche",
-        "touche_appuyee"
+        "touche_appuyee",
+        "ultrason_distance",
+        "afficheur4_nombre",
+        "afficheur4_effacer",
+        "ecran_texte",
+        "ecran_nombre",
+        "ecran_effacer",
+        "tactile_touche",
+        "tactile_valeur",
+        "tactile_oublier"
       ],
       "blocsDepart": null,
       "scenarios": [
@@ -221,7 +248,16 @@ definirParcours({
         "variable",
         "nombre",
         "quand_touche",
-        "touche_appuyee"
+        "touche_appuyee",
+        "ultrason_distance",
+        "afficheur4_nombre",
+        "afficheur4_effacer",
+        "ecran_texte",
+        "ecran_nombre",
+        "ecran_effacer",
+        "tactile_touche",
+        "tactile_valeur",
+        "tactile_oublier"
       ],
       "blocsDepart": null,
       "scenarios": [
