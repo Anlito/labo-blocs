@@ -40,6 +40,8 @@
       installation: 'serie',
       broches: { led: D, bouton: D, servo: ['D5', 'D6'], buzzer: D, joystick: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'] },
       composants: ['led', 'bouton', 'servo', 'buzzer', 'joystick'],
+      // Programme de la carte 0.4 : modules (ultrason, afficheur 4 chiffres, écran I2C, clavier tactile).
+      version: '0.4',
     },
     mbot: {
       id: 'mbot',
@@ -347,6 +349,106 @@
     return j ? [{ type: 'bouton', broche: j.bouton, libelle: 'le bouton du joystick', integre: true, joystick: true }] : [];
   }
 
+  // ---------- Modules de l'Uno (extension 5, Escape Lab : décision de Thomas, 16/11/2026) ----------
+  // Ultrason HY-SRF05 (TRIG, ECHO ; OUT reste libre), afficheur 4 chiffres (CLK, DIO), écran LCD 16×2 I2C (SDA sur
+  // A4, SCL sur A5, toujours sur l'Uno), clavier tactile 12 touches ATtiny1616 (liaison série : RX et TX du clavier).
+  // Les broches sont choisies dans le bloc par l'élève (D2 par défaut : le bloc ne donne jamais la réponse).
+  // Commandes : 1 ultrason(trig, echo) → cm · 2 afficheur nombre(clk, dio, n) · 3 afficheur effacer(clk, dio)
+  // · écran : 4 début de ligne(ligne), 5 lettres à suivre, 6 dernières lettres et affichage, 7 nombre(ligne, n),
+  // 8 effacer · clavier : 9 dernière touche(rx, tx) → 0 à 9, 10 (*), 11 (#), -1 (aucune) · 10 oublier(rx, tx).
+  const BROCHES_MODULES = D.concat(['A0', 'A1', 'A2', 'A3']).map((b) => [b, b]);
+  const numeroBrocheModule = (b) => {
+    const s = String(b || 'D2').toUpperCase();
+    return /^A\d$/.test(s) ? 14 + Number(s.slice(1)) : Number(s.replace(/^D/, '')) || 2;
+  };
+  const TOUCHES_TACTILES = '1 2 3 4 5 6 7 8 9 * 0 #'.split(' ');
+  const codeToucheTactile = (t) => (t === '*' ? 10 : t === '#' ? 11 : /^\d$/.test(String(t)) ? Number(t) : -1);
+  const LIGNES_ECRAN = [['1', '1'], ['2', '2']];
+  const LARGEUR_ECRAN = 16;
+  // Texte d'un nombre sur l'afficheur ou l'écran : entier tel quel, sinon deux décimales au plus (point → virgule).
+  const texteNombreModule = (v) => {
+    const n = Number(v) || 0;
+    return (Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100)).replace('.', ',');
+  };
+  // Afficheur 4 chiffres : de -999 à 9999, aligné à droite ; au-delà, « ---- ».
+  const texteAfficheur4 = (v) => {
+    const n = Math.round(Number(v) || 0);
+    return n < -999 || n > 9999 ? '----' : String(n).padStart(4, ' ');
+  };
+  const BLOCS_MODULES = ['ultrason_distance', 'afficheur4_nombre', 'afficheur4_effacer', 'ecran_texte', 'ecran_nombre', 'ecran_effacer', 'tactile_touche', 'tactile_valeur', 'tactile_oublier'];
+  const brochesTactile = (p) => [numeroBrocheModule(p.rx), numeroBrocheModule(p.tx)];
+  const BLOCS_UNO = {
+    ultrason_distance: {
+      carte: 'uno', categorie: 'uno_ultrason', sorte: 'valeur', texte: 'distance mesurée par l’ultrason (cm) TRIG %TRIG ECHO %ECHO',
+      champs: { TRIG: BROCHES_MODULES, ECHO: BROCHES_MODULES },
+      derouler: (p) => ext(5, 1, [numeroBrocheModule(p.trig), numeroBrocheModule(p.echo)]),
+    },
+    afficheur4_nombre: {
+      carte: 'uno', categorie: 'uno_afficheur4', sorte: 'instruction', texte: 'afficher le nombre %VALEUR sur l’afficheur 4 chiffres CLK %CLK DIO %DIO',
+      champs: { CLK: BROCHES_MODULES, DIO: BROCHES_MODULES }, entrees: { VALEUR: 0 },
+      derouler: (p) => ext(5, 2, [numeroBrocheModule(p.clk), numeroBrocheModule(p.dio), p.valeur]),
+    },
+    afficheur4_effacer: {
+      carte: 'uno', categorie: 'uno_afficheur4', sorte: 'instruction', texte: 'effacer l’afficheur 4 chiffres CLK %CLK DIO %DIO',
+      champs: { CLK: BROCHES_MODULES, DIO: BROCHES_MODULES },
+      derouler: (p) => ext(5, 3, [numeroBrocheModule(p.clk), numeroBrocheModule(p.dio)]),
+    },
+    ecran_texte: {
+      carte: 'uno', categorie: 'uno_ecran', sorte: 'instruction', texte: 'écrire %TEXTE sur la ligne %LIGNE de l’écran',
+      champs: { TEXTE: 'texte', LIGNE: LIGNES_ECRAN }, defauts: { TEXTE: 'Bonjour' },
+      derouler: (p) => {
+        const codes = codesTexte(p.texte).slice(0, LARGEUR_ECRAN);
+        const morceaux = [];
+        for (let i = 0; i < codes.length; i += 4) morceaux.push(codes.slice(i, i + 4));
+        if (!morceaux.length) morceaux.push([]);
+        return [ext(5, 4, [Number(p.ligne) === 2 ? 2 : 1])].concat(morceaux.map((m, i) => ext(5, i === morceaux.length - 1 ? 6 : 5, m)));
+      },
+    },
+    ecran_nombre: {
+      carte: 'uno', categorie: 'uno_ecran', sorte: 'instruction', texte: 'écrire le nombre %VALEUR sur la ligne %LIGNE de l’écran',
+      champs: { LIGNE: LIGNES_ECRAN }, entrees: { VALEUR: 0 },
+      derouler: (p) => ext(5, 7, [Number(p.ligne) === 2 ? 2 : 1, p.valeur]),
+    },
+    ecran_effacer: { carte: 'uno', categorie: 'uno_ecran', sorte: 'instruction', texte: 'effacer l’écran', derouler: () => ext(5, 8, []) },
+    tactile_touche: {
+      carte: 'uno', categorie: 'uno_tactile', sorte: 'condition', texte: 'la dernière touche du clavier tactile est %TOUCHE RX %RX TX %TX',
+      champs: { TOUCHE: TOUCHES_TACTILES.map((x) => [x, x]).concat([['aucune', 'aucune']]), RX: BROCHES_MODULES, TX: BROCHES_MODULES },
+      derouler: (p) => cmp('=', ext(5, 9, brochesTactile(p)), codeToucheTactile(p.touche)),
+    },
+    tactile_valeur: {
+      carte: 'uno', categorie: 'uno_tactile', sorte: 'valeur', texte: 'dernière touche du clavier tactile RX %RX TX %TX',
+      champs: { RX: BROCHES_MODULES, TX: BROCHES_MODULES },
+      derouler: (p) => ext(5, 9, brochesTactile(p)),
+    },
+    tactile_oublier: {
+      carte: 'uno', categorie: 'uno_tactile', sorte: 'instruction', texte: 'oublier la dernière touche du clavier tactile RX %RX TX %TX',
+      champs: { RX: BROCHES_MODULES, TX: BROCHES_MODULES },
+      derouler: (p) => ext(5, 10, brochesTactile(p)),
+    },
+  };
+  // Composants d'un bloc des modules (liste « Composants » et simulateur d'un exercice libre).
+  function composantDuModule(x) {
+    switch (x.bloc) {
+      case 'ultrason_distance':
+        return { type: 'ultrason', broche: x.trig || 'D2', echo: x.echo || 'D2' };
+      case 'afficheur4_nombre':
+      case 'afficheur4_effacer':
+        return { type: 'afficheur4', broche: x.clk || 'D2', dio: x.dio || 'D2' };
+      case 'ecran_texte':
+      case 'ecran_nombre':
+      case 'ecran_effacer':
+        return { type: 'ecran', broche: 'A4', scl: 'A5' };
+      case 'tactile_touche':
+      case 'tactile_valeur':
+      case 'tactile_oublier':
+        return { type: 'tactile', broche: x.rx || 'D2', tx: x.tx || 'D2' };
+      default:
+        return null;
+    }
+  }
+  // Touche du clavier tactile du simulateur : une entrée « tactile:5 », appuyée par la page ou un scénario.
+  const entreeTactile = (t) => 'tactile:' + t;
+
   // Description d'un bloc :
   //   carte, categorie, sorte ('instruction' | 'valeur' | 'condition'), texte (message Blockly : %CHAMP ou %ENTREE),
   //   champs { NOM: options [[libellé, valeur]] | 'texte' | 'etiquette' (caméra) | 'dessin' (afficheur du mBot) }, entrees { NOM: valeur de départ }, derouler(p) → blocs de base
@@ -585,6 +687,7 @@
   }
 
   // Catégories de la palette pour ces blocs (famille « extensions » : lilas, pictogramme puzzle).
+  Object.assign(BLOCS, BLOCS_UNO);
   const CATEGORIES_CARTES = [
     { nom: 'Caméra', cle: 'camera', carte: '*' },
     { nom: 'Clavier', cle: 'clavier', carte: '*' },
@@ -596,6 +699,10 @@
     { nom: 'Boutons', cle: 'mb_entrees', carte: 'microbit' },
     { nom: 'Capteurs', cle: 'mb_capteurs', carte: 'microbit' },
     { nom: 'Musique', cle: 'mb_son', carte: 'microbit' },
+    { nom: 'Ultrason', cle: 'uno_ultrason', carte: 'uno' },
+    { nom: 'Afficheur 4 chiffres', cle: 'uno_afficheur4', carte: 'uno' },
+    { nom: 'Écran', cle: 'uno_ecran', carte: 'uno' },
+    { nom: 'Clavier tactile', cle: 'uno_tactile', carte: 'uno' },
   ].map((c) => Object.assign(c, { blocs: Object.keys(BLOCS).filter((t) => BLOCS[t].categorie === c.cle) }));
 
   // Bloc de carte → blocs de base (une instruction ou une liste ; une expression pour les valeurs et conditions).
@@ -688,6 +795,7 @@
   const CAPTEURS = {
     microbit: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0 },
     mbot: { distance: 100, ligne: 3, lumiere: 500 },
+    uno: { distance: 100 },
   };
   const capteursDepart = (carte) => Object.assign({}, CAPTEURS[carte] || {});
   const couleurRgb = (r, v, b) => ((r & 255) << 16) | ((v & 255) << 8) | (b & 255);
@@ -696,7 +804,49 @@
   // sim : le simulateur (t, entrees, capteurs, ecrire(nom, valeur, type), son(nom, frequence, ms)).
   function creerCarteSimulee(carte, sim) {
     // matrice : afficheur du mBot (16 colonnes) ; defile : texte qui défile ; dessin : moitié gauche reçue (10).
-    const etat = { id: carte, ecran: new Array(25).fill(0), animation: null, lettres: [], matrice: new Array(16).fill(0), defile: null, dessin: new Array(16).fill(0) };
+    const etat = { id: carte, ecran: new Array(25).fill(0), animation: null, lettres: [], matrice: new Array(16).fill(0), defile: null, dessin: new Array(16).fill(0), afficheur4: '', lignesEcran: ['', ''], ligneEcran: 0, touche: -1 };
+    // Modules de l'Uno (extension 5). L'écran garde 16 caractères par ligne ; le clavier, sa dernière touche.
+    function extModules(c, a) {
+      const ecrireLigne = (texte) => (etat.lignesEcran[etat.ligneEcran] = texte.slice(0, LARGEUR_ECRAN));
+      switch (c) {
+        case 1:
+          return Number(sim.capteurs.distance) || 0;
+        case 2:
+          etat.afficheur4 = texteAfficheur4(a[2]);
+          return 0;
+        case 3:
+          etat.afficheur4 = '';
+          return 0;
+        case 4:
+          etat.ligneEcran = Number(a[0]) === 2 ? 1 : 0;
+          etat.lettres = [];
+          return 0;
+        case 5:
+          etat.lettres.push(...a);
+          return 0;
+        case 6:
+          ecrireLigne(etat.lettres.concat(a).map((x) => String.fromCharCode(x)).join(''));
+          etat.lettres = [];
+          return 0;
+        case 7:
+          etat.ligneEcran = Number(a[0]) === 2 ? 1 : 0;
+          ecrireLigne(texteNombreModule(a[1]));
+          return 0;
+        case 8:
+          etat.lignesEcran = ['', ''];
+          return 0;
+        case 9: {
+          const appuyee = TOUCHES_TACTILES.find((x) => sim.entrees[entreeTactile(x)]);
+          if (appuyee !== undefined) etat.touche = codeToucheTactile(appuyee);
+          return etat.touche;
+        }
+        case 10:
+          etat.touche = -1;
+          return 0;
+        default:
+          return 0;
+      }
+    }
     // Le même texte redonné pendant qu'il défile continue de défiler (comme la carte).
     function afficherMatrice(a) {
       const d = etat.defile;
@@ -711,6 +861,7 @@
       etat.animation = null;
     }
     function ext(e, c, a) {
+      if (carte === 'uno' && e === 5) return extModules(c, a);
       if (carte === 'microbit' && e === 2) {
         switch (c) {
           case 1: {
@@ -937,7 +1088,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
+  const api = { BLOCS_MODULES, BROCHES_MODULES, TOUCHES_TACTILES, codeToucheTactile, entreeTactile, composantDuModule, texteAfficheur4, numeroBrocheModule, VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

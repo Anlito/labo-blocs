@@ -68,15 +68,15 @@
 
     // Carte micro:bit ou mBot : écran, boutons, capteurs, moteurs et LED de la carte (noyau/cartes.js).
     let carteSimulee = null;
-    if ((opts.carte === 'microbit' || opts.carte === 'mbot') && !opts.extension) {
+    if ((opts.carte === 'microbit' || opts.carte === 'mbot' || opts.carte === 'uno' || !opts.carte) && !opts.extension) {
       const K = CARTES();
-      sim.capteurs = opts.capteurs || K.capteursDepart(opts.carte);
+      sim.capteurs = opts.capteurs || K.capteursDepart(opts.carte || 'uno');
       sim.ecrire = (nom, valeur, type) => ecrireNom(nom, valeur, type);
       sim.son = (nom, frequence, ms) => {
         sim.journal.push({ t: sim.t, broche: nom, valeur: frequence, duree: ms, type: 'son' });
         if (opts.surSon) opts.surSon(nom, frequence, ms);
       };
-      carteSimulee = K.creerCarteSimulee(opts.carte, sim);
+      carteSimulee = K.creerCarteSimulee(opts.carte || 'uno', sim);
       sim.carte = carteSimulee.etat;
       const entrees = opts.carte === 'microbit' ? ['A', 'B', 'logo'] : ['bouton'];
       const sorties = opts.carte === 'mbot' ? ['moteur gauche', 'moteur droit', 'LED gauche', 'LED droite'] : [];

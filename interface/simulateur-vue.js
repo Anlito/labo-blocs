@@ -11,7 +11,7 @@
   const XS = { GND: 144.5, D13: 154.5, D12: 164, D11: 174, D10: 183.5, D9: 193.5, D8: 203, D7: 219.5, D6: 229, D5: 239, D4: 248.5, D3: 258.5, D2: 268 };
   const PY = 57;
   const FILS = { D3: '#D32F2F', D4: '#1976D2', D5: '#F9A825', D6: '#7B1FA2', D8: '#2E7D32', D9: '#00838F', D10: '#455A64', D7: '#6D4C41', D11: '#AD1457', GND: '#7B4A2A' };
-  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41', joystick: '#00838F' };
+  const FAMILLES = { led: '#FAB22B', bouton: '#1A6E8E', servo: '#C2185B', buzzer: '#6D4C41', joystick: '#00838F', ultrason: '#5E35B1', afficheur4: '#D84315', ecran: '#2E7D32', tactile: '#37474F' };
   const COULEURS_LED = { PetiteDose: '#F5B800', GrandeDose: '#2F80ED', Trappe: '#E53935' };
 
   const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -23,7 +23,7 @@
     return c.couleur || COULEURS_LED[c.nom] || '#E53935';
   }
   function libelle(c) {
-    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick' }[c.type] || c.type;
+    const type = { led: 'LED', bouton: 'BOUTON', servo: 'Servomoteur', buzzer: 'Buzzer', joystick: 'Joystick', ultrason: 'Ultrason', afficheur4: 'Afficheur 4 chiffres', ecran: 'Écran', tactile: 'Clavier tactile' }[c.type] || c.type;
     return c.nom ? `${type} ${c.nom}` : type;
   }
 
@@ -172,7 +172,40 @@
     );
   }
 
+  // Modules de l'Uno : ultrason (curseur de distance), afficheur 4 chiffres, écran 16 × 2, clavier tactile 12 touches.
+  const BROCHES_MODULE = {
+    ultrason: (c) => `TRIG ${c.broche} · ECHO ${c.echo}`,
+    afficheur4: (c) => `CLK ${c.broche} · DIO ${c.dio}`,
+    ecran: () => 'SDA A4 · SCL A5',
+    tactile: (c) => `RX ${c.broche} · TX ${c.tx}`,
+  };
+  function carteModule(c, compact) {
+    let corps = '';
+    if (c.type === 'ultrason') {
+      corps =
+        `<label class="module-distance"><span>Distance de l’obstacle</span><input type="range" data-capteur="distance" min="2" max="400" step="1" value="100" aria-label="Distance de l’obstacle devant l’ultrason, en cm">` +
+        '<output class="pastille-etat" data-valeur="distance">100 cm</output></label>';
+    } else if (c.type === 'afficheur4') {
+      corps = '<div class="module-afficheur4" role="img" aria-label="Afficheur 4 chiffres : éteint"><span>    </span></div>';
+    } else if (c.type === 'ecran') {
+      corps = '<div class="module-ecran" role="img" aria-label="Écran : vide"><div class="module-ecran-ligne"></div><div class="module-ecran-ligne"></div></div>';
+    } else if (c.type === 'tactile') {
+      corps =
+        '<div class="module-tactile">' +
+        (A.TOUCHES_TACTILES || []).map((t) => `<button type="button" class="module-touche" data-touche="${t}" aria-pressed="false" aria-label="Touche ${t} du clavier tactile">${t}</button>`).join('') +
+        '</div><span class="pastille-etat" aria-live="polite">Dernière touche : aucune</span>';
+    }
+    return (
+      `<div class="composant composant-module composant-${c.type}${compact ? ' compact' : ''}" data-broche="${c.broche}" data-type="${c.type}" style="--famille:${FAMILLES[c.type]}">` +
+      '<div class="composant-texte">' +
+      `<div class="composant-nom"><span class="composant-fil" style="background:${couleurFil(c.broche)}"></span><span>${echapper(libelle(c))} · ${BROCHES_MODULE[c.type](c)}</span></div>` +
+      corps +
+      '</div></div>'
+    );
+  }
+
   function carteComposant(c, compact) {
+    if (BROCHES_MODULE[c.type]) return carteModule(c, compact);
     const fam = FAMILLES[c.type];
     let dessin;
     if (c.type === 'joystick') {
@@ -681,6 +714,43 @@
       } else if (b) poussoir(b, (valeur) => rappels.appuyerBouton(broche, valeur));
     }
 
+    // Modules de l'Uno : la distance de l'ultrason se règle à la main ; les touches du clavier s'appuient comme des
+    // boutons (entrées « tactile:5 ») ; l'afficheur et l'écran montrent ce que la carte simulée a reçu.
+    const capteursUno = carte === 'uno' && A.capteursDepart ? A.capteursDepart('uno') : null;
+    for (const champ of grille.querySelectorAll('.module-distance input')) {
+      champ.addEventListener('input', () => {
+        capteursUno.distance = Number(champ.value);
+        champ.parentElement.querySelector('output').textContent = champ.value + ' cm';
+      });
+    }
+    for (const b of grille.querySelectorAll('.module-touche')) {
+      poussoir(b, (valeur) => {
+        b.setAttribute('aria-pressed', valeur ? 'true' : 'false');
+        rappels.appuyerBouton(A.entreeTactile(b.dataset.touche), valeur);
+      });
+    }
+    const texteTouche = (n) => (n === 10 ? '*' : n === 11 ? '#' : n >= 0 ? String(n) : 'aucune');
+    function afficherModules(sim) {
+      const e = (sim && sim.carte) || {};
+      for (const el of grille.querySelectorAll('.module-afficheur4')) {
+        const texte = e.afficheur4 || '';
+        el.firstElementChild.textContent = texte.padStart(4, ' ');
+        el.setAttribute('aria-label', texte.trim() ? `Afficheur 4 chiffres : ${texte.trim()}` : 'Afficheur 4 chiffres : éteint');
+      }
+      for (const el of grille.querySelectorAll('.module-ecran')) {
+        const lignes = e.lignesEcran || ['', ''];
+        [...el.children].forEach((l, i) => (l.textContent = lignes[i] || ''));
+        el.setAttribute('aria-label', lignes.some((l) => l.trim()) ? `Écran : ${lignes.filter((l) => l.trim()).join(' / ')}` : 'Écran : vide');
+      }
+      for (const el of grille.querySelectorAll('.composant-tactile .pastille-etat')) el.textContent = 'Dernière touche : ' + texteTouche(e.touche === undefined ? -1 : e.touche);
+      for (const champ of grille.querySelectorAll('.module-distance input')) {
+        const v = capteursUno && capteursUno.distance;
+        if (v === undefined || document.activeElement === champ || String(v) === champ.value) continue;
+        champ.value = v;
+        champ.parentElement.querySelector('output').textContent = v + ' cm';
+      }
+    }
+
     const memoire = [];
     function maj(k, valeur, quoi) {
       if (memoire[k] === valeur) return;
@@ -759,10 +829,20 @@
       });
       if (son) son.jouer(sonActif && enMarche ? etats[buzzer.broche] : 0);
       if (vueDeCarte) vueDeCarte.afficher(sim || null);
+      else afficherModules(sim);
     }
 
     // capteurs : valeurs réglées à la main, à passer au simulateur (creerSimulation({ capteurs })).
-    return { afficher, carte, capteurs: vueDeCarte ? vueDeCarte.capteurs : null, verrouillerCapteurs: (oui) => vueDeCarte && vueDeCarte.verrouillerCapteurs(oui) };
+    return {
+      afficher,
+      carte,
+      capteurs: vueDeCarte ? vueDeCarte.capteurs : capteursUno,
+      verrouillerCapteurs: (oui) => {
+        if (vueDeCarte) return vueDeCarte.verrouillerCapteurs(oui);
+        // En direct, la distance est celle que mesure le vrai ultrason : le curseur la montre sans se régler.
+        for (const champ of grille.querySelectorAll('.module-distance input')) champ.disabled = !!oui;
+      },
+    };
   }
 
   Object.assign(A, { creerVueSimulateur: creerVue, couleurFil });

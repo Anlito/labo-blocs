@@ -591,6 +591,9 @@
       if (x.quand === 'appui' || x.quand === 'relache') voir('bouton', x.broche);
       if (SORTE_DU_BLOC[x.bloc]) voir(SORTE_DU_BLOC[x.bloc], x.broche);
       if (x.quand === 'joystick' || CARTES().BLOCS_JOYSTICK.includes(x.bloc)) joystick = true;
+      // Modules de l'Uno (ultrason, afficheur, écran, clavier tactile) : un composant par module et par broches.
+      const m = carte === 'uno' && CARTES().composantDuModule ? CARTES().composantDuModule(x) : null;
+      if (m && !composants.some((c) => JSON.stringify(c) === JSON.stringify(m))) composants.push(m);
       for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
     })(programme ? filsEtFonctions(programme) : []);
     if (joystick) composants.push(CARTES().nouveauJoystick(carte));

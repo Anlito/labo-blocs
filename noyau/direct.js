@@ -19,7 +19,7 @@
   const K = () => (enNode ? require('./cartes.js') : global.LaboBlocs);
 
   // Commandes d'extension qui lisent un capteur (les autres agissent : moteurs, LED, écran, son).
-  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13] };
+  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13], 5: [1, 9] };
   const estLecture = (e, c) => (LECTURES[e] || []).includes(c);
 
   // La carte ne lit que des entiers (« X 1 1 50 50 ») : les valeurs sont arrondies. Une note de la micro:bit dure
@@ -60,13 +60,17 @@
     const derniers = new Map();
     // Ordres en plusieurs morceaux (texte, dessin de l'afficheur) : les morceaux attendent la dernière commande et
     // partent avec elle, ou pas du tout si l'ordre entier redonne le précédent.
-    const MORCEAUX = { 1: [10, 14], 2: [14] };
+    const MORCEAUX = { 1: [10, 14], 2: [14], 5: [4, 5] };
     let morceaux = [];
     function groupe(e, c, a) {
       if (e === 1 && (c === 1 || c === 9)) return { cle: c === 1 ? 'moteurs' : 'moteur' + a[0], efface: c === 1 ? ['moteur1', 'moteur2'] : ['moteurs'] };
       if (e === 1 && c === 6) return { cle: 'led' + a[0], efface: Number(a[0]) === 0 ? ['led1', 'led2'] : ['led0'] };
       if (e === 2 && [1, 2, 3, 4, 11, 15].includes(c)) return { cle: 'ecran', efface: [] };
       if (e === 1 && [11, 12, 13, 15].includes(c)) return { cle: 'matrice', efface: [] };
+      // Modules de l'Uno : l'afficheur 4 chiffres (par ses broches) et chaque ligne de l'écran.
+      if (e === 5 && (c === 2 || c === 3)) return { cle: 'afficheur4 ' + a[0] + ' ' + a[1], efface: [] };
+      if (e === 5 && c === 7) return { cle: 'ecran' + a[0], efface: [] };
+      if (e === 5 && c === 8) return { cle: 'ecran', efface: ['ecran1', 'ecran2'] };
       return null;
     }
     // Durée d'un texte qui défile (ms) ; un ordre qui ne défile pas reste valable tant qu'un autre ne le remplace pas.
@@ -155,6 +159,11 @@
         if (sim.capteurs) sim.capteurs[nom] = v;
       };
       if (e === 1) appliquer = { 2: capteur('distance'), 3: capteur('ligne'), 4: entree('bouton'), 5: capteur('lumiere') }[c];
+      // Modules de l'Uno : distance de l'ultrason ; dernière touche reçue par la carte (-1 : aucune).
+      else if (e === 5 && c === 1) appliquer = capteur('distance');
+      else if (e === 5 && c === 9) appliquer = (v) => {
+        if (sim.carte) sim.carte.touche = v;
+      };
       else if (e === 2) {
         if (c === 5) appliquer = entree('A');
         else if (c === 6) appliquer = entree('B');
