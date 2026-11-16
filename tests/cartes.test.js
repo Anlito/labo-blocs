@@ -160,7 +160,7 @@ test('mBot simulé : moteurs, LED, ultrasons, suiveur de ligne, bouton', () => {
 });
 
 test('version du programme de chaque carte : outil, Uno/mBot, micro:bit, fichiers construits (mBot 0.3 : afficheur ; Uno 0.4 : modules)', () => {
-  const ino = fs.readFileSync(path.join(H.CARTES, 'arduino', 'labo_blocs', 'labo_blocs.ino'), 'utf8');
+  const ino = fs.readFileSync(path.join(H.CARTES, 'arduino', 'labo_blocs', 'labo_blocs.ino'), 'utf8').replace(/\r\n/g, '\n'); // extrait sous Windows : CRLF
   const py = fs.readFileSync(path.join(H.CARTES, 'microbit', 'main.py'), 'utf8');
   let construits = null;
   vm.runInNewContext(fs.readFileSync(path.join(H.CARTES, 'firmwares.js'), 'utf8'), { definirFirmwares: (f) => (construits = f) });
