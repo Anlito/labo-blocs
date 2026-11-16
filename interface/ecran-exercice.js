@@ -186,6 +186,8 @@
       if (!A.estDebloque(D, paquet, ex.id, opts)) return false;
       if (etat.exercice) A.noterProgramme(D, etat.exercice.id, editeur.sauvegarder());
       A.aideLed = !!ex.aideLed; // menu de la LED : « HAUT (1) : allumée » pendant les premiers exercices
+      // Broches du joystick écrites dans ses blocs : celles de l'exercice, sinon celles d'un exercice libre.
+      A.joystickCourant = A.joystickDe(ex.composants) || A.nouveauJoystick(ex.carte);
       arreter();
       fermerResultat();
       fermerBulle();

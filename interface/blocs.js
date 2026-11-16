@@ -829,6 +829,36 @@
       WORKSPACE_COMMENT_DEFAULT_TEXT: 'Écris ton commentaire ici…',
     });
     Blockly.common.defineBlocksWithJsonArray(DEFINITIONS);
+    // Broches imposées (l'élève ne les choisit pas) : écrites au bout du bloc, pour savoir où brancher les fils en plus
+    // de VCC et GND. A.joystickCourant (joystick de l'exercice) est réglé à l'ouverture de chaque exercice.
+    const ports = (A.PROFILS && A.PROFILS.mbot && A.PROFILS.mbot.ports) || {};
+    const BROCHES_IMPOSEES = {
+      joystick: () => {
+        const j = A.joystickCourant || (A.JOYSTICK_DEPART || {}).uno;
+        return j ? `X → ${j.broche} · Y → ${j.y} · bouton → ${j.bouton}` : '';
+      },
+      ecran: () => 'SDA → A4 · SCL → A5',
+      ultrasons: () => (ports.ultrasons ? `port ${ports.ultrasons}` : ''),
+      ligne: () => (ports.ligne ? `port ${ports.ligne}` : ''),
+      matrice: () => (ports.matrice ? `port ${ports.matrice}` : ''),
+    };
+    const BLOCS_IMPOSES = {
+      joystick_position: 'joystick', joystick_valeur: 'joystick', joystick_direction: 'joystick', joystick_bouton: 'joystick', quand_joystick: 'joystick',
+      ecran_texte: 'ecran', ecran_nombre: 'ecran', ecran_effacer: 'ecran',
+      mbot_distance: 'ultrasons', mbot_ligne: 'ligne', mbot_ligne_voit: 'ligne',
+      mbot_matrice_dessin: 'matrice', mbot_matrice_texte: 'matrice', mbot_matrice_nombre: 'matrice', mbot_matrice_heure: 'matrice',
+    };
+    for (const [type, quoi] of Object.entries(BLOCS_IMPOSES)) {
+      if (!Blockly.Blocks[type]) continue;
+      const init = Blockly.Blocks[type].init;
+      Blockly.Blocks[type].init = function () {
+        init.call(this);
+        const texte = BROCHES_IMPOSEES[quoi]();
+        // Dans la dernière ligne du bloc qui n'est pas une « bouche » (blocs « quand … » : avant les blocs à faire).
+        const entree = this.inputList.filter((i) => !i.connection || i.connection.type !== Blockly.NEXT_STATEMENT).pop();
+        if (texte && entree) entree.appendField(new Blockly.FieldLabel(`(${texte})`, 'broches-imposees'), 'BROCHES_IMPOSEES');
+      };
+    }
     // Menu HAUT/BAS du bloc LED : « : allumée / : éteinte » pendant les premiers exercices seulement
     // (A.aideLed est réglé à l'ouverture de chaque exercice, voir parametres.js).
     const initLed = Blockly.Blocks.led_etat.init;
