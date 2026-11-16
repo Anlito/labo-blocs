@@ -873,6 +873,18 @@
       $('.simu-note', ecran).textContent = `Programme ${nom} repris : complète-le ou modifie-le. « Annuler » revient en arrière.`;
     });
 
+    // « Repartir de zéro » : le programme du début de l'exercice (vide, ou le programme de départ du professeur).
+    // Une question avant d'effacer ; « Annuler » ramène le programme d'avant.
+    $('.btn-repartir', ecran).addEventListener('click', () => {
+      if (!etat.exercice) return;
+      const depart = A.versBlockly(etat.exercice.blocsDepart || { demarrage: [], boucle: [] });
+      if (A.programmeNonVide(editeur.sauvegarder()) && !confirm('Effacer ton programme et repartir de zéro ?\nTu pourras revenir en arrière avec le bouton « Annuler ».')) return;
+      arreter();
+      editeur.remplacer(depart);
+      majCode();
+      $('.simu-note', ecran).textContent = 'Programme effacé : tu repars de zéro. « Annuler » revient en arrière.';
+    });
+
     // ----- Outils de l'espace de travail -----
 
     $('.btn-annuler', ecran).addEventListener('click', editeur.annuler);

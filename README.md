@@ -152,4 +152,5 @@ demandent le **code professeur** (une fois par ordinateur ; « Verrouiller » le
   « Dans la carte » sans mise à jour des cartes — [RECETTE.md](RECETTE.md) §26.
 - **Reprendre l'exercice précédent, en recette (16/11/2026)** : bouton « Reprendre l'exercice … » à côté de « Mon
   programme » : l'élève repart de son programme de l'exercice d'avant pour le compléter ; « Annuler » revient en
-  arrière ; le professeur peut le retirer d'un exercice (éditeur de parcours) — [RECETTE.md](RECETTE.md) §30.
+  arrière ; le professeur peut le retirer d'un exercice (éditeur de parcours). Bouton « Repartir de zéro » : retour
+  aux blocs du début de l'exercice, après une question — [RECETTE.md](RECETTE.md) §30.
