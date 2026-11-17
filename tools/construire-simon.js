@@ -528,8 +528,8 @@ function exercicesGuides(niveau) {
 
 // ---------- Les deux parcours ----------
 const NIVEAUX = {
-  4: { id: 'simon', titre: 'Simon Rétro Game · 4e', versionParcours: '2.0.0' },
-  5: { id: 'simon-5e', titre: 'Simon Rétro Game · 5e', versionParcours: '1.0.0' },
+  4: { id: 'simon', titre: 'Simon Rétro Game · 4e', versionParcours: '2.0.1' },
+  5: { id: 'simon-5e', titre: 'Simon Rétro Game · 5e', versionParcours: '1.0.1' },
 };
 // ---------- Fiches et lexique ----------
 const fiches = {
@@ -617,7 +617,9 @@ function construire(niveau) {
     id: NIVEAUX[niveau].id,
     titre: NIVEAUX[niveau].titre,
     versionParcours: NIVEAUX[niveau].versionParcours,
-    date: '2026-11-16',
+    date: '2026-11-17',
+    // Sur le site de Labo Blocs, seules les classes de ce niveau sont proposées (une 5C n'ouvre pas le parcours de 4e).
+    niveaux: [String(niveau)],
     moteurMinimum: PA.VERSION_MOTEUR,
     carte: 'uno',
     modes: ['simulateur', 'carte'],

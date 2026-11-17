@@ -35,6 +35,12 @@ for (const [nom, paquet] of [['4e', parcours4], ['5e', parcours5]]) {
   });
 }
 
+test('Simon : chaque parcours est celui d’un niveau (seules ses classes sont proposées) ; un niveau invalide est signalé', () => {
+  assert.deepEqual(lireParcours('simon-5e').niveaux, ['5']);
+  assert.deepEqual(lireParcours('simon').niveaux, ['4']);
+  assert.match(controler(Object.assign(copie(lireParcours('simon')), { niveaux: ['4e'] })).join(' '), /Niveaux du parcours/);
+});
+
 test('Simon : les exercices 1 à 4 et les scénarios sont les mêmes en 5e et en 4e', () => {
   for (let n = 1; n <= 4; n++) assert.deepEqual(ex5(n), ex(n), `exercice ${n}`);
   for (let n = 5; n <= 12; n++) {

@@ -9,7 +9,8 @@
 //     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), listes (noms des
 //     listes données aux élèves ; « Créer une liste » dès qu'un bloc de liste est proposé), ouvertApres (id d'un exercice
 //     placé avant : celui-ci s'ouvre dès que cet exercice est réussi, sans attendre les précédents), … } ],
-//     fiches, lexique, classes (facultatif : classes proposées aux élèves), cheminSauvegarde (facultatif : dossier de
+//     fiches, lexique, classes (facultatif : classes proposées aux élèves), niveaux (facultatif : parcours d'un niveau,
+//     ex. ['5'] : seules les classes de 5e du collège sont proposées), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
 // L'« empreinte » d'un exercice résume ce qui décide de sa réussite (consigne, composants, blocs, scénarios,
@@ -113,6 +114,9 @@
     // Classes et dossier de l'équipe (réglages facultatifs du parcours, pour le site de Labo Blocs).
     if (paquet.classes !== undefined && !(Array.isArray(paquet.classes) && paquet.classes.length && paquet.classes.every((c) => typeof c === 'string' && c.trim()))) {
       pb.push('Classes du parcours : une liste de noms de classes (ex. 4A, 4B).');
+    }
+    if (paquet.niveaux !== undefined && !(Array.isArray(paquet.niveaux) && paquet.niveaux.length && paquet.niveaux.every((n) => /^\d$/.test(String(n))))) {
+      pb.push('Niveaux du parcours : une liste de niveaux (ex. 5 pour la 5e).');
     }
     if (paquet.cheminSauvegarde !== undefined && !(Array.isArray(paquet.cheminSauvegarde) && paquet.cheminSauvegarde.includes('{equipe}'))) {
       pb.push('Dossier de l’équipe du parcours : il doit contenir {equipe}.');

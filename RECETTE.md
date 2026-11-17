@@ -437,6 +437,7 @@ et « Répéter indéfiniment » vides) et utilise la même carte.
 | 30.4 | Après une reprise, bouton « Annuler » (flèche en bas de la zone) | Le programme d'avant la reprise revient | |
 | 30.5 | Fermer l'onglet, rouvrir la sauvegarde de l'équipe | Le programme repris et complété de l'exercice 2 est retrouvé ; l'exercice 1 n'a pas changé | |
 | 30.6 | Éditeur de parcours : cocher « Ne pas proposer à l'élève le bouton… » sur un exercice, publier | Chez l'élève, plus de bouton sur cet exercice | |
+| 30.7 | « Repartir de zéro » (à côté de « Mon programme ») sur un programme commencé | Question « Effacer ton programme et repartir de zéro ? » ; oui : il reste les blocs du début de l'exercice (« Au démarrage », « Répéter indéfiniment », ou le programme de départ du professeur) ; « Annuler » ramène le programme | |
 
 ## 31. Simon : parcours 5e et parcours 4e
 
@@ -451,4 +452,4 @@ et « Répéter indéfiniment » vides) et utilise la même carte.
 | 31.5 | 4e, exercices 6 à 9 | Pas de bouton « Reprendre » ; boucle ou « si » posé vide, avec une bulle | |
 | 31.6 | 4e, exercice 10 | Bouton « Reprendre l'exercice 9 » proposé | |
 | 31.7 | Une équipe qui avait réussi les exercices 1 à 4 | Toujours réussis ; les exercices 5 et plus sont « modifiés, à revérifier » | |
-| 30.7 | « Repartir de zéro » (à côté de « Mon programme ») sur un programme commencé | Question « Effacer ton programme et repartir de zéro ? » ; oui : il reste les blocs du début de l'exercice (« Au démarrage », « Répéter indéfiniment », ou le programme de départ du professeur) ; « Annuler » ramène le programme | |
+| 31.8 | Labo Blocs seul : ouvrir « Simon Rétro Game · 4e », puis « · 5e » (page des parcours) | Le premier ne propose que les classes de 4e, le second que celles de 5e ; les autres parcours, toutes les classes | |

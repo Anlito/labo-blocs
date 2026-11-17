@@ -1,12 +1,15 @@
-// Parcours « Simon Rétro Game · 5e », version 1.0.0 (Labo Blocs).
+// Parcours « Simon Rétro Game · 5e », version 1.0.1 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "simon-5e",
   "titre": "Simon Rétro Game · 5e",
-  "versionParcours": "1.0.0",
-  "date": "2026-11-16",
+  "versionParcours": "1.0.1",
+  "date": "2026-11-17",
+  "niveaux": [
+    "5"
+  ],
   "moteurMinimum": "0.5.0",
   "carte": "uno",
   "modes": [

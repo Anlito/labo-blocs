@@ -82,14 +82,15 @@
     // Un autre parcours du site : ses classes (tous les niveaux) et son dossier (nom du parcours) dans le dossier de la classe.
     if (autre) {
       const dossier = autre.titre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
-      A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', niveaux: null, classes: null, cheminSauvegarde: null, cheminProjet: [dossier] });
+      A.projet = Object.assign({}, A.projet, { id: autre.id, titre: autre.titre, parcours: autre.id, accent: '#2547D0', niveaux: autre.niveaux || null, classes: null, cheminSauvegarde: null, cheminProjet: [dossier] });
     }
     const brut = A.parcoursDefinis.find((p) => p.id === A.projet.parcours);
     if (!brut) return erreurFatale(`Le parcours « ${A.projet.parcours} » est introuvable.`);
     // Classes et dossier de l'équipe : réglages du collège (liste commune), sauf s'ils sont réglés dans le parcours
     // (éditeur › Réglages, sur le site de Labo Blocs) ; un projet qui garde ses propres réglages
     // (reglagesDuProjetPrioritaires) les garde. Recalculé quand la version en ligne des réglages du collège arrive.
-    const base = A.projet;
+    // Un parcours d'un niveau (« niveaux » : ['5']) ne propose que les classes de ce niveau.
+    const base = brut.niveaux && !A.projet.niveaux ? Object.assign({}, A.projet, { niveaux: brut.niveaux.map(String) }) : A.projet;
     const calculer = () => {
       let p = A.projetAvecCollege ? A.projetAvecCollege(base) : base;
       if (!base.reglagesDuProjetPrioritaires) {

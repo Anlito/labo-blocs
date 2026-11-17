@@ -587,3 +587,5 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      posée vide, « si erreur » posé, fin de tour à écrire. Exercices guidés : `sansReprise` (le bouton « Reprendre »
      remplacerait le départ) ; 4e 10 à 12 reprennent le jeu de l'élève.
    - Une seule bulle par exercice et courte : la bulle s'ouvre à 200 × 80 px et en recouvre d'autres.
+   - Sur le site de Labo Blocs seul, l'élève choisit le parcours dans la liste : chaque parcours Simon porte
+     `niveaux` (['5'] ou ['4']) et ne propose que les classes de ce niveau (une 5C ne peut plus ouvrir celui de 4e).
