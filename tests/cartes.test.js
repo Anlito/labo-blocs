@@ -159,14 +159,14 @@ test('mBot simulé : moteurs, LED, ultrasons, suiveur de ligne, bouton', () => {
   assert.equal(sim.variables.l, 321);
 });
 
-test('version du programme de chaque carte : outil, Uno/mBot, micro:bit, fichiers construits (mBot 0.3 : afficheur ; Uno 0.4 : modules)', () => {
+test('version du programme de chaque carte : outil, Uno/mBot, micro:bit, fichiers construits (mBot 0.3 : afficheur ; Uno 0.5 : modules, buzzer à l’état bas)', () => {
   const ino = fs.readFileSync(path.join(H.CARTES, 'arduino', 'labo_blocs', 'labo_blocs.ino'), 'utf8').replace(/\r\n/g, '\n'); // extrait sous Windows : CRLF
   const py = fs.readFileSync(path.join(H.CARTES, 'microbit', 'main.py'), 'utf8');
   let construits = null;
   vm.runInNewContext(fs.readFileSync(path.join(H.CARTES, 'firmwares.js'), 'utf8'), { definirFirmwares: (f) => (construits = f) });
   const attendue = (p) => p.version || K.VERSION_FIRMWARE;
   assert.equal(attendue(K.PROFILS.mbot), '0.3');
-  assert.equal(attendue(K.PROFILS.uno), '0.4');
+  assert.equal(attendue(K.PROFILS.uno), '0.5');
   // Dans le .ino : la version du mBot dans « #if defined(CARTE_MCORE) », celle de l'Uno après « #else ».
   assert.match(ino, new RegExp(`#if defined\\(CARTE_MCORE\\)\\n#define VERSION_FIRMWARE "${attendue(K.PROFILS.mbot)}"[\\s\\S]*?#else\\n#define VERSION_FIRMWARE "${attendue(K.PROFILS.uno)}"`));
   assert.match(py, new RegExp(`PONG v2 ${attendue(K.PROFILS.microbit).replace('.', '\\.')} `));

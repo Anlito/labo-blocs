@@ -9,7 +9,7 @@
 // Listes : le premier élément est le n° 1 (comme dans les blocs). Sans « capacite », les 48 places de la carte sont
 // partagées entre les listes du programme (1 liste : 48 nombres, 2 listes : 24…).
 // Fonctions : les paramètres sont des variables cachées ; une fonction ne s'appelle pas elle-même (même par une autre).
-// Options : { composants: [{ type, broche }], boutonsVersMasse: true }
+// Options : { composants: [{ type, broche, etatBas (buzzer) }], boutonsVersMasse: true }
 // Sortie : { octets: Uint8Array, erreurs: [], carte: [[adresse, idBloc], …] (pour surligner le bloc en cours),
 //           noms: { variables: [nom par n°], broches: { n°: nom écrit dans le programme } } }
 
@@ -22,7 +22,8 @@
   const FORMAT = 1;
   const MAX_LISTES = 4; // comme la carte (vm.c : LB_MAX_LISTES, LB_MAX_ELEMENTS)
   const PLACES_LISTES = 48;
-  const BROCHE = { sortie: 1, boutonMasse: 2, boutonHaut: 3, servo: 4, son: 5, analogique: 6, pwm: 7 };
+  // sonBas : buzzer qui sonne quand sa broche est à 0 V (au repos, la carte la laisse à 5 V ; programme de la carte 0.5).
+  const BROCHE = { sortie: 1, boutonMasse: 2, boutonHaut: 3, servo: 4, son: 5, analogique: 6, pwm: 7, sonBas: 8 };
   const FIL = { demarrage: 0, boucle: 1, appui: 2, relache: 3 };
   const OP = {
     FIN: 0x00, NOMBRE: 0x01, ENTIER: 0x02, LIRE_VAR: 0x03, ECRIRE_VAR: 0x04,
@@ -88,7 +89,7 @@
     const typeBouton = opts.boutonsVersMasse === false ? BROCHE.boutonHaut : BROCHE.boutonMasse;
     const TYPES_COMPOSANTS = { led: BROCHE.sortie, bouton: typeBouton, servo: BROCHE.servo, buzzer: BROCHE.son, potentiometre: BROCHE.analogique, capteur: BROCHE.analogique, pwm: BROCHE.pwm };
     for (const c of opts.composants || []) {
-      if (TYPES_COMPOSANTS[c.type]) broches.set(numeroBroche(c.broche), TYPES_COMPOSANTS[c.type]);
+      if (TYPES_COMPOSANTS[c.type]) broches.set(numeroBroche(c.broche), c.type === 'buzzer' && c.etatBas ? BROCHE.sonBas : TYPES_COMPOSANTS[c.type]);
     }
     const nomsBroches = {};
     for (const c of opts.composants || []) nomsBroches[numeroBroche(c.broche)] = c.broche;

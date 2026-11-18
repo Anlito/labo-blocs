@@ -62,7 +62,10 @@
     })(v1.fils.concat(v1.fonctions || []));
     const fonctions = v1.fonctions || [];
     // Les fonctions de l'élève gardent leur nom, sans toucher aux noms déjà pris par le programme écrit ici.
-    const nomFonction = (nom) => (/^(setup|loop|attendre|bouton|reste|reetalonner|element|remplacer|ajouter|vider|positionJoystick|quand\d*|quandJoystick\d*)$/.test(nomC(nom)) ? 'f_' + nomC(nom) : nomC(nom));
+    // Buzzer déclenché à l'état bas (réglage du parcours) : la note finie, la broche revient à HAUT (silence).
+    const sonsBas = new Set((o.composants || []).filter((c) => c.type === 'buzzer' && c.etatBas).map((c) => numero(c.broche)));
+    const avecSonBas = [...sons].some((n) => sonsBas.has(n));
+    const nomFonction = (nom) => (/^(setup|loop|attendre|bouton|reste|jouerNote|finirNote|reetalonner|element|remplacer|ajouter|vider|positionJoystick|quand\d*|quandJoystick\d*)$/.test(nomC(nom)) ? 'f_' + nomC(nom) : nomC(nom));
 
     const lignes = [];
     const carte = {};
@@ -148,7 +151,8 @@
             ajouter(`${r}servo${numero(i.broche)}.write(constrain((int)(${expression(i.angle)}), 0, 180));`);
             break;
           case 'son':
-            ajouter(`${r}tone(${numero(i.broche)}, ${expression(i.frequence)}, (unsigned long)(${expression(i.duree)} * 1000));`);
+            if (sonsBas.has(numero(i.broche))) ajouter(`${r}jouerNote(${numero(i.broche)}, ${expression(i.frequence)}, ${expression(i.duree)});`);
+            else ajouter(`${r}tone(${numero(i.broche)}, ${expression(i.frequence)}, (unsigned long)(${expression(i.duree)} * 1000));`);
             break;
           case 'affecter':
             ajouter(`${r}${nomC(i.variable)} = ${expression(i.valeur)};`);
@@ -268,10 +272,34 @@
       ajouter('}');
       ajouter('');
     }
-    ajouter('// « attendre » en secondes (les nombres à virgule sont acceptés).');
-    ajouter('void attendre(float secondes) {');
-    ajouter('  if (secondes > 0) delay((unsigned long)(secondes * 1000.0));');
-    ajouter('}');
+    if (avecSonBas) {
+      ajouter('// Buzzer déclenché à l’état bas : il sonne quand sa broche est à LOW. Entre les notes, la broche reste HIGH.');
+      ajouter('int brocheNote = -1;');
+      ajouter('unsigned long finNote = 0;');
+      ajouter('void jouerNote(int broche, float frequence, float secondes) {');
+      ajouter('  tone(broche, frequence);');
+      ajouter('  brocheNote = broche;');
+      ajouter('  finNote = millis() + (unsigned long)(secondes * 1000.0);');
+      ajouter('}');
+      ajouter('void finirNote() {');
+      ajouter('  if (brocheNote >= 0 && (long)(millis() - finNote) >= 0) {');
+      ajouter('    noTone(brocheNote);');
+      ajouter('    digitalWrite(brocheNote, HIGH);');
+      ajouter('    brocheNote = -1;');
+      ajouter('  }');
+      ajouter('}');
+      ajouter('');
+      ajouter('// « attendre » en secondes (les nombres à virgule sont acceptés) ; la note en cours s’arrête à l’heure.');
+      ajouter('void attendre(float secondes) {');
+      ajouter('  unsigned long fin = millis() + (unsigned long)(secondes > 0 ? secondes * 1000.0 : 0);');
+      ajouter('  do finirNote(); while ((long)(millis() - fin) < 0);');
+      ajouter('}');
+    } else {
+      ajouter('// « attendre » en secondes (les nombres à virgule sont acceptés).');
+      ajouter('void attendre(float secondes) {');
+      ajouter('  if (secondes > 0) delay((unsigned long)(secondes * 1000.0));');
+      ajouter('}');
+    }
     ajouter('');
     if (boutons.size) {
       ajouter(versMasse ? '// État du bouton : HAUT quand il est appuyé (il relie alors la broche à la masse).' : '// État du bouton : HAUT quand il est appuyé.');
@@ -335,7 +363,10 @@
       ajouter(`  digitalWrite(${n}, LOW);`);
     }
     for (const n of trier(boutons)) ajouter(`  pinMode(${n}, ${versMasse ? 'INPUT_PULLUP' : 'INPUT'});`);
-    for (const n of trier(sons)) ajouter(`  pinMode(${n}, OUTPUT);`);
+    for (const n of trier(sons)) {
+      ajouter(`  pinMode(${n}, OUTPUT);`);
+      if (sonsBas.has(n)) ajouter(`  digitalWrite(${n}, HIGH); // buzzer silencieux au repos`);
+    }
     // Bouton du joystick : il relie la broche à la masse quand on enfonce le manche.
     if (J && joystickUtilise) ajouter(`  pinMode(${numero(J.bouton)}, INPUT_PULLUP);`);
     if (hasard) ajouter('  randomSeed(analogRead(A5));');
@@ -368,7 +399,7 @@
     commentaire(fil('boucle'), '  ');
     instructions(fil('boucle').corps, 2);
     // Un tour de boucle dure au moins 1 ms, comme dans le simulateur.
-    ajouter('  delay(1);');
+    ajouter(avecSonBas ? '  attendre(0.001);' : '  delay(1);');
     ajouter('}');
     for (const f of fonctions) {
       ajouter('');

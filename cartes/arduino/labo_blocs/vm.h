@@ -62,6 +62,7 @@ enum {
   LB_BROCHE_SON = 5,          // buzzer
   LB_BROCHE_ANALOGIQUE = 6,   // entrée analogique (0 à 1023)
   LB_BROCHE_PWM = 7,          // sortie à intensité réglable
+  LB_BROCHE_SON_BAS = 8,      // buzzer déclenché à l'état bas : silence = HAUT (programme de la carte 0.5)
 };
 
 // Types de fils.

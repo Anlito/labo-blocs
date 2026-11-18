@@ -589,3 +589,10 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Une seule bulle par exercice et courte : la bulle s'ouvre à 200 × 80 px et en recouvre d'autres.
    - Sur le site de Labo Blocs seul, l'élève choisit le parcours dans la liste : chaque parcours Simon porte
      `niveaux` (['5'] ou ['4']) et ne propose que les classes de ce niveau (une 5C ne peut plus ouvrir celui de 4e).
+46. **Buzzer déclenché à l'état bas (18/11/2026)**. Thomas : en 5e, exercice 11 « Dans la carte », une note puis un
+   son continu. Le simulateur et le programme (vérifiés dans une Uno émulée, avr8js) sont justes : le module des kits
+   (MH-FMD, « 低电平触发 ») sonne quand D10 est à 0 V, et tone() laisse la broche à 0 V après chaque note.
+   - Réglage du parcours `buzzerEtatBas` → chaque buzzer porte `etatBas` (après l'empreinte : rien de « modifié »).
+   - Code octet : broche de type 8 (LB_BROCHE_SON_BAS) ; en direct : « M <broche> B » ; C++ : jouerNote / finirNote.
+   - Programme de la carte 0.5 (Uno) : note jouée sans durée et coupée à l'heure, broche remise à HAUT ; arrêt : résistance
+     interne (HAUT). Les cartes en 0.4 sont annoncées « pas à jour » : réinstaller le programme de la carte, une fois.

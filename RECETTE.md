@@ -453,3 +453,17 @@ et « Répéter indéfiniment » vides) et utilise la même carte.
 | 31.6 | 4e, exercice 10 | Bouton « Reprendre l'exercice 9 » proposé | |
 | 31.7 | Une équipe qui avait réussi les exercices 1 à 4 | Toujours réussis ; les exercices 5 et plus sont « modifiés, à revérifier » | |
 | 31.8 | Labo Blocs seul : ouvrir « Simon Rétro Game · 4e », puis « · 5e » (page des parcours) | Le premier ne propose que les classes de 4e, le second que celles de 5e ; les autres parcours, toutes les classes | |
+
+## 32. Buzzer déclenché à l'état bas (programme de la carte 0.5)
+
+Module MH-FMD des kits Simon (« 低电平触发 ») : il sonne quand sa broche est à 0 V. Réglage du parcours « Module buzzer
+déclenché à l'état bas » (éditeur › Réglages ; coché pour les deux parcours Simon).
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 32.1 | Brancher une Uno avec l'ancien programme (0.4), ouvrir un exercice, « Dans la carte » | « Carte pas à jour » : installer le programme de la carte (0.5) | |
+| 32.2 | Simon, exercice 4, « Dans la carte », appuyer sur un bouton | La note dure 0,3 s puis silence (plus de son continu) | |
+| 32.3 | Simon, exercice 11, « Dans la carte » | Tour 1 : une couleur et sa note, puis silence en attendant le joueur | |
+| 32.4 | Même exercice en « En direct » | Notes courtes, silence entre elles | |
+| 32.5 | Panneau C++ d'un exercice Simon avec une note | « jouerNote(10, …) » et « digitalWrite(10, HIGH) » dans setup | |
+| 32.6 | Un parcours sans le réglage (ex. Labyrinthe) sur une carte 0.5 | Rien ne change | |

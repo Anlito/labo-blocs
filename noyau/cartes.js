@@ -40,8 +40,9 @@
       installation: 'serie',
       broches: { led: D, bouton: D, servo: ['D5', 'D6'], buzzer: D, joystick: ['A0', 'A1', 'A2', 'A3', 'A4', 'A5'] },
       composants: ['led', 'bouton', 'servo', 'buzzer', 'joystick'],
-      // Programme de la carte 0.4 : modules (ultrason, afficheur 4 chiffres, écran I2C, clavier tactile).
-      version: '0.4',
+      // Programme de la carte 0.4 : modules (ultrason, afficheur 4 chiffres, écran I2C, clavier tactile) ;
+      // 0.5 : buzzer déclenché à l'état bas (réglage « buzzerEtatBas » du parcours).
+      version: '0.5',
     },
     mbot: {
       id: 'mbot',

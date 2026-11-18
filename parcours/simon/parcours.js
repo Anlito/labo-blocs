@@ -1,12 +1,12 @@
-// Parcours « Simon Rétro Game · 4e », version 2.0.1 (Labo Blocs).
+// Parcours « Simon Rétro Game · 4e », version 2.0.2 (Labo Blocs).
 // Ce fichier est écrit par « Mettre à jour les exercices » (outil du professeur) : ne pas le modifier à la main.
 definirParcours({
   "format": "labo-blocs/parcours",
   "version": 1,
   "id": "simon",
   "titre": "Simon Rétro Game · 4e",
-  "versionParcours": "2.0.1",
-  "date": "2026-11-17",
+  "versionParcours": "2.0.2",
+  "date": "2026-11-18",
   "niveaux": [
     "4"
   ],
@@ -17,6 +17,7 @@ definirParcours({
     "carte"
   ],
   "boutonsVersMasse": true,
+  "buzzerEtatBas": true,
   "parametres": {},
   "exercices": [
     {

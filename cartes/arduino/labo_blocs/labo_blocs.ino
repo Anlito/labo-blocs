@@ -11,7 +11,8 @@
 //   T <broche> <Hz> <ms>    → OK            note
 //   OFF                     → OK            tout éteindre, arrêter les moteurs
 //   S <broche> <0..180>     → OK            servo-moteur
-//   M <broche> <I|P|O>      → OK            mode : entrée, entrée avec résistance (bouton vers GND), sortie
+//   M <broche> <I|P|O|B>    → OK            mode : entrée, entrée avec résistance (bouton vers GND), sortie,
+//                                           buzzer déclenché à l'état bas (silence = HAUT, 0.5)
 //   R <broche>              → V <broche> <0|1>       lecture numérique (niveau électrique)
 //   RA <broche>             → V <broche> <0..1023>   lecture analogique
 //   W [<broche> …]          → OK            surveiller ces entrées : la carte envoie « E <broche> <0|1> »
@@ -37,11 +38,12 @@
 // 0.2 : mBot, un moteur seul (extension 1, commande 9).
 // 0.3 (mBot seulement) : afficheur LED Matrix 8×16 sur le port 4 (extension 1, commandes 10 à 15).
 // 0.4 (Uno seulement) : modules d'Escape Lab (extension 5) : ultrason, afficheur 4 chiffres, écran I2C, clavier tactile.
+// 0.5 (Uno seulement) : buzzer déclenché à l'état bas (broche LB_BROCHE_SON_BAS, « M <broche> B ») : silence = HAUT.
 #if defined(CARTE_MCORE)
 #define VERSION_FIRMWARE "0.3"
 #define NOM_CARTE "mcore"
 #else
-#define VERSION_FIRMWARE "0.4"
+#define VERSION_FIRMWARE "0.5"
 #define NOM_CARTE "uno"
 #endif
 
@@ -634,9 +636,37 @@ float lb_ext(uint8_t extension, uint8_t commande, uint8_t n, const float *a) {
 
 // ---------- Ce que l'interpréteur demande à la carte ----------
 uint8_t lb_lire_octet(uint16_t a) { return a < CAPACITE ? EEPROM.read(a) : 0; }
+// Buzzer déclenché à l'état bas (module « 低电平触发 », ex. MH-FMD) : il sonne quand sa broche est à 0 V. tone() avec
+// une durée remet la broche à 0 V à la fin de la note (le module sonnerait sans arrêt) : la note est jouée sans durée
+// et finirNoteBas() la coupe à l'heure, puis remet la broche à 5 V. Une seule note à la fois (tone() aussi).
+static int8_t brocheSonBas = -1;
+static bool noteBas = false;
+static uint32_t finNoteBas = 0;
+static void silenceBas() {
+  noTone(brocheSonBas);
+  pinMode(brocheSonBas, OUTPUT);
+  digitalWrite(brocheSonBas, HIGH);
+  noteBas = false;
+}
+static void finirNoteBas() {
+  if (noteBas && (int32_t)(millis() - finNoteBas) >= 0) silenceBas();
+}
+static void jouer(uint8_t b, uint16_t f, uint32_t ms) {
+  if ((int8_t)b != brocheSonBas) return tone(b, f, ms);
+  if (!ms) return silenceBas();
+  tone(b, f);
+  noteBas = true;
+  finNoteBas = millis() + ms;
+}
+
 void lb_configurer(uint8_t b, uint8_t type) {
   if (!brocheAutorisee(b) || b >= 20) return;
+  if ((int8_t)b == brocheSonBas) brocheSonBas = -1, noteBas = false; // la broche sert à autre chose
   switch (type) {
+    case LB_BROCHE_SON_BAS:
+      brocheSonBas = b;
+      silenceBas();
+      break;
     case LB_BROCHE_SORTIE:
     case LB_BROCHE_SON:
     case LB_BROCHE_PWM: pinMode(b, OUTPUT); digitalWrite(b, LOW); break;
@@ -655,10 +685,12 @@ void lb_servo(uint8_t b, uint8_t angle) {
   if (brocheAutorisee(b)) ecrireServo(b, angle);
 }
 void lb_son(uint8_t b, uint16_t f, uint32_t ms) {
-  if (brocheAutorisee(b)) tone(b, f, ms);
+  if (brocheAutorisee(b)) jouer(b, f, ms);
 }
 void lb_silence(uint8_t b) {
-  if (brocheAutorisee(b)) noTone(b);
+  if (!brocheAutorisee(b)) return;
+  if ((int8_t)b == brocheSonBas) silenceBas();
+  else noTone(b);
 }
 // Bouton vers GND (résistance interne) : appuyé = niveau BAS, mais 1 pour le programme.
 uint8_t lb_lire_num(uint8_t b, uint8_t type) {
@@ -693,6 +725,12 @@ static void toutEteindre() {
     pinMode(b, INPUT);     // plus rien n'est alimenté
   }
   noTone(8);
+  // Buzzer déclenché à l'état bas : broche tirée à 5 V par la résistance interne (silencieux, rien n'est commandé).
+  if (brocheSonBas >= 0) {
+    noTone(brocheSonBas);
+    noteBas = false;
+    pinMode(brocheSonBas, INPUT_PULLUP);
+  }
   lacherServos();
   nbSurveillees = 0;
 #if defined(CARTE_MCORE)
@@ -774,7 +812,7 @@ static void executer(char *l) {
     if (!entier(p, a) || !entier(p, b) || !entier(p, c)) return (void)Serial.println(F("ERR CMD"));
     if (!brocheAutorisee(a) || a >= 20) return (void)Serial.println(F("ERR PIN"));
     passerEnDirect();
-    tone(a, constrain(b, 31, 20000), constrain(c, 1, 10000));
+    jouer(a, constrain(b, 31, 20000), constrain(c, 1, 10000));
     Serial.println(F("OK"));
     return;
   }
@@ -787,6 +825,7 @@ static void executer(char *l) {
       if (*p == 'I') pinMode(a, INPUT);
       else if (*p == 'P') pinMode(a, INPUT_PULLUP);
       else if (*p == 'O') pinMode(a, OUTPUT);
+      else if (*p == 'B') brocheSonBas = a, silenceBas(); // buzzer déclenché à l'état bas : silence = HAUT
       else return (void)Serial.println(F("ERR CMD"));
     }
     Serial.println(F("OK"));
@@ -939,6 +978,7 @@ void setup() {
 
 void loop() {
   lireSerie();
+  finirNoteBas();
 #if defined(CARTE_MCORE)
   avancerMatrice(); // texte qui défile sur l'afficheur
 #endif

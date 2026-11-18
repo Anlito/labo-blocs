@@ -1183,6 +1183,7 @@
     $('.reglage-moteur', d).textContent = p.moteurMinimum || A.VERSION_MOTEUR;
     $('.reglage-carte', d).value = p.carte || 'uno';
     $('.reglage-boutons', d).checked = p.boutonsVersMasse !== false;
+    $('.reglage-buzzer-bas', d).checked = !!p.buzzerEtatBas;
     $('.reglage-mode-carte', d).checked = (p.modes || ['simulateur']).includes('carte');
     $('.reglage-mode-direct', d).checked = (p.modes || ['simulateur']).includes('direct');
     $('.reglage-classes', d).value = (p.classes || []).join(', ');
@@ -1203,6 +1204,8 @@
       p.carte = $('.reglage-carte', d).value;
       const carteChangee = carteAvant !== p.carte;
       p.boutonsVersMasse = $('.reglage-boutons', d).checked;
+      if ($('.reglage-buzzer-bas', d).checked) p.buzzerEtatBas = true;
+      else delete p.buzzerEtatBas;
       p.modes = ['simulateur'].concat($('.reglage-mode-direct', d).checked ? ['direct'] : [], $('.reglage-mode-carte', d).checked ? ['carte'] : []);
       // Classes et dossier de l'équipe : vides, ce sont ceux du site de Labo Blocs qui comptent.
       const reglesEleves = A.lireReglagesEleves($('.reglage-classes', d).value, $('.reglage-chemin', d).value);

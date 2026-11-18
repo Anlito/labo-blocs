@@ -9,7 +9,8 @@
 //     (noms donnés aux élèves ; absent : ['CHOIX']), variablesLibres (bouton « Créer une variable »), listes (noms des
 //     listes données aux élèves ; « Créer une liste » dès qu'un bloc de liste est proposé), ouvertApres (id d'un exercice
 //     placé avant : celui-ci s'ouvre dès que cet exercice est réussi, sans attendre les précédents), … } ],
-//     fiches, lexique, classes (facultatif : classes proposées aux élèves), niveaux (facultatif : parcours d'un niveau,
+//     fiches, lexique, buzzerEtatBas (facultatif : module buzzer qui sonne quand sa broche est à 0 V),
+//     classes (facultatif : classes proposées aux élèves), niveaux (facultatif : parcours d'un niveau,
 //     ex. ['5'] : seules les classes de 5e du collège sont proposées), cheminSauvegarde (facultatif : dossier de
 //     l'équipe, ex. ['{classe}', 'COMMUN', 'TECHNOLOGIE', 'ROBOT', '{equipe}']) }
 //
@@ -135,6 +136,9 @@
       if (x.boutonsVersMasse === undefined) x.boutonsVersMasse = paquet.boutonsVersMasse !== false;
       // Carte du parcours (après l'empreinte : les exercices existants gardent la leur).
       if (!x.carte) x.carte = paquet.carte || 'uno';
+      // Buzzer déclenché à l'état bas (module « 低电平触发 », ex. MH-FMD) : réglage du parcours, porté par chaque
+      // buzzer (après l'empreinte : rien n'est « modifié » chez les élèves). Au repos, la carte laisse sa broche à 5 V.
+      if (paquet.buzzerEtatBas) x.composants = (x.composants || []).map((c) => (c.type === 'buzzer' ? Object.assign({}, c, { etatBas: true }) : c));
       return x;
     });
     return Object.assign({}, paquet, { exercices, parametres });

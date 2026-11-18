@@ -121,6 +121,8 @@
     const depart = ['OFF'];
     for (const b of boutons) depart.push(`M ${numero(b.broche)} ${aLaMasse(b) ? 'P' : 'I'}`);
     if (boutons.length) depart.push('W ' + boutons.map((b) => numero(b.broche)).join(' '));
+    // Buzzer déclenché à l'état bas : la carte garde sa broche à 5 V entre les notes (programme de la carte 0.5).
+    for (const c of o.composants || []) if (c.type === 'buzzer' && c.etatBas && /^D\d+$/.test(c.broche)) depart.push(`M ${numero(c.broche)} B`);
 
     let lu = 0; // entrées du journal déjà traduites en commandes
     function avancer(t) {
