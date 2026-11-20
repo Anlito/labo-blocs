@@ -467,3 +467,22 @@ déclenché à l'état bas » (éditeur › Réglages ; coché pour les deux par
 | 32.4 | Même exercice en « En direct » | Notes courtes, silence entre elles | |
 | 32.5 | Panneau C++ d'un exercice Simon avec une note | « jouerNote(10, …) » et « digitalWrite(10, HIGH) » dans setup | |
 | 32.6 | Un parcours sans le réglage (ex. Labyrinthe) sur une carte 0.5 | Rien ne change | |
+
+## 33. Robot Kitronik MOVE Motor — essai sur le robot (jalon 0 du MOVE Motor)
+
+Programme d'essai `essais/move-motor/essai.py` → `essais/firmware/essai_move_motor.hex` (`npm run essais:move-motor`),
+à glisser sur le lecteur MICROBIT. Il vérifie sur le vrai robot ce que dit l'extension MakeCode de Kitronik.
+**Robot posé sur une boîte, roues en l'air.** Le numéro de l'étape s'affiche, puis la flèche → : **A** = étape
+suivante, **B** = refaire l'étape. Noter dans « OK ? » ce qu'on voit (valeurs, côté, couleur).
+
+| # | Action | Attendu (d'après Kitronik) | OK ? |
+|---|---|---|---|
+| 33.1 | Glisser le fichier ; étape 1 au démarrage | « V1.0 », « V1.3 » ou « V3.1 » défile (version de la carte du robot) ; aucune roue ne tourne | ✔ V3.1, feux stop allumés à l'arrêt (20/11) |
+| 33.2 | A → étape 2 | La roue **gauche** (vue de derrière, écran de la micro:bit vers l'avant) tourne en marche avant 2 s, puis en arrière 2 s | ✔ (20/11) |
+| 33.3 | A → étape 3 | Même chose avec la roue **droite** | ✔ (20/11) |
+| 33.4 | A → étape 4 | Les deux roues en avant 3 s, à peu près à la même vitesse | ✔ (20/11) |
+| 33.5 | A → étape 5 | Les 4 LED s'allument une par une en rouge (1, 2, 3, 4 sur l'écran) : noter où est chacune ; puis toutes rouge (R), vert (V), bleu (B) | ✔ 1 avant gauche, 2 avant droite, 3 arrière droite, 4 arrière gauche (20/11) |
+| 33.6 | A → étape 6 | « 1 » : 2 bips ; « 2 » : haut-parleur de la micro:bit coupé — entend-on encore 2 bips (buzzer du robot) ? | ✔ oui : buzzer du robot sur P0 (20/11) |
+| 33.7 | A → étape 7 ; ouvrir `essais/move-motor/capteurs.html` dans Chrome, « Se connecter » | Écran du robot : barres gauche / droite = capteurs de ligne, colonne du milieu = distance ; la page montre les nombres en gros | ✔ (20/11) |
+| 33.8 | Main à 10 cm puis 30 cm devant les ultrasons | Distance ≈ 10 puis ≈ 30 | ✔ 10 et 30 (20/11) |
+| 33.9 | Robot sur une feuille blanche puis sur une ligne noire (ruban ou feutre) | Noter les valeurs G et D sur blanc et sur noir (« plus petit / plus grand » de la page) | ✔ blanc G 558 D 552 ; noir G 54 D 49 (20/11) |

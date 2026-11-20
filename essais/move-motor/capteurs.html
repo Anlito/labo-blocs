@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Capteurs du MOVE Motor</title>
+<!-- Essai jetable (jalon 0 du MOVE Motor) : affiche en direct les valeurs envoyées par essai.py à l'étape 7. -->
+<style>
+  body { font-family: system-ui, sans-serif; background: #f7f5ef; color: #2b2b2b; margin: 24px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { font-size: 16px; max-width: 760px; }
+  button { font-size: 18px; padding: 10px 18px; border-radius: 10px; border: 2px solid #2b2b2b; background: #fff; cursor: pointer; }
+  .grille { display: grid; grid-template-columns: repeat(3, minmax(180px, 1fr)); gap: 16px; margin-top: 20px; max-width: 900px; }
+  .case { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 1px 4px #0002; }
+  .nom { font-size: 16px; color: #555; }
+  .valeur { font-size: 64px; font-weight: 700; line-height: 1.1; }
+  .minmax { font-size: 15px; color: #555; }
+  #etat { font-size: 16px; margin-left: 12px; }
+</style>
+</head>
+<body>
+<h1>Capteurs du robot MOVE Motor</h1>
+<p>Robot relié par le câble USB, programme d'essai à l'<strong>étape 7</strong> (barres sur l'écran du robot).
+  Clique sur « Se connecter », choisis la micro:bit (« mbed Serial Port » ou « BBC micro:bit »).
+  Ferme toute autre page Labo Blocs connectée à la carte avant.</p>
+<button id="connecter">Se connecter</button>
+<button id="raz">Remettre min / max à zéro</button>
+<span id="etat">Pas connecté.</span>
+<div class="grille">
+  <div class="case"><div class="nom">Ligne, capteur gauche (P2)</div><div class="valeur" id="G">–</div><div class="minmax" id="G-mm"></div></div>
+  <div class="case"><div class="nom">Ligne, capteur droit (P1)</div><div class="valeur" id="D">–</div><div class="minmax" id="D-mm"></div></div>
+  <div class="case"><div class="nom">Distance (cm)</div><div class="valeur" id="d">–</div><div class="minmax" id="d-mm"></div></div>
+</div>
+<script>
+  const extremes = {};
+  function razExtremes() {
+    for (const k of ['G', 'D', 'd']) {
+      extremes[k] = { min: Infinity, max: -Infinity };
+      document.getElementById(k + '-mm').textContent = '';
+    }
+  }
+  razExtremes();
+  document.getElementById('raz').onclick = razExtremes;
+
+  function afficher(ligne) {
+    for (const morceau of ligne.trim().split(' ')) {
+      const [k, v] = morceau.split('=');
+      if (!(k in extremes)) continue;
+      const n = Number(v);
+      document.getElementById(k).textContent = k === 'd' && n < 0 ? 'rien' : v;
+      if (k === 'd' && n < 0) continue;
+      const e = extremes[k];
+      e.min = Math.min(e.min, n);
+      e.max = Math.max(e.max, n);
+      document.getElementById(k + '-mm').textContent = 'plus petit : ' + e.min + ' · plus grand : ' + e.max;
+    }
+  }
+
+  document.getElementById('connecter').onclick = async () => {
+    const etat = document.getElementById('etat');
+    if (!('serial' in navigator)) { etat.textContent = 'Ce navigateur ne sait pas lire le câble USB : ouvre la page dans Chrome ou Edge.'; return; }
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      etat.textContent = 'Connecté. Si rien ne bouge, passe le robot à l\'étape 7 (bouton A).';
+      const lecteur = port.readable.getReader();
+      const decodeur = new TextDecoder();
+      let reste = '';
+      for (;;) {
+        const { value, done } = await lecteur.read();
+        if (done) break;
+        reste += decodeur.decode(value, { stream: true });
+        const lignes = reste.split('\n');
+        reste = lignes.pop();
+        lignes.forEach(afficher);
+      }
+    } catch (e) {
+      etat.textContent = 'Connexion impossible : ' + e.message + '. Débranche et rebranche le câble, puis réessaie.';
+    }
+  };
+</script>
+</body>
+</html>

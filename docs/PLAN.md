@@ -596,3 +596,18 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Code octet : broche de type 8 (LB_BROCHE_SON_BAS) ; en direct : « M <broche> B » ; C++ : jouerNote / finirNote.
    - Programme de la carte 0.5 (Uno) : note jouée sans durée et coupée à l'heure, broche remise à HAUT ; arrêt : résistance
      interne (HAUT). Les cartes en 0.4 sont annoncées « pas à jour » : réinstaller le programme de la carte, une fois.
+47. **Robot Kitronik MOVE Motor (20/11/2026)**, demande de Thomas : nouveau robot à micro:bit V2 (réf. 5683), d'abord
+   pour le mBot Challenge (une écurie aura un mBot ou un MOVE Motor), d'autres projets ensuite. Décisions : parcours
+   de découverte ; simulateur avec un **robot animé** ; mode « En direct » et envoi dans la carte. Jalons proposés :
+   0 essai sur le robot ; 1 profil « MOVE Motor » (programme de la carte = celui de la micro:bit + partie robot, blocs
+   Moteurs / Capteurs / LED et son / Servos, « Vider la carte » arrête les moteurs) ; 2 « En direct » ; 3 parcours de
+   découverte ; 4 simulateur animé. Ouvert : pilotage clavier sans câble pour le mBot Challenge (radio par une 2e
+   micro:bit ?), nombre de robots.
+   - D'après l'extension MakeCode de Kitronik : 3 versions de carte (V1.0 et V1.3 : moteurs par PCA9632 en I2C à 0x62 ;
+     V3.1 : 6 octets façon WS2811 sur P12), détectées au démarrage ; ultrasons P13/P14 (58 µs/cm sur V2) ; suivi de
+     ligne analogique gauche P2, droite P1 ; 4 LED ZIP sur P8 (GRB) ; klaxon = `music` ; servos P15/P16.
+   - Jalon 0 : `essais/move-motor/essai.py` → `essais/firmware/essai_move_motor.hex` ; recette `RECETTE.md` §33.
+   - **Jalon 0 validé par Thomas sur le robot le 20/11/2026** : carte **V3.1** (moteurs sur P12, feux stop à l'arrêt) ;
+     roues gauche / droite et sens conformes, vitesses égales (pas de réglage d'équilibre pour l'instant) ; LED 1 avant
+     gauche, 2 avant droite, 3 arrière droite, 4 arrière gauche, couleurs justes ; **buzzer propre au robot sur P0** ;
+     ultrasons justes (10 → 10, 30 → 30 cm) ; ligne : blanc ≈ 555, noir ≈ 50 (G et D) → seuil de départ 300.
