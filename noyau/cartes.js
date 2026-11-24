@@ -69,7 +69,7 @@
       reponse: 'microbit-v2',
       // Programme de la carte propre à la micro:bit : 0.3 dessin 5 × 5 ; 0.4 robot MOVE Motor (le même fichier sert
       // aux deux profils : une micro:bit passe du robot à un autre projet sans rien réinstaller).
-      version: '0.4',
+      version: '0.5',
       installation: 'fichier',
       broches: { led: P, bouton: P, servo: P, buzzer: P, joystick: P },
       composants: ['led', 'bouton', 'servo', 'joystick'],
@@ -83,7 +83,7 @@
       nom: 'robot MOVE Motor (micro:bit V2)',
       firmware: 'microbitV2',
       reponse: 'microbit-v2',
-      version: '0.4',
+      version: '0.5',
       installation: 'fichier',
       inclut: ['microbit'],
       broches: { led: [], bouton: [], servo: ['P15', 'P16'], buzzer: [], joystick: [] },

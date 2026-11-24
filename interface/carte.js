@@ -162,7 +162,9 @@
   // « PONG v2 0.2 uno 120 1012 » → { version, nom, octets, place }
   function lirePong(ligne) {
     const m = /PONG v2 (\S+) (\S+) (\d+) (\d+)/.exec(ligne || '');
-    return m ? { version: m[1], nom: m[2], octets: Number(m[3]), place: Number(m[4]) } : null;
+    // « … relais 3 » : la réponse du robot est passée par la micro:bit relais du canal 3 (MOVE Motor sans câble).
+    const relais = / relais (\d+)/.exec(ligne || '');
+    return m ? { version: m[1], nom: m[2], octets: Number(m[3]), place: Number(m[4]), relais: relais ? Number(relais[1]) : null } : null;
   }
 
   // Nom de la carte qui a répondu (« PONG … mcore … »), pour les messages.
@@ -193,7 +195,7 @@
       choisirProfil(profil) {
         const change = c.profil.id !== profil.id;
         c.profil = profil;
-        if (change && ['connectee', 'envoye', 'vide', 'mauvaise-carte', 'pas-a-jour', 'a-installer'].includes(c.etat.cle)) verifier();
+        if (change && ['connectee', 'envoye', 'vide', 'mauvaise-carte', 'pas-a-jour', 'a-installer', 'relais-seul'].includes(c.etat.cle)) verifier();
         else if (change) changer(c.etat.cle === 'sans-usb' ? c.etat : { cle: port ? c.etat.cle : 'aucune' });
       },
       // (installer, envoyer… sont définis plus bas)
@@ -329,6 +331,12 @@
         changer({ cle: 'a-installer', parCle: !!port.sansFil });
         return false;
       }
+      // La micro:bit relais répond seule (« relais-3 ») : aucun robot ne répond sur son canal.
+      const seul = /^relais-(\d+)$/.exec(pong.nom);
+      if (seul) {
+        changer({ cle: 'relais-seul', canal: Number(seul[1]) });
+        return false;
+      }
       const attendue = c.profil.reponse;
       const microbitAttendue = /^microbit/.test(attendue);
       const microbitBranchee = /^microbit/.test(pong.nom);
@@ -338,7 +346,7 @@
       }
       // Version attendue : celle de la carte (le mBot a la sienne, pour l'afficheur), sinon la version commune.
       if (pong.nom !== attendue || pong.version !== (c.profil.version || A.VERSION_FIRMWARE || pong.version)) {
-        changer({ cle: 'pas-a-jour', branchee: NOMS_REPONSE[pong.nom] || pong.nom, version: pong.version, parCle: !!port.sansFil });
+        changer({ cle: 'pas-a-jour', branchee: NOMS_REPONSE[pong.nom] || pong.nom, version: pong.version, parCle: !!port.sansFil, relais: pong.relais });
         return false;
       }
       c.carte = pong;
@@ -538,7 +546,8 @@
     const o = typeof options === 'object' && options ? options : { seulementVider: !!options };
     const seulementVider = !!o.seulementVider;
     const avecCle = profil.id === 'mbot' && !!o.cleDisponible;
-    const nom = profil.nom + (e.parCle ? ' (clé 2.4G)' : '');
+    const relais = e.relais || (e.carte && e.carte.relais);
+    const nom = profil.nom + (e.parCle ? ' (clé 2.4G)' : relais ? ` (par la micro:bit relais, canal ${relais})` : '');
     const microbit = profil.installation === 'fichier';
     switch (e.cle) {
       case 'sans-usb':
@@ -667,7 +676,24 @@
           message: 'La carte est déjà utilisée par un autre programme (IDE Arduino, mBlock, autre onglet…). Ferme-le, puis réessaie.',
           boutons: [{ cle: 'reconnecter', texte: 'Réessayer', principal: true }],
         };
+      case 'relais-seul':
+        return {
+          ton: 'blocage',
+          titre: 'Le robot ne répond pas',
+          statut: `Micro:bit relais branchée · canal ${e.canal}`,
+          message: `La micro:bit relais est bien branchée, mais aucun robot ne lui répond sur le canal ${e.canal}. Allume le robot et approche-le. S’il ne répond toujours pas, vérifie son canal : allume le robot en tenant son bouton A jusqu’à ce qu’un chiffre s’affiche (2 secondes), choisis ${e.canal} avec A, garde-le avec B. Puis clique sur « Réessayer ».`,
+          boutons: [{ cle: 'changer', texte: 'Réessayer', principal: true }],
+        };
       case 'pas-a-jour':
+        if (e.relais) {
+          return {
+            ton: 'blocage',
+            titre: 'Robot pas à jour',
+            statut: 'Mauvais programme de base',
+            message: 'Le programme de base du robot n’est pas à jour. Il s’installe sur le robot lui-même : branche la micro:bit du robot avec le câble USB (pas la micro:bit relais), clique sur « Enregistrer le fichier », puis glisse-le sur le lecteur MICROBIT. Ensuite, règle à nouveau son canal (bouton A tenu en l’allumant, jusqu’à ce qu’un chiffre s’affiche).',
+            boutons: [{ cle: 'installer', texte: 'Enregistrer le fichier', principal: true }],
+          };
+        }
         if (e.parCle) {
           return {
             ton: 'blocage',

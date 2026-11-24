@@ -441,8 +441,17 @@ def lancer_programme():
 direct = [0, 0]   # en direct, dernier message
 envoi = [-1, b'']  # octets annonces, recus
 surv = {}         # broche -> [etat, debut du changement]
+SF = []
 def ecrire(t):
  uart.write(t + '\n')
+ if SF:
+  SF[0].envoyer(t)
+def recue(l):
+ direct[1] = running_time()
+ try:
+  commande(l.strip())
+ except Exception:
+  ecrire('ERR CMD')
 def entiers(mots):
  try:
   return [int(m) for m in mots]
@@ -459,7 +468,7 @@ def commande(l):
  c = m[0]
  n = entiers(m[1:]) if c not in ('H', 'M') else None
  if c == 'PING':
-  ecrire('PONG v2 0.4 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+  ecrire('PONG v2 0.5 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
  elif c == 'OFF':
   tout_eteindre()
   ecrire('OK')
@@ -571,6 +580,10 @@ def surveiller(t):
    ecrire('E %d %d' % (b, v))
 def principal():
  uart.init(115200)
+ if button_a.is_pressed() or 'canal' in os.listdir():
+  import sansfil
+  sansfil.demarrer(button_a.is_pressed())
+  SF.append(sansfil)
  lancer_programme()
  ligne = b''
  while True:
@@ -579,14 +592,14 @@ def principal():
   if d:
    for o in d:
     if o == 10:
-     direct[1] = running_time()
-     try:
-      commande(ligne.decode().strip())
-     except Exception:
-      ecrire('ERR CMD')
+     recue(ligne.decode())
      ligne = b''
     elif o != 13 and len(ligne) < 90:
      ligne += bytes((o,))
+  if SF:
+   m = SF[0].recevoir()
+   if m:
+    recue(m)
   if direct[0]:
    surveiller(t)
    if running_time() - direct[1] > 3000:

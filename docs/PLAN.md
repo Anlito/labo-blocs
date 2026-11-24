@@ -625,3 +625,20 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      (2) lectures analogiques de la micro:bit sans la résistance interne (`h_lire_ana`, robot.py) : après « tout
      éteindre », P2 lisait 124 au lieu de 566 sur du blanc ; (3) **seuil du suivi de ligne 600** (décision de Thomas :
      ses mesures, feuille blanche ≈ 690, noire ≈ 500 ; le « 54 » du jalon 0 était sans doute faux). À revoir sur la piste.
+   - **Jalon 3 (24/11/2026)** : parcours `decouverte-move-motor` 1.0.0, 7 exercices validés par Thomas : avancer puis
+     s'arrêter, aller-retour (klaxon), bouton A (LED), obstacle (ultrasons, LED rouges), suivre une ligne, télécommande
+     au clavier (simulateur et « En direct » par le câble), exercice libre « Mon robot en fête ». Toutes les classes.
+     Contrôle de publication dans `tests/cartes.test.js` ; recette `RECETTE.md` §36.
+48. **Micro:bit relais pour le MOVE Motor (24/11/2026)**, demande de Thomas : piloter le robot sans câble (mBot
+   Challenge : labyrinthe, Récolte au clavier). 8 robots, 16 micro:bit V2 (une paire par robot). Décisions : une 2e
+   micro:bit branchée au PC transmet par radio toutes les lignes du protocole (En direct, envoi du programme, vider) ;
+   pour Labo Blocs, c'est un câble. Canal 1 à 9 par paire : sur le relais, A / B ; sur le robot, bouton A tenu à
+   l'allumage jusqu'à ce que le chiffre s'affiche (≈ 2 s : le programme démarre), A change, B garde (fichier « canal », perdu si on réinstalle le programme de la carte).
+   - `cartes/microbit/relais.py` → `cartes/labo_blocs_relais_v2.hex` (pas dans firmwares.js) ; robot : `sansfil.py`,
+     importé seulement si le robot a un canal ; réponses envoyées par le câble et par la radio. Programme de la
+     micro:bit **0.5** (une réinstallation). Relais sans réponse du robot : « PONG … relais-<canal> » → message « Le
+     robot ne répond pas » ; réponse du robot via relais : « … relais <canal> » (affiché dans le nom de la carte).
+   - Recette `RECETTE.md` §37.
+   - Essai du 24/11/2026 avec les vraies micro:bit : relais seul → « relais-1 » ; robot sur le canal 1 → PONG « relais 1 »,
+     LED, distance et capteurs de ligne par radio. (Une micro:bit bloquée en MAINTENANCE : réparée par la mise à jour
+     du firmware de microbit.org.)

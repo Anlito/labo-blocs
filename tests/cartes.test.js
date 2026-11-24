@@ -234,10 +234,10 @@ test('scénarios sur la carte : bouton A de la micro:bit, moteurs du mBot, phras
   assert.deepEqual(E.nouvelleEtape('appuyer', { composants: [] }, 'mbot'), { appuyer: 'bouton' });
 });
 
-test('parcours de découverte (mBot, micro:bit) : publiables, chaque solution passe ses scénarios', () => {
+test('parcours de découverte (mBot, micro:bit, MOVE Motor) : publiables, chaque solution passe ses scénarios', () => {
   const E = require('../noyau/edition.js');
   const { lireParcours } = require('../tools/construire-module.js');
-  for (const id of ['decouverte-mbot', 'decouverte-microbit']) {
+  for (const id of ['decouverte-mbot', 'decouverte-microbit', 'decouverte-move-motor']) {
     const p = lireParcours(fs.readFileSync(path.join(__dirname, '..', 'parcours', id, 'parcours.js'), 'utf8'));
     assert.deepEqual(E.controlerPublication(p), [], id);
     assert.deepEqual(p.modes, ['simulateur', 'direct', 'carte']);

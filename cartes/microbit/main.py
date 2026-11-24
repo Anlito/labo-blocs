@@ -1,4 +1,4 @@
-# Labo Blocs pour micro:bit V1 et V2 (MicroPython) -- essai du jalon 0 ; 0.4 : robot MOVE Motor (extension 6).
+# Labo Blocs pour micro:bit V1 et V2 (MicroPython) -- essai du jalon 0 ; 0.4 : robot MOVE Motor (extension 6) ; 0.5 : micro:bit relais (radio).
 # Meme role que le firmware Uno (essais/firmware/labo_blocs) : il garde le programme de l'eleve (code octet)
 # dans le fichier "prog.lb", le lance a chaque mise sous tension, et obeit au protocole direct v2 sur le port USB.
 # Il reprend a l'identique les regles de l'interpreteur C (vm.c) : memes instructions, memes fils, memes arrondis.
@@ -497,8 +497,19 @@ direct = [0, 0]   # en direct, dernier message
 envoi = [-1, b'']  # octets annonces, recus
 surv = {}         # broche -> [etat, debut du changement]
 
+# Robot pilote par une micro:bit relais (0.5) : la radio est dans sansfil.py, chargee seulement si le robot a un canal.
+SF = []
 def ecrire(t):
     uart.write(t + '\n')
+    if SF:
+        SF[0].envoyer(t)
+
+def recue(l):
+    direct[1] = running_time()
+    try:
+        commande(l.strip())
+    except Exception:
+        ecrire('ERR CMD')
 
 def entiers(mots):
     try:
@@ -518,7 +529,7 @@ def commande(l):
     c = m[0]
     n = entiers(m[1:]) if c not in ('H', 'M') else None
     if c == 'PING':
-        ecrire('PONG v2 0.4 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+        ecrire('PONG v2 0.5 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
     elif c == 'OFF':
         tout_eteindre()
         ecrire('OK')
@@ -633,6 +644,11 @@ def surveiller(t):
 
 def principal():
     uart.init(115200)
+    # bouton A tenu a l'allumage : choisir le canal radio (sansfil.py)
+    if button_a.is_pressed() or 'canal' in os.listdir():
+        import sansfil
+        sansfil.demarrer(button_a.is_pressed())
+        SF.append(sansfil)
     lancer_programme()
     ligne = b''
     while True:
@@ -641,14 +657,14 @@ def principal():
         if d:
             for o in d:
                 if o == 10:
-                    direct[1] = running_time()
-                    try:
-                        commande(ligne.decode().strip())
-                    except Exception:
-                        ecrire('ERR CMD')
+                    recue(ligne.decode())
                     ligne = b''
                 elif o != 13 and len(ligne) < 90:
                     ligne += bytes((o,))
+        if SF:
+            m = SF[0].recevoir()
+            if m:
+                recue(m)
         if direct[0]:
             surveiller(t)
             if running_time() - direct[1] > 3000:

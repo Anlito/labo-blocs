@@ -1,4 +1,4 @@
-# Recette — jalons 1 à 5 (noyau, parcours du distributeur, éditeur, cartes, mode direct, professeur)
+✔ (24/11) |✔ (24/11) |✔ (24/11) |# Recette — jalons 1 à 5 (noyau, parcours du distributeur, éditeur, cartes, mode direct, professeur)
 
 À faire par Thomas sur un poste du collège, avec **Chrome ou Edge**, en ouvrant `site/index.html` depuis le dossier
 réseau (double-clic). Compter 30 à 40 minutes. Noter ✔ ou ✘ et une remarque pour chaque ligne.
@@ -523,3 +523,39 @@ Parcours `course-portes` (niveau 3e, 4 exercices) et page de la course `site/cou
 | 35.7 | Fin de la manche, puis fin des manches | Classement (meilleur essai) ; « Lancer les finales » : principale, secondaire… (personne éliminé) | |
 | 35.8 | Recharger la page en pleine course | « Reprendre la course » repart où elle en était | |
 | 35.9 | Podium, « Enregistrer » et « Tableur (.csv) » | course-portes.json (rouvrable depuis l'accueil) et CSV lisible dans le tableur | |
+
+## 36. Parcours « Découverte du MOVE Motor » (jalon 3 du MOVE Motor)
+
+Ouvrir dans Chrome `file:///C:/Users/pc/Documents/labo-blocs/site/index.html?parcours=decouverte-move-motor`.
+Robot : programme de la micro:bit 0.4, piles, posé par terre. Vérifier dans le simulateur, puis sur le robot.
+
+| # | Exercice | Attendu | OK ? |
+|---|---|---|---|
+| 36.1 | Page des exercices | 7 exercices, le 1 ouvert, les autres s'ouvrent l'un après l'autre ; le 7 est libre | |
+| 36.2 | 1 · Avancer puis s'arrêter | Solution : « Ton programme fait ce qu'on attend » ; « Dans la carte » : le robot avance 2 s et s'arrête | |
+| 36.3 | 2 · Aller-retour | Le robot avance 1 s, klaxonne, recule 1 s ; un programme sans klaxon donne un seul écart, en ambre | |
+| 36.4 | 3 · Le bouton A | Bouton A tenu : avance à 40 %, 4 LED vertes ; lâché : arrêt, LED éteintes | |
+| 36.5 | 4 · Obstacle | S'arrête devant la main (moins de 20 cm), LED rouges ; repart quand la main s'en va | |
+| 36.6 | 5 · Suivre une ligne | Sur une ligne noire : le robot la suit (seuil provisoire 600, à revoir sur la piste) | |
+| 36.7 | 6 · Télécommande au clavier | « En direct », câble branché : les 4 flèches pilotent le robot ; rien d'appuyé : arrêt | |
+| 36.8 | 7 · Mon robot en fête | Palette : écran de la micro:bit, LED, notes, mouvements ; « J'ai terminé » valide | |
+| 36.9 | Consignes et indices | Lisibles par des élèves, deux indices par exercice, jamais la solution | |
+
+## 37. Robot MOVE Motor sans câble : la micro:bit relais (programme 0.5)
+
+Deux micro:bit V2 par robot : celle du robot (programme `cartes/labo_blocs_microbit_v2.hex`, 0.5) et la **relais**
+(`cartes/labo_blocs_relais_v2.hex`, à copier une fois sur la micro:bit qui restera branchée au PC). Canal 1 à 9, le
+même sur les deux, une paire par écurie (étiqueter « Robot 3 / Relais 3 »).
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 37.1 | Copier le fichier du relais sur la 2e micro:bit | Son écran affiche « 1 » (canal) ; A baisse, B augmente le canal | ✔ (24/11) |
+| 37.2 | Robot : l'allumer en tenant A **jusqu'à ce qu'un chiffre s'affiche** (≈ 2 s) | Le canal s'affiche ; A le change, B le garde (coche ✓) ; choisir le même que le relais | |
+| 37.3 | Éteindre et rallumer le robot | Il garde son canal (rien à refaire) | |
+| 37.4 | Labo Blocs, relais branché, robot allumé, « Connecter la carte » | « robot MOVE Motor (par la micro:bit relais, canal N) · prête » | ✔ (24/11) |
+| 37.5 | Robot éteint, « Connecter la carte » | « Le robot ne répond pas » : canal du relais, comment régler celui du robot | |
+| 37.6 | « En direct » : télécommande au clavier (Découverte, exercice 6), robot débranché | Le robot obéit aux flèches, sans câble ; il s'arrête quand on lâche | ✔ (24/11, parcours libre) |
+| 37.7 | « En direct » : suivi de ligne, « Lu sur le robot » | Les nombres des capteurs arrivent par radio | |
+| 37.8 | « Dans la carte » par le relais | Le programme part par radio ; le robot le garde après extinction | |
+| 37.9 | Deux paires sur deux canaux, deux PC | Chaque PC ne commande que son robot | |
+| 37.10 | Robot relié par le câble (sans relais) | Tout marche comme avant | |

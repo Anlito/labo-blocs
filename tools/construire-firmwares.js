@@ -91,7 +91,17 @@ function construireMicrobit() {
   // rester assez petit pour être compilé au démarrage (16 Ko allégé : MemoryError ; 14 Ko : bon, essai du 20/11/2026).
   if (source.length > 14500) throw new Error(`main.py allégé fait ${source.length} octets : trop gros pour la micro:bit (14 500 au plus).`);
   microbitFs.write('robot.py', alleger(fs.readFileSync(path.join(CARTES, 'microbit', 'robot.py'), 'utf8')));
+  // Radio du robot piloté par une micro:bit relais (0.5) : importée seulement si le robot a un canal.
+  microbitFs.write('sansfil.py', alleger(fs.readFileSync(path.join(CARTES, 'microbit', 'sansfil.py'), 'utf8')));
   fs.writeFileSync(path.join(CARTES, 'microbit', 'main-allege.py'), source);
+  return microbitFs.getIntelHex(microbitBoardId.V2);
+}
+
+// micro:bit relais (0.5) : MicroPython + relais.py, à copier une fois sur la micro:bit branchée au PC.
+function construireRelais() {
+  const { MicropythonFsHex, microbitBoardId } = require('@microbit/microbit-fs');
+  const microbitFs = new MicropythonFsHex([{ hex: fs.readFileSync(path.join(CARTES, 'microbit', 'micropython', 'micropython-v2.1.2.hex'), 'utf8'), boardId: microbitBoardId.V2 }]);
+  microbitFs.write('main.py', alleger(fs.readFileSync(path.join(CARTES, 'microbit', 'relais.py'), 'utf8')));
   return microbitFs.getIntelHex(microbitBoardId.V2);
 }
 
@@ -117,7 +127,9 @@ if (require.main === module) {
   const versions = {};
   for (const [carte, hex] of Object.entries(fichiers)) versions[carte] = carte === 'microbitV2' ? versionDe(fs.readFileSync(path.join(CARTES, 'microbit', 'main.py'), 'utf8')) : versionDe(hex);
   fs.writeFileSync(path.join(CARTES, 'labo_blocs_microbit_v2.hex'), fichiers.microbitV2);
-  console.log('micro:bit V2 : cartes/labo_blocs_microbit_v2.hex');
+  // Relais : fichier à part (pas dans firmwares.js, que chargent toutes les pages), téléchargé une fois par le professeur.
+  fs.writeFileSync(path.join(CARTES, 'labo_blocs_relais_v2.hex'), construireRelais());
+  console.log('micro:bit V2 : cartes/labo_blocs_microbit_v2.hex ; relais : cartes/labo_blocs_relais_v2.hex');
   fs.writeFileSync(
     path.join(CARTES, 'firmwares.js'),
     `// Programmes de la carte Labo Blocs (Intel HEX), construits par « npm run firmwares » : ne pas modifier.\n` +

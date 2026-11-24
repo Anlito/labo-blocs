@@ -32,12 +32,12 @@ const ROBOT = {
   ],
 };
 
-test('MOVE Motor : profil (même programme de la carte que la micro:bit, 0.4), blocs de la micro:bit acceptés', () => {
+test('MOVE Motor : profil (même programme de la carte que la micro:bit, 0.5 : relais radio), blocs de la micro:bit acceptés', () => {
   const p = K.profil('movemotor');
   assert.equal(p.firmware, K.PROFILS.microbit.firmware);
   assert.equal(p.reponse, 'microbit-v2');
-  assert.equal(p.version, '0.4');
-  assert.equal(K.PROFILS.microbit.version, '0.4');
+  assert.equal(p.version, '0.5');
+  assert.equal(K.PROFILS.microbit.version, '0.5');
   assert.equal(p.installation, 'fichier');
   assert.deepEqual(p.broches.servo, ['P15', 'P16']);
   assert.ok(K.carteAccepte('microbit', 'movemotor'));
@@ -108,13 +108,13 @@ test('MOVE Motor : composants et capteurs de la carte (scénarios de test)', () 
   assert.equal(K.capteursDepart('movemotor').distance, 100);
 });
 
-test('MOVE Motor : le programme de la micro:bit sait piloter le robot (extension 6, robot.py, version 0.4)', () => {
+test('MOVE Motor : le programme de la micro:bit sait piloter le robot (extension 6, robot.py, version 0.5)', () => {
   const dossier = path.join(__dirname, '..', 'cartes', 'microbit');
   const py = fs.readFileSync(path.join(dossier, 'main.py'), 'utf8');
   const robot = fs.readFileSync(path.join(dossier, 'robot.py'), 'utf8');
   assert.match(py, /if e == 6:\n\s+return h_robot\(c, a\)/);
   assert.match(py, /import robot\n/);
-  assert.match(py, /PONG v2 0\.4 /);
+  assert.match(py, /PONG v2 0\.5 /);
   // main.py allégé assez petit pour être compilé au démarrage (16 Ko : MemoryError sur la micro:bit, 20/11/2026).
   assert.ok(fs.readFileSync(path.join(dossier, 'main-allege.py'), 'utf8').length <= 14500);
   // Broches vérifiées sur le robot de Thomas (RECETTE §33) : ultrasons P13/P14, ligne gauche P2 / droite P1, LED P8, moteurs V3.1 P12.
@@ -132,7 +132,7 @@ test('MOVE Motor : le programme de la micro:bit sait piloter le robot (extension
   const hex = fs.readFileSync(path.join(__dirname, '..', 'cartes', 'labo_blocs_microbit_v2.hex'), 'utf8');
   const lu = new MicropythonFsHex(fs.readFileSync(path.join(dossier, 'micropython', 'micropython-v2.1.2.hex'), 'utf8'));
   lu.importFilesFromIntelHex(hex);
-  assert.deepEqual(lu.ls().sort(), ['main.py', 'robot.py']);
+  assert.deepEqual(lu.ls().sort(), ['main.py', 'robot.py', 'sansfil.py']);
 });
 
 test('MOVE Motor en direct : capteurs lus sur le vrai robot, un ordre répété ne repart pas (programme de Thomas, 20/11/2026)', () => {
@@ -159,4 +159,43 @@ test('MOVE Motor en direct : capteurs lus sur le vrai robot, un ordre répété 
   d2.lire(d2.lectures[0], 'V 5');
   assert.deepEqual(d2.avancer(0), ['X 6 5 0 255 0 0']);
   assert.deepEqual(d2.avancer(500), []);
+});
+
+test('Découverte du MOVE Motor : un programme qui tourne du mauvais côté sur la ligne est repéré, sans « faux »', () => {
+  const V = require('../noyau/validation.js');
+  const { lireParcours } = require('../tools/construire-module.js');
+  const p = lireParcours(fs.readFileSync(path.join(__dirname, '..', 'parcours', 'decouverte-move-motor', 'parcours.js'), 'utf8'));
+  const e = Object.assign({ carte: p.carte }, p.exercices.find((x) => x.titre === 'Suivre une ligne'));
+  const mauvais = { demarrage: [], boucle: [{ bloc: 'si_sinon', condition: { bloc: 'mm_ligne_voit', cote: 'gauche', couleur: 'noir' }, alors: [{ bloc: 'mm_deplacer', direction: 'droite', vitesse: 30 }], sinon: [{ bloc: 'mm_deplacer', direction: 'avancer', vitesse: 30 }] }] };
+  const r = V.valider(e, mauvais);
+  assert.equal(r.reussi, false);
+  assert.match(r.message, /noir à gauche seulement, le moteur gauche devrait tourner à -30 %/);
+  assert.doesNotMatch(r.message, /faux|erreur/i);
+  assert.equal(V.valider(e, e.solutionReference).reussi, true);
+});
+
+test('micro:bit relais (0.5) : fichier à part, transmet les lignes par radio, répond seule si le robot se tait', () => {
+  const dossier = path.join(__dirname, '..', 'cartes', 'microbit');
+  const relais = fs.readFileSync(path.join(dossier, 'relais.py'), 'utf8');
+  const sansfil = fs.readFileSync(path.join(dossier, 'sansfil.py'), 'utf8');
+  const py = fs.readFileSync(path.join(dossier, 'main.py'), 'utf8');
+  // Même réglage radio des deux côtés (groupe = canal, messages assez longs pour une ligne « H … »).
+  const reglage = /radio\.config\(group=c, length=120, queue=20, power=7\)/;
+  assert.match(relais, reglage);
+  assert.match(sansfil, reglage);
+  // Robot sans réponse : le relais répond « relais-<canal> » ; une réponse du robot porte « relais <canal> ».
+  assert.match(relais, /PONG v2 %s relais-%d 0 0/);
+  assert.match(relais, /b' relais ' \+ str\(canal\)/);
+  assert.match(relais, /VERSION = '0\.5'/);
+  // Le robot n'allume la radio que s'il a un canal (ou bouton A tenu à l'allumage) ; ses réponses partent aussi par radio.
+  assert.match(py, /if button_a\.is_pressed\(\) or 'canal' in os\.listdir\(\):\n\s+import sansfil/);
+  assert.match(py, /def ecrire\(t\):\n\s+uart\.write\(t \+ '\\n'\)\n\s+if SF:\n\s+SF\[0\]\.envoyer\(t\)/);
+  for (const [nom, texte] of [['relais.py', relais], ['sansfil.py', sansfil]]) assert.ok(!/[^\x00-\x7f]/.test(texte), nom + ' reste en ASCII');
+  // Le fichier du relais : MicroPython + relais.py en main.py ; il n'est pas dans firmwares.js (chargé par toutes les pages).
+  const { MicropythonFsHex } = require('@microbit/microbit-fs');
+  const lu = new MicropythonFsHex(fs.readFileSync(path.join(dossier, 'micropython', 'micropython-v2.1.2.hex'), 'utf8'));
+  lu.importFilesFromIntelHex(fs.readFileSync(path.join(__dirname, '..', 'cartes', 'labo_blocs_relais_v2.hex'), 'utf8'));
+  assert.deepEqual(lu.ls(), ['main.py']);
+  assert.match(lu.read('main.py'), /radio\.send_bytes\(l\)/);
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'cartes', 'firmwares.js'), 'utf8'), /relais/);
 });
