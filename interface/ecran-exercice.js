@@ -243,6 +243,8 @@
       const ex = etat.exercice;
       // mBot, micro:bit : tout est sur la carte (sauf le joystick de la micro:bit, sur P0, P1, P2).
       if (ex.carte === 'microbit') return { composants: A.composantsDuProgramme(editeur.lire().programme, 'microbit').composants.filter((c) => c.type === 'joystick'), conflits: [] };
+      // MOVE Motor : seuls les servos (P15, P16) se branchent.
+      if (ex.carte === 'movemotor') return { composants: A.composantsDuProgramme(editeur.lire().programme, 'movemotor').composants.filter((c) => c.type === 'servo'), conflits: [] };
       if (ex.carte && ex.carte !== 'uno') return { composants: [], conflits: [] };
       return A.composantsDuProgramme(editeur.lire().programme, 'uno');
     }

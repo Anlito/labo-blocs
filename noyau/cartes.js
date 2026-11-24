@@ -21,6 +21,11 @@
 //     partent jamais vers la carte (simulateur et mode « En direct » seulement, jamais « Dans la carte »).
 //   Extension 4 = clavier de l'ordinateur (toutes les cartes) : 1 la touche (code) est appuyée → 0/1. Comme la caméra,
 //     le clavier est dans l'ordinateur : simulateur et « En direct » seulement.
+//   Extension 6 = robot MOVE Motor (programme de la micro:bit 0.4) : 1 moteurs (gauche, droite : -100 à 100) ·
+//     2 un moteur (1 gauche | 2 droit, vitesse) · 3 ultrasons → cm (400 : rien devant) · 4 suivi de ligne
+//     (1 gauche | 2 droit) → 0 à 1023 (feuille noire ≈ 500, blanche ≈ 690 sur le robot de Thomas) · 5 LED (0 toutes | 1 avant
+//     gauche | 2 avant droite | 3 arrière droite | 4 arrière gauche, rouge, vert, bleu). Le buzzer (P0) et les servos
+//     (P15, P16) passent par les blocs de base (son, servo).
 (function (global) {
   'use strict';
 
@@ -62,15 +67,37 @@
       nom: 'micro:bit V2',
       firmware: 'microbitV2',
       reponse: 'microbit-v2',
-      // Programme de la carte propre à la micro:bit (dessin 5 × 5) : l'Uno reste en 0.2.
-      version: '0.3',
+      // Programme de la carte propre à la micro:bit : 0.3 dessin 5 × 5 ; 0.4 robot MOVE Motor (le même fichier sert
+      // aux deux profils : une micro:bit passe du robot à un autre projet sans rien réinstaller).
+      version: '0.4',
       installation: 'fichier',
       broches: { led: P, bouton: P, servo: P, buzzer: P, joystick: P },
       composants: ['led', 'bouton', 'servo', 'joystick'],
     },
+    // Robot Kitronik MOVE Motor (réf. 5683) avec une micro:bit V2 (décision de Thomas, 20/11/2026) : les blocs de la
+    // micro:bit + ceux du robot. Branchements du robot (essai du 20/11/2026, RECETTE §33) : moteurs (carte V1.0 / V1.3 :
+    // PCA9632 en I2C ; V3.1 : P12), ultrasons P13 / P14, suivi de ligne gauche P2, droite P1, 4 LED ZIP sur P8,
+    // buzzer sur P0, servos P15 / P16 (les seules broches libres : les autres servent au robot).
+    movemotor: {
+      id: 'movemotor',
+      nom: 'robot MOVE Motor (micro:bit V2)',
+      firmware: 'microbitV2',
+      reponse: 'microbit-v2',
+      version: '0.4',
+      installation: 'fichier',
+      inclut: ['microbit'],
+      broches: { led: [], bouton: [], servo: ['P15', 'P16'], buzzer: [], joystick: [] },
+      composants: ['servo'],
+    },
   };
 
   const profil = (carte) => PROFILS[carte] || PROFILS.uno;
+  // Les blocs (ou une catégorie) prévus pour la carte « carteDuBloc » vont-ils sur « carte » ? Le MOVE Motor reprend
+  // ceux de la micro:bit qu'il porte ; « * » : toutes les cartes.
+  const carteAccepte = (carteDuBloc, carte) =>
+    !carteDuBloc || carteDuBloc === '*' || carteDuBloc === (carte || 'uno') || ((PROFILS[carte] || {}).inclut || []).includes(carteDuBloc);
+  // La carte simulée porte-t-elle une micro:bit (écran, boutons A et B, logo, capteurs) ?
+  const avecMicrobit = (carte) => carte === 'microbit' || carte === 'movemotor';
 
   // ---------- Blocs propres à une carte ----------
 
@@ -100,6 +127,16 @@
     blanc: [255, 255, 255],
     eteinte: [0, 0, 0],
   };
+  const DIRECTIONS_ROBOT = [['avancer', 'avancer'], ['reculer', 'reculer'], ['tourner à gauche', 'gauche'], ['tourner à droite', 'droite']];
+  // MOVE Motor : en dessous, le capteur voit du noir. Seuil provisoire (décision de Thomas, 20/11/2026) : milieu des
+  // valeurs lues sur son robot posé sur une feuille, blanche ≈ 690, noire ≈ 500 (le robot fait de l'ombre au capteur ;
+  // la mesure « noir ≈ 54 » de l'essai du jalon 0 était sans doute fausse). À revoir sur la piste du mBot Challenge.
+  const SEUIL_LIGNE_ROBOT = 600;
+  // LED du robot, dans l'ordre de ses numéros (vu de derrière : 1 avant gauche, puis dans le sens des aiguilles d'une montre).
+  const LED_ROBOT = ['LED avant gauche', 'LED avant droite', 'LED arrière droite', 'LED arrière gauche'];
+  // Valeurs des capteurs de ligne du MOVE Motor simulé, pour le réglage « ligne » (0 à 3, comme le mBot).
+  const LIGNE_NOIR = 500;
+  const LIGNE_BLANC = 690;
   const IMAGES = [
     ['sourire', '1'],
     ['triste', '2'],
@@ -688,6 +725,87 @@
       entrees: { DUREE: 0.5 },
       derouler: (p) => [ext(2, 12, [Number(p.note) || 440, p.duree]), attendre(p.duree)],
     },
+
+    // ----- Robot MOVE Motor : moteurs (mêmes blocs que le mBot : tourner = pivoter sur place, comme mBlock) -----
+    mm_deplacer: {
+      carte: 'movemotor',
+      categorie: 'mm_moteurs',
+      sorte: 'instruction',
+      texte: '%DIRECTION à la vitesse %VITESSE %',
+      champs: { DIRECTION: DIRECTIONS_ROBOT },
+      entrees: { VITESSE: 50 },
+      derouler: (p) => ext(6, 1, vitesses(p.direction, p.vitesse)),
+    },
+    mm_deplacer_pendant: {
+      carte: 'movemotor',
+      categorie: 'mm_moteurs',
+      sorte: 'instruction',
+      texte: '%DIRECTION à la vitesse %VITESSE % pendant %DUREE s',
+      champs: { DIRECTION: DIRECTIONS_ROBOT },
+      entrees: { VITESSE: 50, DUREE: 1 },
+      derouler: (p) => [ext(6, 1, vitesses(p.direction, p.vitesse)), attendre(p.duree), ext(6, 1, [0, 0])],
+    },
+    mm_arreter: { carte: 'movemotor', categorie: 'mm_moteurs', sorte: 'instruction', texte: 'arrêter les moteurs', derouler: () => ext(6, 1, [0, 0]) },
+    mm_moteur: {
+      carte: 'movemotor',
+      categorie: 'mm_moteurs',
+      sorte: 'instruction',
+      texte: 'moteur %MOTEUR à la vitesse %VITESSE %',
+      champs: { MOTEUR: [['gauche', '1'], ['droit', '2']] },
+      entrees: { VITESSE: 50 },
+      derouler: (p) => ext(6, 2, [Number(p.moteur) || 1, p.vitesse]),
+    },
+    // ----- Robot MOVE Motor : capteurs -----
+    mm_distance: { carte: 'movemotor', categorie: 'mm_capteurs', sorte: 'valeur', texte: 'distance mesurée par les ultrasons (cm)', derouler: () => ext(6, 3, []) },
+    mm_ligne_voit: {
+      carte: 'movemotor',
+      categorie: 'mm_capteurs',
+      sorte: 'condition',
+      texte: 'le capteur %COTE du suivi de ligne voit du %COULEUR',
+      champs: { COTE: [['gauche', 'gauche'], ['droit', 'droit']], COULEUR: [['noir', 'noir'], ['blanc', 'blanc']] },
+      derouler: (p) => {
+        const v = ext(6, 4, [p.cote === 'droit' ? 2 : 1]);
+        return p.couleur === 'blanc' ? cmp('≥', v, SEUIL_LIGNE_ROBOT) : cmp('<', v, SEUIL_LIGNE_ROBOT);
+      },
+    },
+    mm_ligne_valeur: {
+      carte: 'movemotor',
+      categorie: 'mm_capteurs',
+      sorte: 'valeur',
+      texte: 'valeur du capteur %COTE du suivi de ligne (0 à 1023)',
+      champs: { COTE: [['gauche', 'gauche'], ['droit', 'droit']] },
+      derouler: (p) => ext(6, 4, [p.cote === 'droit' ? 2 : 1]),
+    },
+    // ----- Robot MOVE Motor : LED et son -----
+    mm_led: {
+      carte: 'movemotor',
+      categorie: 'mm_led_son',
+      sorte: 'instruction',
+      texte: 'LED %QUELLE en %COULEUR',
+      champs: {
+        QUELLE: [['toutes', '0'], ['avant gauche', '1'], ['avant droite', '2'], ['arrière droite', '3'], ['arrière gauche', '4']],
+        COULEUR: [['rouge', 'rouge'], ['vert', 'vert'], ['bleu', 'bleu'], ['jaune', 'jaune'], ['violet', 'violet'], ['cyan', 'cyan'], ['blanc', 'blanc'], ['éteinte', 'eteinte']],
+      },
+      derouler: (p) => ext(6, 5, [Number(p.quelle) || 0, ...(COULEURS_LED[p.couleur] || COULEURS_LED.eteinte)]),
+    },
+    // Buzzer du robot sur P0 (le haut-parleur de la micro:bit V2 joue aussi : MicroPython le relie à P0).
+    mm_note: {
+      carte: 'movemotor',
+      categorie: 'mm_led_son',
+      sorte: 'instruction',
+      texte: 'jouer la note %NOTE pendant %DUREE s',
+      champs: { NOTE: NOTES },
+      entrees: { DUREE: 0.5 },
+      derouler: (p) => [{ bloc: 'son', broche: 'P0', frequence: Number(p.note) || 440, duree: p.duree }, attendre(p.duree)],
+    },
+    // Klaxon : la note de Kitronik (185 Hz), 0,3 s.
+    mm_klaxon: {
+      carte: 'movemotor',
+      categorie: 'mm_led_son',
+      sorte: 'instruction',
+      texte: 'klaxonner',
+      derouler: () => [{ bloc: 'son', broche: 'P0', frequence: 185, duree: 0.3 }, attendre(0.3)],
+    },
   };
 
   // avancer : les deux roues en avant ; tourner à gauche : la roue gauche recule (comme mBlock).
@@ -717,6 +835,9 @@
     { nom: 'Boutons', cle: 'mb_entrees', carte: 'microbit' },
     { nom: 'Capteurs', cle: 'mb_capteurs', carte: 'microbit' },
     { nom: 'Musique', cle: 'mb_son', carte: 'microbit' },
+    { nom: 'Moteurs du robot', cle: 'mm_moteurs', carte: 'movemotor' },
+    { nom: 'Capteurs du robot', cle: 'mm_capteurs', carte: 'movemotor' },
+    { nom: 'LED et son', cle: 'mm_led_son', carte: 'movemotor' },
     { nom: 'Relais', cle: 'uno_relais', carte: 'uno' },
     { nom: 'Mouvement', cle: 'uno_mouvement', carte: 'uno' },
     { nom: 'Ultrason', cle: 'uno_ultrason', carte: 'uno' },
@@ -815,6 +936,7 @@
   const CAPTEURS = {
     microbit: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0 },
     mbot: { distance: 100, ligne: 3, lumiere: 500 },
+    movemotor: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0, distance: 100, ligne: 3 },
     uno: { distance: 100 },
   };
   const capteursDepart = (carte) => Object.assign({}, CAPTEURS[carte] || {});
@@ -882,7 +1004,7 @@
     }
     function ext(e, c, a) {
       if (carte === 'uno' && e === 5) return extModules(c, a);
-      if (carte === 'microbit' && e === 2) {
+      if (avecMicrobit(carte) && e === 2) {
         switch (c) {
           case 1: {
             const v = Number(a[0]) || 0;
@@ -936,6 +1058,7 @@
             return 0;
         }
       }
+      if (carte === 'movemotor' && e === 6) return extMoveMotor(c, a);
       if (carte === 'mbot' && e === 1) {
         switch (c) {
           case 1:
@@ -989,6 +1112,40 @@
         }
       }
       return 0;
+    }
+    // Robot MOVE Motor (extension 6) : moteurs et LED en sorties, ultrasons et suivi de ligne en capteurs.
+    function extMoveMotor(c, a) {
+      switch (c) {
+        case 1:
+          sim.ecrire('moteur gauche', borner(a[0], -100, 100), 'moteur');
+          sim.ecrire('moteur droit', borner(a[1], -100, 100), 'moteur');
+          return 0;
+        case 2:
+          if (Number(a[0]) === 1) sim.ecrire('moteur gauche', borner(a[1], -100, 100), 'moteur');
+          else if (Number(a[0]) === 2) sim.ecrire('moteur droit', borner(a[1], -100, 100), 'moteur');
+          return 0;
+        case 3:
+          return Number(sim.capteurs.distance) || 0;
+        case 4: {
+          // En direct : la valeur lue sur le vrai robot (ligneGauche, ligneDroite).
+          const brut = sim.capteurs[Number(a[0]) === 2 ? 'ligneDroite' : 'ligneGauche'];
+          if (brut !== undefined) return Number(brut) || 0;
+          // ligne : 0 noir des deux côtés, 1 noir à gauche, 2 noir à droite, 3 blanc des deux côtés (comme le mBot).
+          const l = borner(sim.capteurs.ligne, 0, 3);
+          const noir = Number(a[0]) === 2 ? l === 0 || l === 2 : l <= 1;
+          return noir ? LIGNE_NOIR : LIGNE_BLANC;
+        }
+        case 5: {
+          const couleur = couleurRgb(a[1], a[2], a[3]);
+          const quelle = borner(a[0], 0, 4);
+          LED_ROBOT.forEach((nom, i) => {
+            if (!quelle || quelle === i + 1) sim.ecrire(nom, couleur, 'rgb');
+          });
+          return 0;
+        }
+        default:
+          return 0;
+      }
     }
     return { etat, ext };
   }
@@ -1046,6 +1203,14 @@
       { type: 'buzzer', broche: 'D8', libelle: 'le buzzer', integre: true },
     ],
   };
+  COMPOSANTS_CARTE.movemotor = COMPOSANTS_CARTE.microbit.concat(
+    [
+      { type: 'moteur', broche: 'moteur gauche', libelle: 'le moteur gauche', integre: true },
+      { type: 'moteur', broche: 'moteur droit', libelle: 'le moteur droit', integre: true },
+    ],
+    LED_ROBOT.map((nom) => ({ type: 'led_rgb', broche: nom, libelle: 'la ' + nom, integre: true })),
+    [{ type: 'buzzer', broche: 'P0', libelle: 'le buzzer du robot', integre: true }],
+  );
   const composantsCarte = (carte) => (COMPOSANTS_CARTE[carte] || []).map((c) => Object.assign({}, c));
 
   // Capteurs réglables à la main (simulateur) ou par un scénario de test ({ regler: { distance: 10 } }).
@@ -1070,6 +1235,10 @@
       { nom: 'lumiere', libelle: 'lumière', unite: '', min: 0, max: 1023 },
     ],
   };
+  CAPTEURS_CARTE.movemotor = CAPTEURS_CARTE.microbit.concat([
+    { nom: 'distance', libelle: 'distance (ultrasons)', unite: 'cm', min: 2, max: 400 },
+    { nom: 'ligne', libelle: 'suivi de ligne', options: LIGNE },
+  ]);
   const capteursCarte = (carte) => CAPTEURS_CARTE[carte] || [];
 
   // « l’obstacle est à 10 cm », « la température est de 30 °C » (phrases des scénarios).
@@ -1108,7 +1277,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { BLOCS_MODULES, BROCHES_MODULES, TOUCHES_TACTILES, codeToucheTactile, entreeTactile, composantDuModule, texteAfficheur4, numeroBrocheModule, VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
+  const api = { carteAccepte, avecMicrobit, LED_ROBOT, SEUIL_LIGNE_ROBOT, BLOCS_MODULES, BROCHES_MODULES, TOUCHES_TACTILES, codeToucheTactile, entreeTactile, composantDuModule, texteAfficheur4, numeroBrocheModule, VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

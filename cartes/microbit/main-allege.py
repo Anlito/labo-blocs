@@ -46,14 +46,28 @@ def h_lire(b, t):
  v = broche(b).read_digital()
  return (1 - v) if t == 2 else v
 def h_lire_ana(b):
- return broche(b).read_analog()
+ p = broche(b)
+ p.read_digital()
+ p.set_pull(p.NO_PULL)
+ return p.read_analog()
 import random
 def h_hasard(a, b):
  return random.randint(a, b)
+ROBOT = []
+def h_robot(c, a):
+ if not ROBOT:
+  import robot
+  ROBOT.append(robot)
+ return ROBOT[0].commande(c, a)
+def robot_eteint():
+ if ROBOT:
+  ROBOT[0].eteindre()
 IMAGES = None
 LETTRES = []
 def h_ext(e, c, a):
  global IMAGES
+ if e == 6:
+  return h_robot(c, a)
  if e != 2:
   return 0
  if c == 1:
@@ -407,6 +421,7 @@ def lire_fichier():
   return b''
 def tout_eteindre():
  arreter()
+ robot_eteint()
  music.stop()
  display.clear()
  for b in LIBRES:
@@ -419,6 +434,8 @@ def tout_eteindre():
 def lancer_programme():
  tout_eteindre()
  if charger(lire_fichier()) == 0:
+  if b'\x28\x06' in P:
+   h_robot(0, [])
   random.seed(running_time())
   demarrer(running_time())
 direct = [0, 0]   # en direct, dernier message
@@ -442,7 +459,7 @@ def commande(l):
  c = m[0]
  n = entiers(m[1:]) if c not in ('H', 'M') else None
  if c == 'PING':
-  ecrire('PONG v2 0.3 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+  ecrire('PONG v2 0.4 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
  elif c == 'OFF':
   tout_eteindre()
   ecrire('OK')
@@ -460,7 +477,7 @@ def commande(l):
   ecrire('OK')
  elif c in ('R', 'RA'):
   en_direct()
-  ecrire('V %d %d' % (n[0], broche(n[0]).read_digital() if c == 'R' else broche(n[0]).read_analog()))
+  ecrire('V %d %d' % (n[0], broche(n[0]).read_digital() if c == 'R' else h_lire_ana(n[0])))
  elif c == 'M':
   n = entiers(m[1:2])
   if not n or len(m) < 3 or m[2] not in ('I', 'P', 'O'):

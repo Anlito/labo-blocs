@@ -381,7 +381,7 @@
       '<div class="carte ed-carte ed-carte-blocs">' +
       '<div class="ed-carte-tete"><h3>Blocs proposés aux élèves</h3><span class="ed-aide">Coche ce qui apparaît dans la palette.</span></div>' +
       '<div class="ed-blocs">' +
-      A.CATEGORIES.filter((cat) => !cat.carte || cat.carte === '*' || cat.carte === carteDuParcours()).map(
+      A.CATEGORIES.filter((cat) => A.carteAccepte(cat.carte, carteDuParcours())).map(
         (cat) =>
           `<fieldset><legend>${echapper(cat.nom)}${cat.carte && cat.carte !== '*' ? ` <span class="ed-aide">· ${echapper(A.profil(cat.carte).nom)}</span>` : ''}</legend>` +
           cat.blocs.map((t) => `<label class="ed-case"><input type="checkbox" class="champ-bloc" value="${t}"${blocsCoches.has(t) ? ' checked' : ''}> ${echapper(A.NOMS_BLOCS[t] || t)}</label>`).join('') +

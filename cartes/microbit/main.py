@@ -1,4 +1,4 @@
-# Labo Blocs pour micro:bit V1 et V2 (MicroPython) -- essai du jalon 0.
+# Labo Blocs pour micro:bit V1 et V2 (MicroPython) -- essai du jalon 0 ; 0.4 : robot MOVE Motor (extension 6).
 # Meme role que le firmware Uno (essais/firmware/labo_blocs) : il garde le programme de l'eleve (code octet)
 # dans le fichier "prog.lb", le lance a chaque mise sous tension, et obeit au protocole direct v2 sur le port USB.
 # Il reprend a l'identique les regles de l'interpreteur C (vm.c) : memes instructions, memes fils, memes arrondis.
@@ -63,8 +63,13 @@ def h_lire(b, t):
     v = broche(b).read_digital()
     return (1 - v) if t == 2 else v
 
+# Lecture analogique sans la resistance interne : apres "tout eteindre" (broche a 0) ou une lecture numerique, elle
+# reste branchee et fausse la mesure (capteur de ligne du MOVE Motor : 124 au lieu de 566 sur du blanc, 20/11/2026).
 def h_lire_ana(b):
-    return broche(b).read_analog()
+    p = broche(b)
+    p.read_digital()
+    p.set_pull(p.NO_PULL)
+    return p.read_analog()
 
 import random
 def h_hasard(a, b):
@@ -75,10 +80,25 @@ def h_hasard(a, b):
 # 11 texte qui defile, 12 note sur le haut-parleur, 13 geste, 14 lettres du texte a suivre (version 0.2),
 # 15 dessin 5 x 5 (version 0.3) : 2 valeurs, lignes 0 a 2 puis lignes 3 et 4, bit y*5+x de chaque moitie
 # Une commande porte 4 valeurs au plus : un texte arrive en morceaux (14, 14, ..., puis 11 qui le fait defiler).
+# Extension 6 = robot Kitronik MOVE Motor (version 0.4) : dans robot.py, importe a la premiere commande du robot
+# (une micro:bit seule ne voit pas de difference ; main.py reste assez petit pour etre compile au demarrage).
+ROBOT = []
+def h_robot(c, a):
+    if not ROBOT:
+        import robot
+        ROBOT.append(robot)
+    return ROBOT[0].commande(c, a)
+
+def robot_eteint():
+    if ROBOT:
+        ROBOT[0].eteindre()
+
 IMAGES = None
 LETTRES = []
 def h_ext(e, c, a):
     global IMAGES
+    if e == 6:
+        return h_robot(c, a)
     if e != 2:
         return 0
     if c == 1:
@@ -452,6 +472,7 @@ def lire_fichier():
 
 def tout_eteindre():
     arreter()
+    robot_eteint()
     music.stop()
     display.clear()
     for b in LIBRES:
@@ -465,6 +486,10 @@ def tout_eteindre():
 def lancer_programme():
     tout_eteindre()
     if charger(lire_fichier()) == 0:
+        # Programme du robot (commande EXT de l'extension 6) : carte du robot reconnue avant de demarrer, pour que la
+        # premiere commande ne prenne pas de retard.
+        if b'\x28\x06' in P:
+            h_robot(0, [])
         random.seed(running_time())
         demarrer(running_time())
 
@@ -493,7 +518,7 @@ def commande(l):
     c = m[0]
     n = entiers(m[1:]) if c not in ('H', 'M') else None
     if c == 'PING':
-        ecrire('PONG v2 0.3 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
+        ecrire('PONG v2 0.4 %s %d %d' % (CARTE, etat['long'] if not etat['erreur'] else 0, CAP))
     elif c == 'OFF':
         tout_eteindre()
         ecrire('OK')
@@ -511,7 +536,7 @@ def commande(l):
         ecrire('OK')
     elif c in ('R', 'RA'):
         en_direct()
-        ecrire('V %d %d' % (n[0], broche(n[0]).read_digital() if c == 'R' else broche(n[0]).read_analog()))
+        ecrire('V %d %d' % (n[0], broche(n[0]).read_digital() if c == 'R' else h_lire_ana(n[0])))
     elif c == 'M':
         n = entiers(m[1:2])
         if not n or len(m) < 3 or m[2] not in ('I', 'P', 'O'):

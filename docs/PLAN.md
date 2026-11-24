@@ -611,3 +611,17 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
      roues gauche / droite et sens conformes, vitesses égales (pas de réglage d'équilibre pour l'instant) ; LED 1 avant
      gauche, 2 avant droite, 3 arrière droite, 4 arrière gauche, couleurs justes ; **buzzer propre au robot sur P0** ;
      ultrasons justes (10 → 10, 30 → 30 cm) ; ligne : blanc ≈ 555, noir ≈ 50 (G et D) → seuil de départ 300.
+   - **Jalon 1 livré le 20/11/2026** (recette `RECETTE.md` §34) : profil `movemotor` (micro:bit V2 + robot, `inclut:
+     ['microbit']`, `carteAccepte`), extension 6 (moteurs, un moteur, ultrasons, ligne, 4 LED), klaxon et notes sur P0
+     (bloc de base « son »), servos P15 / P16 ; catégories « Moteurs du robot », « Capteurs du robot », « LED et son » ;
+     carte simulée (sorties moteurs et 4 LED, capteurs distance et ligne 0 à 3 → 50 / 555) et vue provisoire du robot.
+     Programme de la micro:bit **0.4** pour les deux profils (une réinstallation par micro:bit) ; partie robot dans
+     `cartes/microbit/robot.py`, importée à la première commande du robot : main.py allégé à 16 Ko ne se compilait plus
+     (MemoryError), 14,2 Ko oui (essai par le câble : PONG 0.4, distance, ligne, LED). `npm run firmwares -- --microbit`
+     reconstruit la micro:bit seule. Parcours d'essai `move-motor-libre`. Tests : `tests/move-motor.test.js`.
+   - **Recette du jalon 1 (20/11/2026), corrections** : (1) « En direct » : capteurs du robot relus sur le vrai robot
+     (extension 6 : 3 et 4 en lectures, les deux capteurs de ligne toujours, nombres affichés sous le robot) et ordres
+     regroupés comme le mBot (sans quoi une boucle sans « attendre » noyait le câble : le robot obéissait en retard) ;
+     (2) lectures analogiques de la micro:bit sans la résistance interne (`h_lire_ana`, robot.py) : après « tout
+     éteindre », P2 lisait 124 au lieu de 566 sur du blanc ; (3) **seuil du suivi de ligne 600** (décision de Thomas :
+     ses mesures, feuille blanche ≈ 690, noire ≈ 500 ; le « 54 » du jalon 0 était sans doute faux). À revoir sur la piste.

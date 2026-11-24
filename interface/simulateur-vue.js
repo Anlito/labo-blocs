@@ -431,30 +431,63 @@
     );
   }
 
+  // Robot MOVE Motor (en attendant le robot animé) : la micro:bit, puis le robot vu de dessus (roues, 4 LED) et ses états.
+  function htmlMoveMotor() {
+    const roue = (x, cote) =>
+      `<g class="mbot-roue" data-roue="${cote}"><rect x="${x}" y="26" width="20" height="64" rx="8" fill="#F2C200" stroke="#2B3338" stroke-width="3"/>` +
+      `<text x="${x + 10}" y="64" text-anchor="middle" class="mbot-fleche"></text></g>`;
+    const led = (x, y, nom) => `<circle class="mbot-led" data-led="${nom}" cx="${x}" cy="${y}" r="7" fill="#EEF3F6" stroke="#7C8B94" stroke-width="2"/>`;
+    const [avG, avD, arD, arG] = A.LED_ROBOT;
+    return (
+      htmlMicrobit() +
+      '<div class="mbot mm-robot" role="group" aria-label="Robot MOVE Motor">' +
+      '<svg class="mbot-dessin" viewBox="0 0 160 112" aria-hidden="true">' +
+      // ultrasons (avant), châssis noir, roues jaunes, 4 LED aux coins, capteurs de ligne
+      '<rect x="56" y="2" width="48" height="16" rx="4" fill="#1A4E8E"/><circle cx="70" cy="10" r="6" fill="#DCE6EA"/><circle cx="90" cy="10" r="6" fill="#DCE6EA"/>' +
+      '<rect x="30" y="20" width="100" height="84" rx="12" fill="#22272B" stroke="#111" stroke-width="2"/>' +
+      roue(6, 'gauche') +
+      roue(134, 'droite') +
+      led(44, 32, avG) +
+      led(116, 32, avD) +
+      led(116, 92, arD) +
+      led(44, 92, arG) +
+      '<text x="80" y="64" text-anchor="middle" class="mbot-texte">MOVE</text>' +
+      '<rect x="62" y="96" width="36" height="6" rx="2" fill="#5A6770"/>' +
+      '</svg>' +
+      '<ul class="mbot-etats">' +
+      '<li>Moteur gauche : <strong data-etat="moteur gauche">arrêté</strong></li>' +
+      '<li>Moteur droit : <strong data-etat="moteur droit">arrêté</strong></li>' +
+      A.LED_ROBOT.map((nom) => `<li>${nom} : <strong data-etat="${nom}">éteinte</strong></li>`).join('') +
+      // En direct : les nombres lus sur le vrai robot (capteurs de ligne de 0 à 1023, distance en cm).
+      '<li class="mm-lu" hidden></li>' +
+      '<li class="mbot-son" aria-live="polite"></li>' +
+      '</ul>' +
+      '</div>'
+    );
+  }
+
+  const OPTIONS_LIGNE = [
+    ['noir sous les deux capteurs (0)', 0],
+    ['noir à gauche seulement (1)', 1],
+    ['noir à droite seulement (2)', 2],
+    ['blanc sous les deux capteurs (3)', 3],
+  ];
+
   function htmlCapteurs(carte, c) {
-    if (carte === 'microbit') {
-      return (
-        curseur('temperature', 'Température', -10, 50, 1, c.temperature, '°C') +
-        curseur('lumiere', 'Lumière', 0, 255, 1, c.lumiere, '') +
-        curseur('x', 'Accélération x', -1024, 1024, 16, c.x, 'mg') +
-        curseur('y', 'Accélération y', -1024, 1024, 16, c.y, 'mg') +
-        curseur('z', 'Accélération z', -1024, 1024, 16, c.z, 'mg') +
-        choix('geste', 'Geste', [['aucun', 0]].concat(A.GESTES || []), c.geste)
-      );
+    const microbit =
+      curseur('temperature', 'Température', -10, 50, 1, c.temperature, '°C') +
+      curseur('lumiere', 'Lumière', 0, 255, 1, c.lumiere, '') +
+      curseur('x', 'Accélération x', -1024, 1024, 16, c.x, 'mg') +
+      curseur('y', 'Accélération y', -1024, 1024, 16, c.y, 'mg') +
+      curseur('z', 'Accélération z', -1024, 1024, 16, c.z, 'mg') +
+      choix('geste', 'Geste', [['aucun', 0]].concat(A.GESTES || []), c.geste);
+    if (carte === 'microbit') return microbit;
+    if (carte === 'movemotor') {
+      return curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') + choix('ligne', 'Suivi de ligne', OPTIONS_LIGNE, c.ligne) + microbit;
     }
     return (
       curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') +
-      choix(
-        'ligne',
-        'Suiveur de ligne',
-        [
-          ['noir sous les deux capteurs (0)', 0],
-          ['noir à gauche seulement (1)', 1],
-          ['noir à droite seulement (2)', 2],
-          ['blanc sous les deux capteurs (3)', 3],
-        ],
-        c.ligne,
-      ) +
+      choix('ligne', 'Suiveur de ligne', OPTIONS_LIGNE, c.ligne) +
       curseur('lumiere', 'Lumière', 0, 1023, 1, c.lumiere, '')
     );
   }
@@ -464,7 +497,7 @@
   // Partie « carte » de la vue : micro:bit (écran, boutons, logo) ou mBot (moteurs, LED, bouton), et ses capteurs.
   function vueCarte(racine, carte, rappels, avecMatrice) {
     const zone = racine.querySelector('.simu-carte');
-    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : htmlMbot(avecMatrice)}</div>`;
+    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : carte === 'movemotor' ? htmlMoveMotor() : htmlMbot(avecMatrice)}</div>`;
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
     const capteurs = A.capteursDepart ? A.capteursDepart(carte) : {};
     const panneau = document.createElement('details');
@@ -495,8 +528,22 @@
       const note = sim && sim.journal.filter((e) => e.type === 'son' && e.broche === nom).pop();
       return note && note.valeur && sim.t < note.t + note.duree ? `♪ ${Math.round(note.valeur)} Hz` : '';
     }
+    // Roues et LED du robot (mBot : LED gauche / droite ; MOVE Motor : 4 LED).
+    function afficherRobot(sorties, leds) {
+      for (const cote of ['gauche', 'droite']) {
+        const moteur = cote === 'gauche' ? 'moteur gauche' : 'moteur droit';
+        const v = sorties[moteur] || 0;
+        zone.querySelector(`[data-etat="${moteur}"]`).textContent = sensMoteur(v);
+        zone.querySelector(`[data-roue="${cote}"] .mbot-fleche`).textContent = v > 0 ? '▲' : v < 0 ? '▼' : '';
+      }
+      for (const nom of leds) {
+        const rgb = sorties[nom] || 0;
+        zone.querySelector(`[data-etat="${nom}"]`).textContent = A.nomCouleur ? A.nomCouleur(rgb) : String(rgb);
+        zone.querySelector(`[data-led="${nom}"]`).setAttribute('fill', rgb ? '#' + rgb.toString(16).padStart(6, '0') : '#EEF3F6');
+      }
+    }
     function afficher(sim) {
-      if (carte === 'microbit') {
+      if (carte === 'microbit' || carte === 'movemotor') {
         const ecran = sim && sim.carte ? A.ecranA(sim.carte, sim.t) : new Array(25).fill(0);
         const cle = ecran.join('');
         if (cle !== ecranAvant) {
@@ -506,17 +553,19 @@
           zone.querySelector('.mb-ecran').setAttribute('aria-label', n ? `Écran de la micro:bit : ${n} point${n > 1 ? 's' : ''} allumé${n > 1 ? 's' : ''}` : 'Écran de la micro:bit : éteint');
         }
         zone.querySelector('.mb-son').textContent = son(sim, 'haut-parleur');
-      } else {
-        const sorties = (sim && sim.sorties) || {};
-        for (const cote of ['gauche', 'droite']) {
-          const moteur = cote === 'gauche' ? 'moteur gauche' : 'moteur droit';
-          const v = sorties[moteur] || 0;
-          zone.querySelector(`[data-etat="${moteur}"]`).textContent = sensMoteur(v);
-          zone.querySelector(`[data-roue="${cote}"] .mbot-fleche`).textContent = v > 0 ? '▲' : v < 0 ? '▼' : '';
-          const rgb = sorties['LED ' + cote] || 0;
-          zone.querySelector(`[data-etat="LED ${cote}"]`).textContent = A.nomCouleur ? A.nomCouleur(rgb) : String(rgb);
-          zone.querySelector(`[data-led="${cote}"]`).setAttribute('fill', rgb ? '#' + rgb.toString(16).padStart(6, '0') : '#EEF3F6');
+        if (carte === 'movemotor') {
+          afficherRobot((sim && sim.sorties) || {}, A.LED_ROBOT);
+          zone.querySelector('.mbot-son').textContent = son(sim, 'P0');
+          const c = (sim && sim.capteurs) || {};
+          const lu = [];
+          if ('ligneGauche' in c) lu.push(`ligne gauche ${c.ligneGauche} (${c.ligneGauche < A.SEUIL_LIGNE_ROBOT ? 'noir' : 'blanc'})`);
+          if ('ligneDroite' in c) lu.push(`ligne droite ${c.ligneDroite} (${c.ligneDroite < A.SEUIL_LIGNE_ROBOT ? 'noir' : 'blanc'})`);
+          const ligneLu = zone.querySelector('.mm-lu');
+          ligneLu.hidden = !lu.length;
+          ligneLu.innerHTML = lu.length ? `Lu sur le robot : <strong>${lu.join(' · ')}</strong> <span class="mm-seuil">(noir en dessous de ${A.SEUIL_LIGNE_ROBOT})</span>` : '';
         }
+      } else {
+        afficherRobot((sim && sim.sorties) || {}, ['LED gauche', 'LED droite']);
         zone.querySelector('.mbot-son').textContent = son(sim, 'D8');
         if (pointsMatrice.length) {
           const colonnes = sim && sim.carte && A.matriceA ? A.matriceA(sim.carte, sim.t) : new Array(16).fill(0);
@@ -658,7 +707,7 @@
     const composants = exercice.composants || [];
     const compact = composants.length > 4;
     const recadrer = composants.length > 4;
-    const carte = exercice.carte === 'microbit' || exercice.carte === 'mbot' ? exercice.carte : 'uno';
+    const carte = ['microbit', 'mbot', 'movemotor'].includes(exercice.carte) ? exercice.carte : 'uno';
     racine.classList.toggle('avec-carte', carte !== 'uno');
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
     const avecMatrice = carte === 'mbot' && (exercice.blocsAutorises || []).some((t) => /^mbot_matrice_/.test(t));

@@ -87,6 +87,10 @@ function construireMicrobit() {
   // Un fichier par version : le fichier « universel » est refusé par les puces USB anciennes (jalon 0).
   const microbitFs = new MicropythonFsHex([{ hex: fs.readFileSync(path.join(CARTES, 'microbit', 'micropython', 'micropython-v2.1.2.hex'), 'utf8'), boardId: microbitBoardId.V2 }]);
   microbitFs.write('main.py', source);
+  // Robot MOVE Motor (0.4) : un fichier à part, importé seulement quand un programme commande le robot. main.py doit
+  // rester assez petit pour être compilé au démarrage (16 Ko allégé : MemoryError ; 14 Ko : bon, essai du 20/11/2026).
+  if (source.length > 14500) throw new Error(`main.py allégé fait ${source.length} octets : trop gros pour la micro:bit (14 500 au plus).`);
+  microbitFs.write('robot.py', alleger(fs.readFileSync(path.join(CARTES, 'microbit', 'robot.py'), 'utf8')));
   fs.writeFileSync(path.join(CARTES, 'microbit', 'main-allege.py'), source);
   return microbitFs.getIntelHex(microbitBoardId.V2);
 }
@@ -94,7 +98,15 @@ function construireMicrobit() {
 if (require.main === module) {
   const cli = [process.env.ARDUINO_CLI, 'arduino-cli'].filter(Boolean).find((c) => trouver(c, ['version']));
   const fichiers = {};
+  // « npm run firmwares -- --microbit » : seulement la micro:bit ; l'Uno et le mBot gardent leurs fichiers déjà
+  // construits (poste sans arduino-cli ni avr-gcc).
+  const microbitSeule = process.argv.includes('--microbit');
   for (const [carte, options] of Object.entries({ uno: ['-D_SS_MAX_RX_BUFF=16'], mbot: ['-DCARTE_MCORE'] })) {
+    if (microbitSeule) {
+      fichiers[carte] = fs.readFileSync(path.join(CARTES, `labo_blocs_${carte}.hex`), 'utf8');
+      console.log(`${carte} : cartes/labo_blocs_${carte}.hex (gardé tel quel)`);
+      continue;
+    }
     const sortie = fs.mkdtempSync(path.join(os.tmpdir(), `labo-blocs-fw-${carte}-`));
     const r = cli ? avecArduinoCli(cli, options, sortie) : avecAvrGcc(options, sortie);
     fichiers[carte] = fs.readFileSync(r.hex, 'utf8');

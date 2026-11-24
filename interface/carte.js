@@ -787,7 +787,7 @@
   }
 
   // Fenêtre autonome (ex. « Vider la carte » en fin de séance, depuis une page du projet).
-  //   options : { carte ('uno' | 'mbot' | 'microbit'), titre, intro, seulementVider, programme(), surEnvoi(r), surVidage(r) }
+  //   options : { carte ('uno' | 'mbot' | 'microbit' | 'movemotor'), titre, intro, seulementVider, programme(), surEnvoi(r), surVidage(r) }
   function ouvrirDialogueCarte(options) {
     const o = options || {};
     const d = global.document.createElement('dialog');

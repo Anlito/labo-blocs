@@ -487,6 +487,27 @@ suivante, **B** = refaire l'étape. Noter dans « OK ? » ce qu'on voit (valeurs
 | 33.8 | Main à 10 cm puis 30 cm devant les ultrasons | Distance ≈ 10 puis ≈ 30 | ✔ 10 et 30 (20/11) |
 | 33.9 | Robot sur une feuille blanche puis sur une ligne noire (ruban ou feutre) | Noter les valeurs G et D sur blanc et sur noir (« plus petit / plus grand » de la page) | ✔ blanc G 558 D 552 ; noir G 54 D 49 (20/11) |
 
+## 34. Robot MOVE Motor dans Labo Blocs (jalon 1 du MOVE Motor)
+
+Parcours d'essai « MOVE Motor libre » : ouvrir dans Chrome
+`file:///C:/Users/pc/Documents/labo-blocs/site/index.html?parcours=move-motor-libre`. Programme de la micro:bit **0.4**
+(le même pour une micro:bit seule et pour le robot). **Piles dans le robot, interrupteur allumé**, robot posé par terre.
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 34.1 | Ouvrir l'exercice | Palette : Écran, Boutons, Capteurs, Musique (micro:bit) + Moteurs du robot, Capteurs du robot, LED et son | ✔ (24/11) |
+| 34.2 | Simulateur : « avancer à 50 % » + « LED toutes en vert », Lancer | Moteurs « 50 % en avant », les 4 LED du dessin en vert | ✔ (24/11) |
+| 34.3 | « Dans la carte », micro:bit du robot en 0.3 ou avec un autre programme | « Pas à jour » : « Enregistrer le fichier », le glisser sur MICROBIT, « Connecter la carte » | ✔ (24/11) |
+| 34.4 | Envoyer : avancer 50 % pendant 1 s, LED avant gauche en rouge, klaxonner | Le robot avance 1 s tout droit puis s'arrête ; LED avant gauche rouge ; un bip (buzzer et haut-parleur de la micro:bit) | ✔ (24/11) |
+| 34.5 | Envoyer : tourner à gauche à 40 % pendant 1 s, puis tourner à droite | Pivote sur place à gauche, puis à droite | ✔ (24/11) |
+| 34.6 | Envoyer : avancer à 20 % pendant 2 s | Les roues partent quand même (petit coup de démarrage) | ✔ (24/11) |
+| 34.7 | Répéter : si distance < 15 cm → arrêter, sinon avancer 40 % | S'arrête devant une main ou un mur | ✔ (24/11) |
+| 34.8 | (seuil du noir : 600, provisoire) Répéter : si le capteur gauche voit du noir → tourner à gauche, sinon si le droit voit du noir → tourner à droite, sinon avancer 30 % | Suit une ligne noire (ruban) | ✔ (24/11) |
+| 34.9 | Éteindre puis rallumer le robot (câble débranché) | Le programme repart tout seul | ✔ (24/11) |
+| 34.10 | « Vider la carte » pendant que le robot roule | Les roues s'arrêtent, les LED s'éteignent | ✔ (24/11) |
+| 34.11 | Une micro:bit seule (sans robot) avec un exercice micro:bit (ex. Découverte) | Marche comme avant, après réinstallation du programme 0.4 (une fois) | ✔ (24/11) |
+| 34.12 | En direct : si le capteur gauche voit du noir → LED rouges, sinon bleues ; robot sur une feuille blanche puis noire | « Lu sur le robot » : blanc ≈ 690, noir ≈ 500 ; le robot s’arrête sur le noir | ✔ (20/11) |
+
 ## 35. La course aux portes (mBot + caméra, 3e) et le mini-championnat
 
 Parcours `course-portes` (niveau 3e, 4 exercices) et page de la course `site/course.html` (moteur `noyau/course.js`).

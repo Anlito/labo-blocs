@@ -45,7 +45,7 @@
 <script>
   (function () {
     'use strict';
-    const NOMS_CARTES = { uno: 'Arduino Uno', mbot: 'mBot', microbit: 'micro:bit' };
+    const NOMS_CARTES = { uno: 'Arduino Uno', mbot: 'mBot', microbit: 'micro:bit', movemotor: 'robot MOVE Motor' };
     const echapper = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
     const charger = (src) => new Promise((ok) => {
       const s = document.createElement('script');

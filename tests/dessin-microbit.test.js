@@ -24,7 +24,7 @@ test('bloc « afficher le dessin » : 2 valeurs exactes, relu par Blockly à l�
   assert.deepEqual(K.deroulerBlocCarte({ bloc: 'mb_dessin', dessin: DESSIN }), { bloc: 'ext', extension: 2, commande: 15, arguments: [a, b] });
   // Un dessin abîmé (sauvegarde modifiée à la main) s'affiche vide.
   assert.deepEqual(K.valeursDessinMicrobit('2x'), [0, 0]);
-  assert.equal(K.PROFILS.microbit.version, '0.3');
+  assert.ok(K.PROFILS.microbit.version >= '0.3', 'dessin 5 × 5 : programme de la carte 0.3 ou plus');
 });
 
 test('simulateur : l’écran montre le dessin, point par point', () => {

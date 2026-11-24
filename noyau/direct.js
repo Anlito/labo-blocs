@@ -19,7 +19,7 @@
   const K = () => (enNode ? require('./cartes.js') : global.LaboBlocs);
 
   // Commandes d'extension qui lisent un capteur (les autres agissent : moteurs, LED, écran, son).
-  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13], 5: [1, 9] };
+  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13], 5: [1, 9], 6: [3, 4] };
   const estLecture = (e, c) => (LECTURES[e] || []).includes(c);
 
   // La carte ne lit que des entiers (« X 1 1 50 50 ») : les valeurs sont arrondies. Une note de la micro:bit dure
@@ -65,6 +65,9 @@
     function groupe(e, c, a) {
       if (e === 1 && (c === 1 || c === 9)) return { cle: c === 1 ? 'moteurs' : 'moteur' + a[0], efface: c === 1 ? ['moteur1', 'moteur2'] : ['moteurs'] };
       if (e === 1 && c === 6) return { cle: 'led' + a[0], efface: Number(a[0]) === 0 ? ['led1', 'led2'] : ['led0'] };
+      // Robot MOVE Motor : mêmes regroupements (les deux moteurs ou chacun, toutes les LED ou chacune des 4).
+      if (e === 6 && (c === 1 || c === 2)) return { cle: c === 1 ? 'moteurs' : 'moteur' + a[0], efface: c === 1 ? ['moteur1', 'moteur2'] : ['moteurs'] };
+      if (e === 6 && c === 5) return { cle: 'led' + a[0], efface: Number(a[0]) === 0 ? ['led1', 'led2', 'led3', 'led4'] : ['led0'] };
       if (e === 2 && [1, 2, 3, 4, 11, 15].includes(c)) return { cle: 'ecran', efface: [] };
       if (e === 1 && [11, 12, 13, 15].includes(c)) return { cle: 'matrice', efface: [] };
       // Modules de l'Uno : l'afficheur 4 chiffres (par ses broches) et chaque ligne de l'écran.
@@ -155,7 +158,12 @@
     }
 
     // Capteurs relus pendant le mode direct, rangés là où le programme les lit (sim.capteurs, sim.entrees).
-    const lectures = lecturesDuProgramme(programme).map(({ e, c, args }) => {
+    // Robot MOVE Motor : les deux capteurs de ligne sont toujours relus (leurs nombres s'affichent sous le robot).
+    const aLire = lecturesDuProgramme(programme);
+    if (carte === 'movemotor') {
+      for (const cote of [1, 2]) if (!aLire.some((l) => l.e === 6 && l.c === 4 && l.args[0] === cote)) aLire.push({ e: 6, c: 4, args: [cote] });
+    }
+    const lectures = aLire.map(({ e, c, args }) => {
       const ligne = ['X', e, c, ...args].join(' ');
       let appliquer = () => {};
       const entree = (nom) => (v) => {
@@ -167,6 +175,17 @@
       if (e === 1) appliquer = { 2: capteur('distance'), 3: capteur('ligne'), 4: entree('bouton'), 5: capteur('lumiere') }[c];
       // Modules de l'Uno : distance de l'ultrason ; dernière touche reçue par la carte (-1 : aucune).
       else if (e === 5 && c === 1) appliquer = capteur('distance');
+      // Robot MOVE Motor : distance ; valeur brute de chaque capteur de ligne (0 à 1023), lue telle quelle par le programme.
+      else if (e === 6 && c === 3) appliquer = capteur('distance');
+      else if (e === 6 && c === 4) {
+        appliquer = (v) => {
+          if (!sim.capteurs) return;
+          sim.capteurs[Number(args[0]) === 2 ? 'ligneDroite' : 'ligneGauche'] = v;
+          // Le réglage « suivi de ligne » du panneau des capteurs suit ce que voit le robot (0 à 3, comme le mBot).
+          const noir = (nom) => nom in sim.capteurs && sim.capteurs[nom] < K().SEUIL_LIGNE_ROBOT;
+          sim.capteurs.ligne = noir('ligneGauche') ? (noir('ligneDroite') ? 0 : 1) : noir('ligneDroite') ? 2 : 3;
+        };
+      }
       else if (e === 5 && c === 9) appliquer = (v) => {
         if (sim.carte) sim.carte.touche = v;
       };

@@ -20,7 +20,7 @@
   const VITESSE_SERVO = 180 / 300; // degrés par ms : 0° → 180° en 0,3 s
 
   // options : { composants, boutonsVersMasse, graine (hasard reproductible), surSon(broche, frequence, ms),
-  //             carte ('uno' | 'microbit' | 'mbot'), capteurs (valeurs des capteurs de la carte, modifiables en marche),
+  //             carte ('uno' | 'microbit' | 'mbot' | 'movemotor'), capteurs (valeurs des capteurs de la carte, modifiables en marche),
   //             surExtension(e, c, args) (mode « En direct ») }
   function creerSimulation(programme, options) {
     const opts = options || {};
@@ -68,7 +68,7 @@
 
     // Carte micro:bit ou mBot : écran, boutons, capteurs, moteurs et LED de la carte (noyau/cartes.js).
     let carteSimulee = null;
-    if ((opts.carte === 'microbit' || opts.carte === 'mbot' || opts.carte === 'uno' || !opts.carte) && !opts.extension) {
+    if ((opts.carte === 'microbit' || opts.carte === 'mbot' || opts.carte === 'movemotor' || opts.carte === 'uno' || !opts.carte) && !opts.extension) {
       const K = CARTES();
       sim.capteurs = opts.capteurs || K.capteursDepart(opts.carte || 'uno');
       sim.ecrire = (nom, valeur, type) => ecrireNom(nom, valeur, type);
@@ -78,8 +78,8 @@
       };
       carteSimulee = K.creerCarteSimulee(opts.carte || 'uno', sim);
       sim.carte = carteSimulee.etat;
-      const entrees = opts.carte === 'microbit' ? ['A', 'B', 'logo'] : ['bouton'];
-      const sorties = opts.carte === 'mbot' ? ['moteur gauche', 'moteur droit', 'LED gauche', 'LED droite'] : [];
+      const entrees = K.avecMicrobit(opts.carte) ? ['A', 'B', 'logo'] : ['bouton'];
+      const sorties = opts.carte === 'mbot' ? ['moteur gauche', 'moteur droit', 'LED gauche', 'LED droite'] : opts.carte === 'movemotor' ? ['moteur gauche', 'moteur droit'].concat(K.LED_ROBOT) : [];
       for (const n of entrees) sim.entrees[n] = sim.initiales[n] = 0;
       for (const n of sorties) sim.sorties[n] = sim.initiales[n] = 0;
     }
