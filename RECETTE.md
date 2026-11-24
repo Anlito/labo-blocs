@@ -486,3 +486,19 @@ suivante, **B** = refaire l'étape. Noter dans « OK ? » ce qu'on voit (valeurs
 | 33.7 | A → étape 7 ; ouvrir `essais/move-motor/capteurs.html` dans Chrome, « Se connecter » | Écran du robot : barres gauche / droite = capteurs de ligne, colonne du milieu = distance ; la page montre les nombres en gros | ✔ (20/11) |
 | 33.8 | Main à 10 cm puis 30 cm devant les ultrasons | Distance ≈ 10 puis ≈ 30 | ✔ 10 et 30 (20/11) |
 | 33.9 | Robot sur une feuille blanche puis sur une ligne noire (ruban ou feutre) | Noter les valeurs G et D sur blanc et sur noir (« plus petit / plus grand » de la page) | ✔ blanc G 558 D 552 ; noir G 54 D 49 (20/11) |
+
+## 35. La course aux portes (mBot + caméra, 3e) et le mini-championnat
+
+Parcours `course-portes` (niveau 3e, 4 exercices) et page de la course `site/course.html` (moteur `noyau/course.js`).
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 35.1 | Ouvrir le parcours « La course aux portes », exercice 1 | Panneau « Caméra et IA » avec Rien, Avancer, Reculer, Gauche, Droite ; palette : caméra et moteurs du mBot | |
+| 35.2 | Apprendre 4 objets au choix (main, feuille, figurine…) + Rien, 10 photos chacun | Les photos restent pour les exercices 2 à 4 (apprises une seule fois) | |
+| 35.3 | Exercice 2 au simulateur, puis « Vérifier » | Les 4 commandes et l'arrêt sur « Rien » ; un seul écart décrit, en ambre | |
+| 35.4 | Exercice 3 en direct par la clé 2.4G, pilote dos à la piste | Le mBot obéit à la caméra sans fil ; il s'arrête quand l'objet sort de l'image | |
+| 35.5 | Ouvrir `site/course.html`, « Démonstration », 2 pistes, « Proposer un format » pour 40 min | Le format et la durée estimée s'affichent ; « Lancer la course » | |
+| 35.6 | Un départ : Espace = top départ, + portes, + malus, touche 1 = arrivée piste 1, « Abandon » piste 2 | Chronos au dixième ; « Arrivé » en vert avec ✓, « Pas arrivé · n portes » en ambre | |
+| 35.7 | Fin de la manche, puis fin des manches | Classement (meilleur essai) ; « Lancer les finales » : principale, secondaire… (personne éliminé) | |
+| 35.8 | Recharger la page en pleine course | « Reprendre la course » repart où elle en était | |
+| 35.9 | Podium, « Enregistrer » et « Tableur (.csv) » | course-portes.json (rouvrable depuis l'accueil) et CSV lisible dans le tableur | |

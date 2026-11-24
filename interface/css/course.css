@@ -1,0 +1,110 @@
+/* La course aux portes (site/course.html) : écran du professeur au vidéoprojecteur, sur la charte de Labo Blocs.
+   Jamais la couleur seule (✓, « Pas arrivé », textes) ; écart en ambre, jamais en rouge ; texte ≥ 13 px. */
+
+body.page-course { overflow: auto; display: block; min-height: 100%; }
+.co-ecran { display: flex; flex-direction: column; min-height: 100vh; box-sizing: border-box; padding: 1.25rem 1.5rem; gap: 1rem; max-width: 1600px; margin: 0 auto; }
+.co-haut { display: flex; align-items: center; gap: 1rem; }
+.co-haut h1 { margin: 0; font-size: 2rem; }
+.co-sur-titre { font: 700 .9rem var(--titres); color: var(--texte-2); text-transform: uppercase; letter-spacing: .04em; }
+.co-compte { font: 700 1.1rem var(--titres); background: var(--action-pale); color: var(--action-fonce); padding: .35rem .8rem; border-radius: 999px; }
+.co-milieu { flex: 1; }
+.co-bas { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-top: 1px solid var(--bord); padding-top: 1rem; }
+.co-groupe { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
+.co-aide { color: var(--texte-2); margin: .25rem 0 .75rem; }
+
+/* Boutons */
+.co-btn, .co-choix { font: 700 1rem var(--titres); border: 2px solid var(--bord-fort); background: #fff; color: var(--texte); border-radius: 10px; padding: .6rem 1rem; cursor: pointer; }
+.co-btn:hover:not(:disabled), .co-choix:hover { border-color: var(--action); }
+.co-btn:disabled { opacity: .45; cursor: not-allowed; }
+.co-principal { background: var(--action); border-color: var(--action); color: #fff; }
+.co-principal:hover:not(:disabled) { background: var(--action-fonce); border-color: var(--action-fonce); }
+.co-choix-groupe { display: flex; gap: .4rem; flex-wrap: wrap; }
+.co-choix { min-width: 3rem; }
+.co-choix[aria-pressed="true"] { background: var(--action); border-color: var(--action); color: #fff; }
+.co-choix[aria-pressed="true"]::before { content: '✓ '; }
+.co-rond { width: 2.6rem; height: 2.6rem; padding: 0; font-size: 1.4rem; border-radius: 50%; }
+.co-gros { font-size: 1.2rem; padding: .8rem 1.4rem; }
+.co-btn:focus-visible, .co-choix:focus-visible, .co-depart:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+/* Accueil */
+.co-accueil { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: .5rem; }
+.co-logo { font-size: 4rem; }
+.co-grand { font-size: 3rem; margin: 0 0 1.5rem; }
+.co-cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; width: min(900px, 100%); }
+.co-carte { padding: 1.4rem 1rem; font-size: 1.15rem; display: flex; align-items: center; justify-content: center; text-align: center; }
+
+/* Panneaux */
+.co-deux { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(320px, 1.4fr); gap: 1.25rem; align-items: start; }
+.co-panneau { background: #fff; border: 1px solid var(--bord); border-radius: 14px; padding: 1rem 1.25rem; }
+.co-panneau h2 { margin: 0 0 .5rem; font-size: 1.3rem; }
+.co-panneau h2 small { font: 400 .9rem var(--police); color: var(--texte-2); }
+.co-equipes { width: 100%; box-sizing: border-box; font: 1.1rem/1.5 var(--police); border: 2px solid var(--bord-fort); border-radius: 10px; padding: .6rem .8rem; resize: vertical; }
+.co-ligne { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem 0; border-bottom: 1px solid var(--gris-fond); flex-wrap: wrap; }
+.co-ligne input[type="number"] { width: 5rem; font: 700 1.05rem var(--police); padding: .35rem .5rem; border: 2px solid var(--bord-fort); border-radius: 8px; }
+.co-estimation { margin-top: 1rem; background: var(--action-pale); border-radius: 10px; padding: .8rem 1rem; font-size: 1.05rem; }
+.co-estimation small { display: block; color: var(--texte-2); font-size: .85rem; }
+.co-proposer { border: none; padding-bottom: 0; justify-content: flex-start; }
+
+/* Programme */
+.co-programme { display: flex; flex-direction: column; gap: 1rem; }
+.co-phase h2 { margin: 0 0 .5rem; font-size: 1.3rem; }
+.co-phase { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: .6rem; }
+.co-phase h2 { grid-column: 1 / -1; }
+.co-depart { text-align: left; background: #fff; border: 2px solid var(--bord); border-radius: 12px; padding: .7rem .9rem; cursor: pointer; display: flex; flex-direction: column; gap: .35rem; font: 1rem var(--police); }
+.co-depart:hover { border-color: var(--action); }
+.co-depart.fini { background: var(--reussi-pale); border-color: var(--reussi); }
+.co-depart.prochain { border-color: var(--action); box-shadow: 0 0 0 3px var(--action-pale); }
+.co-depart-nom { font: 700 1rem var(--titres); }
+.co-depart-equipe { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
+.co-attente { color: var(--texte-2); font-style: italic; }
+.co-pastille-ecart { background: var(--ecart-pale); color: var(--ecart-texte); border: 1px solid var(--ecart); border-radius: 999px; padding: .1rem .6rem; font-weight: 700; font-size: .9rem; }
+.co-pastille-ok { background: var(--reussi-pale); color: var(--reussi-texte); border: 1px solid var(--reussi); border-radius: 999px; padding: .2rem .7rem; font-weight: 700; }
+small { font-size: max(13px, .85em); }
+
+/* Un départ */
+.co-pistes { display: grid; gap: 1rem; align-items: stretch; }
+.co-pistes-1 { grid-template-columns: minmax(0, 720px); justify-content: center; }
+.co-pistes-2 { grid-template-columns: 1fr 1fr; }
+.co-pistes-3 { grid-template-columns: 1fr 1fr 1fr; }
+.co-piste { background: #fff; border: 2px solid var(--bord); border-radius: 16px; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .9rem; align-items: center; text-align: center; }
+.co-piste.faite { border-color: var(--bord-fort); }
+.co-piste-tete h2 { margin: .2rem 0 0; font-size: 1.8rem; }
+.co-num { font: 700 .95rem var(--titres); background: var(--texte); color: #fff; padding: .2rem .7rem; border-radius: 999px; }
+.co-chrono { font: 500 4.5rem/1 var(--mono); font-variant-numeric: tabular-nums; }
+.co-chrono small { font-size: 1.5rem; }
+.co-compteurs { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.co-compteur > span { display: block; color: var(--texte-2); font-weight: 700; margin-bottom: .3rem; }
+.co-compteur > div { display: flex; align-items: center; gap: .6rem; }
+.co-compteur strong { font: 700 1.6rem var(--titres); min-width: 4.5rem; }
+.co-total { font-size: 1.2rem; }
+.co-piste-actions { justify-content: center; margin-top: auto; }
+
+/* Classements */
+.co-classements { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1rem; align-items: start; }
+.co-large { grid-column: span 1; }
+.co-tableau { width: 100%; border-collapse: collapse; font-size: 1.05rem; }
+.co-tableau th { text-align: left; color: var(--texte-2); font-size: .9rem; border-bottom: 2px solid var(--bord); padding: .4rem .5rem; }
+.co-tableau td { padding: .45rem .5rem; border-bottom: 1px solid var(--gris-fond); }
+.co-tableau tr.podium td:first-child { font-weight: 700; }
+
+/* Podium */
+.co-fin { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.co-podium { display: flex; align-items: flex-end; justify-content: center; gap: 1rem; width: min(900px, 100%); }
+.co-marche { flex: 1; display: flex; flex-direction: column; align-items: stretch; text-align: center; }
+.co-marche-noms { padding: .6rem; font-size: 1.15rem; line-height: 1.5; }
+.co-marche-noms strong { font: 700 1.4rem var(--titres); }
+.co-marche-socle { font: 700 2.4rem var(--titres); color: #fff; background: var(--action); border-radius: 12px 12px 0 0; display: flex; align-items: center; justify-content: center; }
+.co-marche-1 .co-marche-socle { height: 11rem; background: var(--action-fonce); }
+.co-marche-2 .co-marche-socle { height: 8rem; }
+.co-marche-3 .co-marche-socle { height: 6rem; background: var(--gris); }
+.co-record { font-size: 1.25rem; margin: .5rem 0 0; }
+.co-bravo { font: 700 1.8rem var(--titres); margin: 0; }
+.co-fin details { width: min(700px, 100%); }
+.co-fin summary { font: 700 1.1rem var(--titres); cursor: pointer; }
+
+.co-message { position: fixed; left: 50%; bottom: 1.5rem; transform: translateX(-50%); background: var(--texte); color: #fff; padding: .8rem 1.2rem; border-radius: 10px; font-size: 1.05rem; z-index: 10; max-width: 90vw; }
+
+@media (max-width: 900px) {
+  .co-deux, .co-pistes-2, .co-pistes-3 { grid-template-columns: 1fr; }
+  .co-chrono { font-size: 3.2rem; }
+}
