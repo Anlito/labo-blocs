@@ -24,6 +24,8 @@ function publier(out) {
   // Programmes des cartes (chargés par interface/carte.js pour les installer) : seulement le fichier construit.
   mkdirSync(join(OUT, 'cartes'), { recursive: true });
   cpSync(join(RACINE, 'cartes', 'firmwares.js'), join(OUT, 'cartes', 'firmwares.js'));
+  // Micro:bit relais du MOVE Motor : fichier à télécharger une fois par le professeur (pas dans firmwares.js).
+  cpSync(join(RACINE, 'cartes', 'labo_blocs_relais_v2.hex'), join(OUT, 'cartes', 'labo_blocs_relais_v2.hex'));
 
   // Parcours du site : la dernière version de chacun, et la liste complète.
   const { parcours, refuses } = lireTousLesParcours(RACINE);
