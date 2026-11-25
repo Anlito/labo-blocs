@@ -463,7 +463,7 @@
             const ex = etat.exercice;
             const prog = editeur.lire().programme;
             // clavier : le programme utilise le clavier de l'ordinateur (il ne part pas dans la carte, voir carte.js).
-            return Object.assign(A.codeOctet.compiler(prog, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse }), { clavier: !!(A.utiliseClavier && A.utiliseClavier(prog)) });
+            return Object.assign(A.codeOctet.compiler(prog, { composants: ex.composants, boutonsVersMasse: ex.boutonsVersMasse }), { clavier: !!(A.utiliseClavier && A.utiliseClavier(prog)), telecommande: !!(A.utiliseTelecommande && A.utiliseTelecommande(prog)) });
           },
           surEnvoi(r) {
             if (lecture || !etat.exercice) return;

@@ -46,7 +46,7 @@ test('MOVE Motor : profil (même programme de la carte que la micro:bit, 0.5 : r
   assert.ok(!K.carteAccepte('mbot', 'movemotor'));
   assert.ok(!K.carteAccepte('movemotor', 'microbit'), 'les blocs du robot ne vont pas sur une micro:bit seule');
   const cles = K.CATEGORIES_CARTES.filter((c) => c.carte === 'movemotor').map((c) => c.cle);
-  assert.deepEqual(cles, ['mm_moteurs', 'mm_capteurs', 'mm_led_son']);
+  assert.deepEqual(cles, ['mm_moteurs', 'mm_capteurs', 'mm_led_son', 'mm_telecommande']);
   // Jamais la réponse dans un bloc : rien ne dépend d'un projet, broches imposées par le robot.
   for (const [t, d] of Object.entries(K.BLOCS_CARTES)) if (d.carte === 'movemotor') assert.match(t, /^mm_/);
 });
@@ -102,7 +102,7 @@ test('MOVE Motor simulé : écran de la micro:bit, moteurs, 4 LED, ultrasons, su
 
 test('MOVE Motor : composants et capteurs de la carte (scénarios de test)', () => {
   const comp = K.composantsCarte('movemotor').map((c) => c.broche);
-  assert.deepEqual(comp, ['A', 'B', 'logo', 'moteur gauche', 'moteur droit', 'LED avant gauche', 'LED avant droite', 'LED arrière droite', 'LED arrière gauche', 'P0']);
+  assert.deepEqual(comp, ['A', 'B', 'logo', 'moteur gauche', 'moteur droit', 'LED avant gauche', 'LED avant droite', 'LED arrière droite', 'LED arrière gauche', 'P0', 'télécommande A', 'télécommande B']);
   const capteurs = K.capteursCarte('movemotor').map((c) => c.nom);
   assert.ok(capteurs.includes('distance') && capteurs.includes('ligne') && capteurs.includes('temperature'));
   assert.equal(K.capteursDepart('movemotor').distance, 100);
@@ -180,7 +180,7 @@ test('micro:bit relais (0.5) : fichier à part, transmet les lignes par radio, r
   const sansfil = fs.readFileSync(path.join(dossier, 'sansfil.py'), 'utf8');
   const py = fs.readFileSync(path.join(dossier, 'main.py'), 'utf8');
   // Même réglage radio des deux côtés (groupe = canal, messages assez longs pour une ligne « H … »).
-  const reglage = /radio\.config\(group=c, length=120, queue=20, power=7\)/;
+  const reglage = /radio\.config\(group=\w+, length=120, queue=20, power=7\)/;
   assert.match(relais, reglage);
   assert.match(sansfil, reglage);
   // Robot sans réponse : le relais répond « relais-<canal> » ; une réponse du robot porte « relais <canal> ».
@@ -198,4 +198,41 @@ test('micro:bit relais (0.5) : fichier à part, transmet les lignes par radio, r
   assert.deepEqual(lu.ls(), ['main.py']);
   assert.match(lu.read('main.py'), /radio\.send_bytes\(l\)/);
   assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', 'cartes', 'firmwares.js'), 'utf8'), /relais/);
+});
+
+test('Télécommande (micro:bit relais) : simulateur, « En direct » sans rien envoyer au robot, refusée « Dans la carte »', () => {
+  const { creerDirect } = require('../noyau/direct.js');
+  const P = require('../noyau/programme.js');
+  // Penchée vers l'avant → avancer ; bouton B → klaxonner ; sinon arrêter.
+  const prog = {
+    demarrage: [],
+    boucle: [{ bloc: 'si_sinon', condition: { bloc: 'mm_tele_penchee', direction: 'avant' }, alors: [{ bloc: 'mm_deplacer', direction: 'avancer', vitesse: 50 }], sinon: [{ bloc: 'si_sinon', condition: { bloc: 'mm_tele_bouton', bouton: '2' }, alors: [{ bloc: 'mm_klaxon' }], sinon: [{ bloc: 'mm_arreter' }] }] }],
+  };
+  assert.deepEqual(compiler(prog).erreurs, []);
+  assert.ok(P.utiliseTelecommande(prog));
+  assert.ok(!P.utiliseTelecommande(ROBOT));
+  // Simulateur : curseur avant-arrière et bouton B de la télécommande.
+  const sim = creerSimulation(prog, { carte: 'movemotor' });
+  sim.avancerJusqua(100);
+  assert.equal(sim.sorties['moteur gauche'], 0);
+  sim.capteurs.teleY = 60;
+  sim.avancerJusqua(300);
+  assert.equal(sim.sorties['moteur gauche'], 50);
+  sim.capteurs.teleY = 10;
+  sim.changerEntree('télécommande B', 1);
+  sim.avancerJusqua(700);
+  assert.ok(sim.journal.some((j) => j.type === 'son' && j.broche === 'P0' && j.valeur === 185));
+  // En direct : lu sur le relais (X 7 …), jamais envoyé au robot comme un ordre.
+  const d = creerDirect(prog, { carte: 'movemotor', composants: [] });
+  assert.deepEqual(d.lectures.map((l) => l.ligne).filter((l) => l.startsWith('X 7')), ['X 7 1 2', 'X 7 2 2']);
+  d.lire(d.lectures.find((l) => l.ligne === 'X 7 1 2'), 'V 55');
+  assert.deepEqual(d.avancer(0), ['X 6 1 50 50']);
+  d.lire(d.lectures.find((l) => l.ligne === 'X 7 1 2'), 'V -3');
+  assert.deepEqual(d.avancer(500), ['X 6 1 0 0']);
+  // Phrase des scénarios.
+  assert.equal(K.decrireCapteur('teleX', 40), 'la télécommande est penchée vers la droite (40)');
+  // Le relais répond lui-même à « X 7 … » ; A et B ne changent plus le canal pendant qu'il tourne.
+  const relais = fs.readFileSync(path.join(__dirname, '..', 'cartes', 'microbit', 'relais.py'), 'utf8');
+  assert.match(relais, /if l\.startswith\(b'X 7 '\):\n\s+uart\.write\(\(telecommande/);
+  assert.doesNotMatch(relais, /while True:[\s\S]*button_a\.was_pressed\(\) and canal/);
 });

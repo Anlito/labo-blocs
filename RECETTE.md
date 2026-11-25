@@ -549,7 +549,7 @@ même sur les deux, une paire par écurie (étiqueter « Robot 3 / Relais 3 »).
 
 | # | Action | Attendu | OK ? |
 |---|---|---|---|
-| 37.1 | Copier le fichier du relais sur la 2e micro:bit | Son écran affiche « 1 » (canal) ; A baisse, B augmente le canal | ✔ (24/11) |
+| 37.1 | Copier le fichier du relais sur la 2e micro:bit | Son écran affiche « 1 » (canal). Depuis le 25/11 : pour changer le canal, la brancher en tenant A jusqu'à ce que le chiffre clignote, A change, B garde | ✔ (24/11) |
 | 37.2 | Robot : l'allumer en tenant A **jusqu'à ce qu'un chiffre s'affiche** (≈ 2 s) | Le canal s'affiche ; A le change, B le garde (coche ✓) ; choisir le même que le relais | |
 | 37.3 | Éteindre et rallumer le robot | Il garde son canal (rien à refaire) | |
 | 37.4 | Labo Blocs, relais branché, robot allumé, « Connecter la carte » | « robot MOVE Motor (par la micro:bit relais, canal N) · prête » | ✔ (24/11) |
@@ -559,3 +559,17 @@ même sur les deux, une paire par écurie (étiqueter « Robot 3 / Relais 3 »).
 | 37.8 | « Dans la carte » par le relais | Le programme part par radio ; le robot le garde après extinction | |
 | 37.9 | Deux paires sur deux canaux, deux PC | Chaque PC ne commande que son robot | |
 | 37.10 | Robot relié par le câble (sans relais) | Tout marche comme avant | |
+
+## 38. Télécommande : la micro:bit relais tenue en main (programme du relais 0.5, 25/11/2026)
+
+Parcours « MOVE Motor libre » 1.1.0, catégorie **Télécommande**. Relais branché au PC (nouveau programme), robot sans
+câble sur le même canal. La micro:bit relais se tient à plat, écran vers le haut, **logo vers l'avant** (loin de soi).
+
+| # | Action | Attendu | OK ? |
+|---|---|---|---|
+| 38.1 | Palette | Catégorie « Télécommande » : penchée vers…, inclinaison (-100 à 100), bouton A / B de la télécommande | ✔ (25/11) |
+| 38.2 | Simulateur | Boutons A et B de la télécommande sous le robot ; curseurs « Télécommande » dans les capteurs | |
+| 38.3 | En direct : si penchée vers l'avant → avancer, vers l'arrière → reculer, vers la gauche / droite → tourner, sinon arrêter | Pencher la micro:bit relais pilote le robot ; à plat, il s'arrête ; le robot ne bouge plus tout seul | ✔ (25/11, avec des LED : chaque sens change la couleur, après la correction du signe de vie) |
+| 38.4 | Vérifier les sens | Avant = logo qui descend ; droite = côté du bouton B qui descend (sinon, me le dire) | |
+| 38.5 | Bouton B de la télécommande → klaxonner | Le robot klaxonne quand on appuie sur B du relais (A et B ne changent plus le canal) | |
+| 38.6 | « Dans la carte » avec un bloc Télécommande | Message : la télécommande ne marche qu'en « En direct » par la micro:bit relais | |

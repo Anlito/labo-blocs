@@ -19,7 +19,7 @@
   const K = () => (enNode ? require('./cartes.js') : global.LaboBlocs);
 
   // Commandes d'extension qui lisent un capteur (les autres agissent : moteurs, LED, écran, son).
-  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13], 5: [1, 9], 6: [3, 4] };
+  const LECTURES = { 1: [2, 3, 4, 5], 2: [5, 6, 7, 8, 9, 10, 13], 5: [1, 9], 6: [3, 4], 7: [1, 2] };
   const estLecture = (e, c) => (LECTURES[e] || []).includes(c);
 
   // La carte ne lit que des entiers (« X 1 1 50 50 ») : les valeurs sont arrondies. Une note de la micro:bit dure
@@ -177,6 +177,9 @@
       else if (e === 5 && c === 1) appliquer = capteur('distance');
       // Robot MOVE Motor : distance ; valeur brute de chaque capteur de ligne (0 à 1023), lue telle quelle par le programme.
       else if (e === 6 && c === 3) appliquer = capteur('distance');
+      // Télécommande : la micro:bit relais répond elle-même (son inclinaison, ses boutons).
+      else if (e === 7 && c === 1) appliquer = capteur(Number(args[0]) === 2 ? 'teleY' : 'teleX');
+      else if (e === 7 && c === 2) appliquer = entree(K().BOUTONS_TELECOMMANDE[Number(args[0]) === 2 ? 1 : 0]);
       else if (e === 6 && c === 4) {
         appliquer = (v) => {
           if (!sim.capteurs) return;

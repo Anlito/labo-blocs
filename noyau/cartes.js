@@ -26,6 +26,10 @@
 //     (1 gauche | 2 droit) → 0 à 1023 (feuille noire ≈ 500, blanche ≈ 690 sur le robot de Thomas) · 5 LED (0 toutes | 1 avant
 //     gauche | 2 avant droite | 3 arrière droite | 4 arrière gauche, rouge, vert, bleu). Le buzzer (P0) et les servos
 //     (P15, P16) passent par les blocs de base (son, servo).
+//   Extension 7 = télécommande (micro:bit relais du MOVE Motor, programme 0.5) : 1 inclinaison (1 gauche-droite,
+//     2 avant-arrière) → -100 à 100 (accélération en mg ÷ 10 : 100 = à la verticale) · 2 bouton (1 A, 2 B) → 0/1.
+//     Le relais répond lui-même (sa propre micro:bit, celle qu'on tient en main) : « En direct » par le relais et
+//     simulateur seulement, jamais « Dans la carte ».
 (function (global) {
   'use strict';
 
@@ -132,6 +136,10 @@
   // valeurs lues sur son robot posé sur une feuille, blanche ≈ 690, noire ≈ 500 (le robot fait de l'ombre au capteur ;
   // la mesure « noir ≈ 54 » de l'essai du jalon 0 était sans doute fausse). À revoir sur la piste du mBot Challenge.
   const SEUIL_LIGNE_ROBOT = 600;
+  // Télécommande : « penchée » au-delà de 30 (300 mg, environ 17°) ; entrées et réglages du simulateur.
+  const SEUIL_TELECOMMANDE = 30;
+  const BOUTONS_TELECOMMANDE = ['télécommande A', 'télécommande B'];
+  const BLOCS_TELECOMMANDE = ['mm_tele_penchee', 'mm_tele_inclinaison', 'mm_tele_bouton'];
   // LED du robot, dans l'ordre de ses numéros (vu de derrière : 1 avant gauche, puis dans le sens des aiguilles d'une montre).
   const LED_ROBOT = ['LED avant gauche', 'LED avant droite', 'LED arrière droite', 'LED arrière gauche'];
   // Valeurs des capteurs de ligne du MOVE Motor simulé, pour le réglage « ligne » (0 à 3, comme le mBot).
@@ -806,6 +814,35 @@
       texte: 'klaxonner',
       derouler: () => [{ bloc: 'son', broche: 'P0', frequence: 185, duree: 0.3 }, attendre(0.3)],
     },
+    // ----- Robot MOVE Motor : télécommande (la micro:bit relais, tenue en main ; décision de Thomas, 25/11/2026) -----
+    mm_tele_penchee: {
+      carte: 'movemotor',
+      categorie: 'mm_telecommande',
+      sorte: 'condition',
+      texte: 'la télécommande est penchée %DIRECTION',
+      champs: { DIRECTION: [['vers l’avant', 'avant'], ['vers l’arrière', 'arriere'], ['vers la gauche', 'gauche'], ['vers la droite', 'droite']] },
+      derouler: (p) => {
+        const avantArriere = p.direction === 'avant' || p.direction === 'arriere';
+        const v = ext(7, 1, [avantArriere ? 2 : 1]);
+        return p.direction === 'avant' || p.direction === 'droite' ? cmp('>', v, SEUIL_TELECOMMANDE) : cmp('<', v, -SEUIL_TELECOMMANDE);
+      },
+    },
+    mm_tele_inclinaison: {
+      carte: 'movemotor',
+      categorie: 'mm_telecommande',
+      sorte: 'valeur',
+      texte: 'inclinaison %AXE de la télécommande (-100 à 100)',
+      champs: { AXE: [['gauche-droite', '1'], ['avant-arrière', '2']] },
+      derouler: (p) => ext(7, 1, [Number(p.axe) === 2 ? 2 : 1]),
+    },
+    mm_tele_bouton: {
+      carte: 'movemotor',
+      categorie: 'mm_telecommande',
+      sorte: 'condition',
+      texte: 'le bouton %BOUTON de la télécommande est appuyé',
+      champs: { BOUTON: [['A', '1'], ['B', '2']] },
+      derouler: (p) => cmp('=', ext(7, 2, [Number(p.bouton) === 2 ? 2 : 1]), 1),
+    },
   };
 
   // avancer : les deux roues en avant ; tourner à gauche : la roue gauche recule (comme mBlock).
@@ -838,6 +875,7 @@
     { nom: 'Moteurs du robot', cle: 'mm_moteurs', carte: 'movemotor' },
     { nom: 'Capteurs du robot', cle: 'mm_capteurs', carte: 'movemotor' },
     { nom: 'LED et son', cle: 'mm_led_son', carte: 'movemotor' },
+    { nom: 'Télécommande', cle: 'mm_telecommande', carte: 'movemotor' },
     { nom: 'Relais', cle: 'uno_relais', carte: 'uno' },
     { nom: 'Mouvement', cle: 'uno_mouvement', carte: 'uno' },
     { nom: 'Ultrason', cle: 'uno_ultrason', carte: 'uno' },
@@ -936,7 +974,7 @@
   const CAPTEURS = {
     microbit: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0 },
     mbot: { distance: 100, ligne: 3, lumiere: 500 },
-    movemotor: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0, distance: 100, ligne: 3 },
+    movemotor: { temperature: 21, lumiere: 128, x: 0, y: 0, z: -1024, geste: 0, distance: 100, ligne: 3, teleX: 0, teleY: 0 },
     uno: { distance: 100 },
   };
   const capteursDepart = (carte) => Object.assign({}, CAPTEURS[carte] || {});
@@ -1059,6 +1097,12 @@
         }
       }
       if (carte === 'movemotor' && e === 6) return extMoveMotor(c, a);
+      // Télécommande (extension 7) : inclinaison réglée par les curseurs (ou un scénario), boutons comme des entrées.
+      if (carte === 'movemotor' && e === 7) {
+        if (c === 1) return borner(sim.capteurs[Number(a[0]) === 2 ? 'teleY' : 'teleX'], -100, 100);
+        if (c === 2) return sim.entrees[BOUTONS_TELECOMMANDE[Number(a[0]) === 2 ? 1 : 0]] ? 1 : 0;
+        return 0;
+      }
       if (carte === 'mbot' && e === 1) {
         switch (c) {
           case 1:
@@ -1210,6 +1254,10 @@
     ],
     LED_ROBOT.map((nom) => ({ type: 'led_rgb', broche: nom, libelle: 'la ' + nom, integre: true })),
     [{ type: 'buzzer', broche: 'P0', libelle: 'le buzzer du robot', integre: true }],
+    [
+      { type: 'bouton', broche: 'télécommande A', libelle: 'le bouton A de la télécommande', integre: true },
+      { type: 'bouton', broche: 'télécommande B', libelle: 'le bouton B de la télécommande', integre: true },
+    ],
   );
   const composantsCarte = (carte) => (COMPOSANTS_CARTE[carte] || []).map((c) => Object.assign({}, c));
 
@@ -1238,6 +1286,8 @@
   CAPTEURS_CARTE.movemotor = CAPTEURS_CARTE.microbit.concat([
     { nom: 'distance', libelle: 'distance (ultrasons)', unite: 'cm', min: 2, max: 400 },
     { nom: 'ligne', libelle: 'suivi de ligne', options: LIGNE },
+    { nom: 'teleX', libelle: 'télécommande : inclinaison gauche-droite', unite: '', min: -100, max: 100 },
+    { nom: 'teleY', libelle: 'télécommande : inclinaison avant-arrière', unite: '', min: -100, max: 100 },
   ]);
   const capteursCarte = (carte) => CAPTEURS_CARTE[carte] || [];
 
@@ -1259,6 +1309,12 @@
         const d = CODES_JOYSTICK[Number(valeur)] || 'centre';
         return d === 'centre' ? 'le joystick est au centre' : `le joystick est poussé ${DIRECTIONS_JOYSTICK.find((x) => x[1] === d)[0]}`;
       }
+      case 'teleX':
+      case 'teleY': {
+        const n = Number(valeur) || 0;
+        const sens = nom === 'teleX' ? (n > 0 ? 'vers la droite' : 'vers la gauche') : n > 0 ? 'vers l’avant' : 'vers l’arrière';
+        return n ? `la télécommande est penchée ${sens} (${Math.abs(n)})` : 'la télécommande est à plat';
+      }
       case 'geste': {
         const g = GESTES.find((x) => Number(x[1]) === Number(valeur));
         return g ? `la carte est ${g[0]}` : 'la carte est immobile';
@@ -1277,7 +1333,7 @@
     return `rouge ${r}, vert ${v}, bleu ${b}`;
   }
 
-  const api = { carteAccepte, avecMicrobit, LED_ROBOT, SEUIL_LIGNE_ROBOT, BLOCS_MODULES, BROCHES_MODULES, TOUCHES_TACTILES, codeToucheTactile, entreeTactile, composantDuModule, texteAfficheur4, numeroBrocheModule, VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
+  const api = { SEUIL_TELECOMMANDE, BOUTONS_TELECOMMANDE, BLOCS_TELECOMMANDE, carteAccepte, avecMicrobit, LED_ROBOT, SEUIL_LIGNE_ROBOT, BLOCS_MODULES, BROCHES_MODULES, TOUCHES_TACTILES, codeToucheTactile, entreeTactile, composantDuModule, texteAfficheur4, numeroBrocheModule, VERSION_FIRMWARE, PROFILS, profil, BLOCS_CARTES: BLOCS, CATEGORIES_CARTES, deroulerBlocCarte: derouler, codesTexte, NOTES, matriceA, lireDessinMatrice, texteNombre, colonnesTexte, colonnesChiffres, colonnesHeure, POLICE_MATRICE, CHIFFRES_MATRICE, DESSIN_DEPART, DUREE_COLONNE_MATRICE, DESSIN_MICROBIT_DEPART, lireDessinMicrobit, valeursDessinMicrobit, IMAGES, GESTES, COULEURS_LED, creerCarteSimulee, ecranA, capteursDepart, nomCouleur, composantsCarte, capteursCarte, decrireCapteur, TOUCHES, codeTouche, toucheDuCode, toucheDuClavier, entreeTouche, composantsClavier, BLOCS_CLAVIER, JOYSTICK_DEPART, DIRECTIONS_JOYSTICK, SEUIL_JOYSTICK, CODES_JOYSTICK, BLOCS_JOYSTICK, joystickDe, nouveauJoystick, brutsJoystick, deroulerJoystick, composantsJoystick };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);

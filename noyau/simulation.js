@@ -78,7 +78,7 @@
       };
       carteSimulee = K.creerCarteSimulee(opts.carte || 'uno', sim);
       sim.carte = carteSimulee.etat;
-      const entrees = K.avecMicrobit(opts.carte) ? ['A', 'B', 'logo'] : ['bouton'];
+      const entrees = K.avecMicrobit(opts.carte) ? ['A', 'B', 'logo'].concat(opts.carte === 'movemotor' ? K.BOUTONS_TELECOMMANDE : []) : ['bouton'];
       const sorties = opts.carte === 'mbot' ? ['moteur gauche', 'moteur droit', 'LED gauche', 'LED droite'] : opts.carte === 'movemotor' ? ['moteur gauche', 'moteur droit'].concat(K.LED_ROBOT) : [];
       for (const n of entrees) sim.entrees[n] = sim.initiales[n] = 0;
       for (const n of sorties) sim.sorties[n] = sim.initiales[n] = 0;

@@ -477,7 +477,9 @@
       changer({ cle: 'direct', carte: c.carte, parCle: !!port.sansFil });
       const envoyerLigne = async (ligne) => {
         const r = await liaison.commande(ligne, 700);
-        boucle.dernierEnvoi = Date.now();
+        // Les lectures de la télécommande (« X 7 … ») sont répondues par la micro:bit relais : elles ne comptent pas
+        // comme un signe de vie pour le robot (sans rien pendant 3 s, il éteint tout).
+        if (!/^X 7 /.test(ligne)) boucle.dernierEnvoi = Date.now();
         if (r === null) boucle.sansReponse++;
         else boucle.sansReponse = 0;
         if (boucle.sansReponse >= 3 && !boucle.arret) {
@@ -498,10 +500,11 @@
             await envoyerLigne(boucle.file.shift());
             continue;
           }
-          if (direct.lectures.length) {
+          if (Date.now() - boucle.dernierEnvoi > 800) await envoyerLigne('PING');
+          else if (direct.lectures.length) {
             const l = direct.lectures[boucle.lecture++ % direct.lectures.length];
             direct.lire(l, await envoyerLigne(l.ligne));
-          } else if (Date.now() - boucle.dernierEnvoi > 800) await envoyerLigne('PING');
+          }
           await pause(direct.lectures.length ? 15 : 20);
         }
       })();
@@ -788,6 +791,9 @@
           }
           if (p.clavier) {
             return connexion.signaler({ cle: 'programme', message: 'Ton programme utilise le clavier de l’ordinateur : une fois dans la carte, il ne le verrait pas. Essaie-le en mode « En direct ».' });
+          }
+          if (p.telecommande) {
+            return connexion.signaler({ cle: 'programme', message: 'Ton programme utilise la télécommande (la micro:bit relais) : une fois dans le robot, il ne la verrait pas. Essaie-le en mode « En direct », par la micro:bit relais.' });
           }
           const r = await connexion.envoyer(p.octets);
           if (r && o.surEnvoi) o.surEnvoi(Object.assign({ octets: p.octets.length }, r));

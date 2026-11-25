@@ -432,7 +432,13 @@
   }
 
   // Robot MOVE Motor (en attendant le robot animé) : la micro:bit, puis le robot vu de dessus (roues, 4 LED) et ses états.
-  function htmlMoveMotor() {
+  // Télécommande (micro:bit relais) : ses deux boutons ; l'inclinaison se règle avec les curseurs des capteurs.
+  function htmlTelecommande() {
+    const bouton = (n, entree) => `<button type="button" class="mb-bouton poussoir-carte" data-entree="${entree}" aria-pressed="false" aria-label="Bouton ${n} de la télécommande : maintenir pour appuyer">${n}</button>`;
+    return `<figure class="mm-telecommande"><div class="mm-telecommande-boutons">${bouton('A', A.BOUTONS_TELECOMMANDE[0])}${bouton('B', A.BOUTONS_TELECOMMANDE[1])}</div><figcaption>Télécommande (micro:bit relais)</figcaption></figure>`;
+  }
+
+  function htmlMoveMotor(avecTelecommande) {
     const roue = (x, cote) =>
       `<g class="mbot-roue" data-roue="${cote}"><rect x="${x}" y="26" width="20" height="64" rx="8" fill="#F2C200" stroke="#2B3338" stroke-width="3"/>` +
       `<text x="${x + 10}" y="64" text-anchor="middle" class="mbot-fleche"></text></g>`;
@@ -462,6 +468,7 @@
       '<li class="mm-lu" hidden></li>' +
       '<li class="mbot-son" aria-live="polite"></li>' +
       '</ul>' +
+      (avecTelecommande ? htmlTelecommande() : '') +
       '</div>'
     );
   }
@@ -473,7 +480,7 @@
     ['blanc sous les deux capteurs (3)', 3],
   ];
 
-  function htmlCapteurs(carte, c) {
+  function htmlCapteurs(carte, c, avecTelecommande) {
     const microbit =
       curseur('temperature', 'Température', -10, 50, 1, c.temperature, '°C') +
       curseur('lumiere', 'Lumière', 0, 255, 1, c.lumiere, '') +
@@ -483,7 +490,10 @@
       choix('geste', 'Geste', [['aucun', 0]].concat(A.GESTES || []), c.geste);
     if (carte === 'microbit') return microbit;
     if (carte === 'movemotor') {
-      return curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') + choix('ligne', 'Suivi de ligne', OPTIONS_LIGNE, c.ligne) + microbit;
+      const tele = avecTelecommande
+        ? curseur('teleX', 'Télécommande : gauche-droite', -100, 100, 5, c.teleX, '') + curseur('teleY', 'Télécommande : avant-arrière', -100, 100, 5, c.teleY, '')
+        : '';
+      return curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') + choix('ligne', 'Suivi de ligne', OPTIONS_LIGNE, c.ligne) + tele + microbit;
     }
     return (
       curseur('distance', 'Distance (ultrasons)', 2, 400, 1, c.distance, 'cm') +
@@ -495,15 +505,15 @@
   const sensMoteur = (v) => (!v ? 'arrêté' : `${Math.abs(v)} % ${v > 0 ? 'en avant' : 'en arrière'}`);
 
   // Partie « carte » de la vue : micro:bit (écran, boutons, logo) ou mBot (moteurs, LED, bouton), et ses capteurs.
-  function vueCarte(racine, carte, rappels, avecMatrice) {
+  function vueCarte(racine, carte, rappels, avecMatrice, avecTelecommande) {
     const zone = racine.querySelector('.simu-carte');
-    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : carte === 'movemotor' ? htmlMoveMotor() : htmlMbot(avecMatrice)}</div>`;
+    zone.innerHTML = `<div class="simu-carte-dessin simu-${carte}">${carte === 'microbit' ? htmlMicrobit() : carte === 'movemotor' ? htmlMoveMotor(avecTelecommande) : htmlMbot(avecMatrice)}</div>`;
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
     const capteurs = A.capteursDepart ? A.capteursDepart(carte) : {};
     const panneau = document.createElement('details');
     panneau.className = 'simu-capteurs';
     panneau.open = true;
-    panneau.innerHTML = `<summary>Capteurs de la carte <span class="capteurs-aide">à régler à la main pendant la simulation</span></summary><div class="capteurs-liste">${htmlCapteurs(carte, capteurs)}</div>`;
+    panneau.innerHTML = `<summary>Capteurs de la carte <span class="capteurs-aide">à régler à la main pendant la simulation</span></summary><div class="capteurs-liste">${htmlCapteurs(carte, capteurs, avecTelecommande)}</div>`;
     zone.insertAdjacentElement('afterend', panneau);
     panneau.addEventListener('input', (e) => {
       const nom = e.target.dataset.capteur;
@@ -711,7 +721,8 @@
     racine.classList.toggle('avec-carte', carte !== 'uno');
     for (const vieux of racine.querySelectorAll('.simu-capteurs')) vieux.remove();
     const avecMatrice = carte === 'mbot' && (exercice.blocsAutorises || []).some((t) => /^mbot_matrice_/.test(t));
-    const vueDeCarte = carte === 'uno' ? null : vueCarte(racine, carte, rappels, avecMatrice);
+    const avecTelecommande = carte === 'movemotor' && (exercice.blocsAutorises || []).some((t) => (A.BLOCS_TELECOMMANDE || []).includes(t));
+    const vueDeCarte = carte === 'uno' ? null : vueCarte(racine, carte, rappels, avecMatrice, avecTelecommande);
     if (!vueDeCarte) racine.querySelector('.simu-carte').innerHTML = `<div class="simu-carte-dessin">${dessinCarte(composants, recadrer)}</div>`;
     // Illustration du projet (distributeur : exercices 8 et 13) : à droite des cartes des composants.
     const distributeur = exercice.illustration === 'distributeur';

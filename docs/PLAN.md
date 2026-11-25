@@ -642,3 +642,14 @@ s'affiche. Je prépare des pages d'essai qui affichent un compte rendu à copier
    - Essai du 24/11/2026 avec les vraies micro:bit : relais seul → « relais-1 » ; robot sur le canal 1 → PONG « relais 1 »,
      LED, distance et capteurs de ligne par radio. (Une micro:bit bloquée en MAINTENANCE : réparée par la mise à jour
      du firmware de microbit.org.)
+49. **Télécommande (25/11/2026)**, demande de Thomas : piloter le robot en penchant une micro:bit. L'accéléromètre lu
+   en direct était celui du robot (micro:bit montée debout : y ≈ -1000 au repos, et il bouge avec le robot) → blocs
+   « Télécommande » (extension 7, catégorie mm_telecommande) : penchée vers l'avant / l'arrière / la gauche / la droite
+   (seuil 30 = 300 mg), inclinaison gauche-droite / avant-arrière (mg ÷ 10, -100 à 100), bouton A / B. La micro:bit
+   relais répond elle-même à « X 7 … » ; A et B ne changent plus son canal (on la branche en tenant A pour le changer).
+   Simulateur : curseurs teleX / teleY et boutons « télécommande A / B » si l'exercice a ces blocs. Refusée « Dans la
+   carte » (comme le clavier). Sens (avant = logo vers le bas, droite = côté B vers le bas) à confirmer, recette §38.
+   - Recette du 25/11/2026 : les LED restaient bloquées. Cause : en « En direct », le signe de vie (PING) ne partait que
+     sans lecture de capteur ; les lectures « X 7 » sont répondues par le relais, donc le robot ne recevait plus rien et
+     coupait tout au bout de 3 s. Correction (interface/carte.js) : PING au moins toutes les 0,8 s vers le robot, les
+     lignes « X 7 » ne comptant pas. Validé par Thomas : chaque sens change la couleur.

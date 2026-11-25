@@ -685,7 +685,19 @@
     return oui;
   }
 
-  const api = { utiliseCamera, utiliseClavier, nomDeVariable, variablesDeSauvegarde, nomsDeSauvegarde, lireNombres, BLOCS_FONCTION, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
+  // Le programme utilise-t-il la télécommande (micro:bit relais du MOVE Motor : extension 7) ?
+  function utiliseTelecommande(programme) {
+    let oui = false;
+    (function parcourir(x) {
+      if (oui || !x || typeof x !== 'object') return;
+      if (Array.isArray(x)) return x.forEach(parcourir);
+      if ((typeof x.bloc === 'string' && x.bloc.indexOf('mm_tele_') === 0) || (x.bloc === 'ext' && x.extension === 7)) oui = true;
+      for (const k of Object.keys(x)) if (x[k] && typeof x[k] === 'object') parcourir(x[k]);
+    })(programme ? filsEtFonctions(programme) : []);
+    return oui;
+  }
+
+  const api = { utiliseCamera, utiliseClavier, utiliseTelecommande, nomDeVariable, variablesDeSauvegarde, nomsDeSauvegarde, lireNombres, BLOCS_FONCTION, composantsDuProgramme, depuisBlockly, versBlockly, versV1, versSimplifie, appliquerParametres, typesDeBlocs, FORMAT_PROGRAMME: FORMAT };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else Object.assign((global.LaboBlocs = global.LaboBlocs || {}), api);
 })(this);
